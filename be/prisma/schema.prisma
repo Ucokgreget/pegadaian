@@ -1,0 +1,133 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id              Int                @id @default(autoincrement())
+  name            String?
+  email           String             @unique
+  password        String
+  role            Role               @default(USER)
+  createdAt       DateTime           @default(now()) @map("created_at")
+  updatedAt       DateTime           @updatedAt @map("updated_at")
+  chatbotSettings ChatbotSettings?
+  conversations   Conversation[]
+  customers       Customer[]
+  products        Product[]
+  subscriptions   UserSubscription[]
+
+  @@map("users")
+}
+
+model Package {
+  id            Int                @id @default(autoincrement())
+  name          String             @unique
+  price         Int
+  durationDays  Int                @default(30) @map("duration_days")
+  createdAt     DateTime           @default(now()) @map("created_at")
+  updatedAt     DateTime           @updatedAt @map("updated_at")
+  subscriptions UserSubscription[]
+
+  @@map("packages")
+}
+
+model UserSubscription {
+  id               Int                @id @default(autoincrement())
+  userId           Int                @map("user_id")
+  packageId        Int                @map("package_id")
+  status           SubscriptionStatus @default(PENDING)
+  startDate        DateTime?          @map("started_at")
+  endDate          DateTime?          @map("expires_at")
+  paymentProofUrl  String?            @map("payment_proof_url")
+  paymentProofName String?            @map("payment_proof_name")
+  adminNotes       String?            @map("admin_notes")
+  createdAt        DateTime           @default(now()) @map("created_at")
+  updatedAt        DateTime           @updatedAt @map("updated_at")
+  package          Package            @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  user             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_subscriptions")
+}
+
+model Product {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  price       Int
+  stock       Int      @default(0)
+  imageUrl    String?  @map("image_url")
+  userId      Int      @map("user_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("products")
+}
+
+model Customer {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  phone     String?
+  address   String?
+  notes     String?
+  userId    Int      @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("customers")
+}
+
+model ChatbotSettings {
+  id             Int      @id @default(autoincrement())
+  userId         Int      @unique @map("user_id")
+  isActive       Boolean  @default(false) @map("is_active")
+  welcomeMessage String   @default("Halo! Terima kasih telah menghubungi kami. Ada yang bisa saya bantu?") @map("welcome_message")
+  fontteToken    String?  @map("fonnte_token")
+  device         String?
+  aiPrompt       String?  @map("ai_prompt")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("chatbot_settings")
+}
+
+model Conversation {
+  id         Int      @id @default(autoincrement())
+  userId     Int      @map("user_id")
+  sender     String
+  message    String
+  response   String?
+  isIncoming Boolean  @default(true) @map("is_incoming")
+  createdAt  DateTime @default(now()) @map("created_at")
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("conversations")
+}
+
+model BlastMessage {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  message    String
+  recipients String
+  status     String   @default("PENDING")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum SubscriptionStatus {
+  PENDING
+  ACTIVE
+  EXPIRED
+}
