@@ -69,9 +69,39 @@ export const register = async (req, res) => {
       .json({ error: "gagal register wak", details: error?.message });
   }
 };
-  
+
 //logout
 export const logout = async (req, res) => {
   // Since this is a stateless API, logout can be handled on the client side
   res.status(200).json({ message: "Logout successful" });
+};
+
+// getMe
+export const getMe = async (req, res) => {
+  try {
+    // req.user is set by requireAuth middleware
+    if (!req.user) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: parseInt(req.user.id) },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        createdAt: true,
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    return res.json(user);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Failed to fetch user profile" });
+  }
 };

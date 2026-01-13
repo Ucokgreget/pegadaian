@@ -11,7 +11,7 @@ export function HeroSection() {
 
         <h1 className="mt-4 text-balance text-3xl font-semibold tracking-tight text-slate-50 sm:text-4xl lg:text-5xl">
           <span className="bg-gradient-to-r from-emerald-400 via-emerald-300 to-sky-300 bg-clip-text text-transparent">
-            Dari Pemula Jadi Juara
+            Pusing Ngurus Orderan Manual?
           </span>
           <br />
           Ubah Bisnis dengan Automasi WhatsApp.

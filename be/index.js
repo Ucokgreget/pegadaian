@@ -10,6 +10,7 @@ import customerRoute from "./route/customerRoute.js";
 import productRoute from "./route/productRoute.js";
 import subscriptionRoute from "./route/subscriptionRoute.js";
 import packageRoute from "./route/packageRoute.js";
+import adminRoute from "./route/adminRoute.js";
 
 app.use(express.json());
 
@@ -28,6 +29,7 @@ app.use("/customer", customerRoute);
 app.use("/product", productRoute);
 app.use("/subscription", subscriptionRoute);
 app.use("/package", packageRoute);
+app.use("/admin", adminRoute);
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
