@@ -2,7 +2,7 @@
 
 import { cookies } from "next/headers";
 
-const BACKEND_URL = "http://localhost:8000";
+const API_URL = process.env.API_URL || "http://localhost:8000";
 
 export interface Package {
   id: number;
@@ -13,7 +13,10 @@ export interface Package {
   createdAt: string;
 }
 
-export type CreatePackageInput = Omit<Package, "id" | "createdAt" | "subscriptions">;
+export type CreatePackageInput = Omit<
+  Package,
+  "id" | "createdAt" | "subscriptions"
+>;
 export type UpdatePackageInput = Partial<CreatePackageInput>;
 
 async function getAuthHeaders() {
@@ -28,7 +31,7 @@ async function getAuthHeaders() {
 export async function getPackages(): Promise<Package[]> {
   try {
     const headers = await getAuthHeaders();
-    const res = await fetch(`${BACKEND_URL}/package`, {
+    const res = await fetch(`${API_URL}/package`, {
       method: "GET",
       headers,
     });
@@ -44,10 +47,12 @@ export async function getPackages(): Promise<Package[]> {
   }
 }
 
-export async function createPackage(data: CreatePackageInput): Promise<Package> {
+export async function createPackage(
+  data: CreatePackageInput,
+): Promise<Package> {
   try {
     const headers = await getAuthHeaders();
-    const res = await fetch(`${BACKEND_URL}/package`, {
+    const res = await fetch(`${API_URL}/package`, {
       method: "POST",
       headers,
       body: JSON.stringify(data),
@@ -65,10 +70,13 @@ export async function createPackage(data: CreatePackageInput): Promise<Package> 
   }
 }
 
-export async function updatePackage(id: number, data: UpdatePackageInput): Promise<Package> {
+export async function updatePackage(
+  id: number,
+  data: UpdatePackageInput,
+): Promise<Package> {
   try {
     const headers = await getAuthHeaders();
-    const res = await fetch(`${BACKEND_URL}/package/${id}`, {
+    const res = await fetch(`${API_URL}/package/${id}`, {
       method: "PUT",
       headers,
       body: JSON.stringify(data),
@@ -89,7 +97,7 @@ export async function updatePackage(id: number, data: UpdatePackageInput): Promi
 export async function deletePackage(id: number): Promise<{ message: string }> {
   try {
     const headers = await getAuthHeaders();
-    const res = await fetch(`${BACKEND_URL}/package/${id}`, {
+    const res = await fetch(`${API_URL}/package/${id}`, {
       method: "DELETE",
       headers,
     });

@@ -2,7 +2,7 @@
 
 import { cookies } from "next/headers";
 
-const BACKEND_URL = "http://localhost:8000";
+const API_URL = process.env.API_URL || "http://localhost:8000";
 
 export interface Blast {
   id: number;
@@ -17,7 +17,7 @@ export async function getBlastMessages(): Promise<Blast[]> {
   const token = cookieStore.get("token")?.value;
 
   try {
-    const res = await fetch(`${BACKEND_URL}/chatbot/blast`, {
+    const res = await fetch(`${API_URL}/chatbot/blast`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -26,12 +26,12 @@ export async function getBlastMessages(): Promise<Blast[]> {
     });
 
     if (!res.ok) {
-         // If 404/Empty
-         return [];
+      // If 404/Empty
+      return [];
     }
 
     const data = await res.json();
-    
+
     // Ensure recipients is parsed if it comes as string (depending on backend implementation)
     // Assuming backend returns it properly formatted or strings.
     // Generally standardizing on array for UI.
@@ -47,7 +47,7 @@ export async function createBlast(message: string, recipients: string[]) {
   const token = cookieStore.get("token")?.value;
 
   try {
-    const res = await fetch(`${BACKEND_URL}/chatbot/blast`, {
+    const res = await fetch(`${API_URL}/chatbot/blast`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,

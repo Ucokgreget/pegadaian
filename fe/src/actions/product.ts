@@ -2,7 +2,7 @@
 
 import { cookies } from "next/headers";
 
-const BACKEND_URL = "http://localhost:8000";
+const API_URL = process.env.API_URL || "http://localhost:8000";
 
 export interface Product {
   id: number;
@@ -29,7 +29,7 @@ async function getAuthHeaders() {
 export async function getProducts(): Promise<Product[]> {
   try {
     const headers = await getAuthHeaders();
-    const res = await fetch(`${BACKEND_URL}/product`, {
+    const res = await fetch(`${API_URL}/product`, {
       method: "GET",
       headers,
     });
@@ -46,11 +46,11 @@ export async function getProducts(): Promise<Product[]> {
 }
 
 export async function createProduct(
-  data: CreateProductInput
+  data: CreateProductInput,
 ): Promise<Product> {
   try {
     const headers = await getAuthHeaders();
-    const res = await fetch(`${BACKEND_URL}/product`, {
+    const res = await fetch(`${API_URL}/product`, {
       method: "POST",
       headers,
       body: JSON.stringify(data),
@@ -70,11 +70,11 @@ export async function createProduct(
 
 export async function updateProduct(
   id: number,
-  data: UpdateProductInput
+  data: UpdateProductInput,
 ): Promise<Product> {
   try {
     const headers = await getAuthHeaders();
-    const res = await fetch(`${BACKEND_URL}/product/${id}`, {
+    const res = await fetch(`${API_URL}/product/${id}`, {
       method: "PUT",
       headers,
       body: JSON.stringify(data),
@@ -95,7 +95,7 @@ export async function updateProduct(
 export async function deleteProduct(id: number): Promise<{ message: string }> {
   try {
     const headers = await getAuthHeaders();
-    const res = await fetch(`${BACKEND_URL}/product/${id}`, {
+    const res = await fetch(`${API_URL}/product/${id}`, {
       method: "DELETE",
       headers,
     });

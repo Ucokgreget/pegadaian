@@ -2,7 +2,7 @@
 
 import { cookies } from "next/headers";
 
-const BACKEND_URL = "http://localhost:8000";
+const API_URL = process.env.API_URL || "http://localhost:8000";
 
 async function getAuthHeaders() {
   const cookieStore = await cookies();
@@ -16,7 +16,7 @@ async function getAuthHeaders() {
 export async function getUsersWithAnalytics() {
   try {
     const headers = await getAuthHeaders();
-    const res = await fetch(`${BACKEND_URL}/user-analytics`, {
+    const res = await fetch(`${API_URL}/user-analytics`, {
       method: "GET",
       headers,
     });
@@ -29,47 +29,59 @@ export async function getUsersWithAnalytics() {
   } catch (error) {
     console.error("GetUsersWithAnalytics error:", error);
     // Return safe default struct
-    return { users: [], analytics: { totalUsers: 0, activeSubscriptions: 0, totalProducts: 0, totalRevenue: 0 } };
+    return {
+      users: [],
+      analytics: {
+        totalUsers: 0,
+        activeSubscriptions: 0,
+        totalProducts: 0,
+        totalRevenue: 0,
+      },
+    };
   }
 }
 
 export async function deleteUser(id: number) {
-    try {
-        const headers = await getAuthHeaders();
-        const res = await fetch(`${BACKEND_URL}/user/${id}`, {
-            method: "DELETE",
-            headers,
-        });
+  try {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_URL}/user/${id}`, {
+      method: "DELETE",
+      headers,
+    });
 
-        if (!res.ok) {
-             const result = await res.json();
-             throw new Error(result.error || "Failed to delete user");
-        }
-        
-        return await res.json();
-    } catch (error) {
-        console.error("DeleteUser error:", error)
-        throw error;
+    if (!res.ok) {
+      const result = await res.json();
+      throw new Error(result.error || "Failed to delete user");
     }
+
+    return await res.json();
+  } catch (error) {
+    console.error("DeleteUser error:", error);
+    throw error;
+  }
 }
 
-export async function updateUserRole(id: number, role: "USER" | "ADMIN", name?: string) {
-    try {
-        const headers = await getAuthHeaders();
-        const res = await fetch(`${BACKEND_URL}/user/${id}`, {
-            method: "PUT",
-            headers,
-            body: JSON.stringify({ role, name })
-        });
+export async function updateUserRole(
+  id: number,
+  role: "USER" | "ADMIN",
+  name?: string,
+) {
+  try {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_URL}/user/${id}`, {
+      method: "PUT",
+      headers,
+      body: JSON.stringify({ role, name }),
+    });
 
-        if (!res.ok) {
-             const result = await res.json();
-             throw new Error(result.error || "Failed to update user");
-        }
-
-        return await res.json();
-    } catch(error) {
-        console.error("UpdateUserRole error:", error);
-        throw error;
+    if (!res.ok) {
+      const result = await res.json();
+      throw new Error(result.error || "Failed to update user");
     }
+
+    return await res.json();
+  } catch (error) {
+    console.error("UpdateUserRole error:", error);
+    throw error;
+  }
 }

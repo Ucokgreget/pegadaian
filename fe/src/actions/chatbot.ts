@@ -2,14 +2,14 @@
 
 import { cookies } from "next/headers";
 
-const BACKEND_URL = "http://localhost:8000";
+const API_URL = process.env.API_URL || "http://localhost:8000";
 
 export async function getChatbotSettings() {
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
 
   try {
-    const res = await fetch(`${BACKEND_URL}/chatbot/runtime`, {
+    const res = await fetch(`${API_URL}/chatbot/runtime`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -50,7 +50,7 @@ export async function updateChatbotSettings(data: any) {
   const token = cookieStore.get("token")?.value;
 
   try {
-    const res = await fetch(`${BACKEND_URL}/chatbot/settings`, {
+    const res = await fetch(`${API_URL}/chatbot/settings`, {
       method: "PUT",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -76,7 +76,7 @@ export async function testChatbot(message: string, customPrompt?: string) {
   const token = cookieStore.get("token")?.value;
 
   try {
-    const res = await fetch(`${BACKEND_URL}/chatbot/test`, {
+    const res = await fetch(`${API_URL}/chatbot/test`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -102,7 +102,7 @@ export async function connectChatbot() {
   const token = cookieStore.get("token")?.value;
 
   try {
-    const res = await fetch(`${BACKEND_URL}/chatbot/connect`, {
+    const res = await fetch(`${API_URL}/chatbot/connect`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -127,7 +127,7 @@ export async function disconnectChatbot() {
   const token = cookieStore.get("token")?.value;
 
   try {
-    const res = await fetch(`${BACKEND_URL}/chatbot/disconnect`, {
+    const res = await fetch(`${API_URL}/chatbot/disconnect`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,

@@ -2,7 +2,7 @@
 
 import { cookies } from "next/headers";
 
-const BACKEND_URL = "http://localhost:8000";
+const API_URL = process.env.API_URL || "http://localhost:8000";
 
 export interface Customer {
   id: number;
@@ -30,13 +30,13 @@ async function getAuthHeaders() {
 export async function getCustomers(): Promise<Customer[]> {
   try {
     const headers = await getAuthHeaders();
-    const res = await fetch(`${BACKEND_URL}/customer`, {
+    const res = await fetch(`${API_URL}/customer`, {
       method: "GET",
       headers,
     });
 
     if (!res.ok) {
-        throw new Error("Failed to fetch customers");
+      throw new Error("Failed to fetch customers");
     }
 
     return await res.json();
@@ -46,10 +46,12 @@ export async function getCustomers(): Promise<Customer[]> {
   }
 }
 
-export async function createCustomer(data: CreateCustomerInput): Promise<Customer> {
+export async function createCustomer(
+  data: CreateCustomerInput,
+): Promise<Customer> {
   try {
     const headers = await getAuthHeaders();
-    const res = await fetch(`${BACKEND_URL}/customer`, {
+    const res = await fetch(`${API_URL}/customer`, {
       method: "POST",
       headers,
       body: JSON.stringify(data),
@@ -67,18 +69,21 @@ export async function createCustomer(data: CreateCustomerInput): Promise<Custome
   }
 }
 
-export async function updateCustomer(id: number, data: UpdateCustomerInput): Promise<Customer> {
+export async function updateCustomer(
+  id: number,
+  data: UpdateCustomerInput,
+): Promise<Customer> {
   try {
     const headers = await getAuthHeaders();
-    const res = await fetch(`${BACKEND_URL}/customer/${id}`, {
-        method: "PUT",
-        headers,
-        body: JSON.stringify(data),
+    const res = await fetch(`${API_URL}/customer/${id}`, {
+      method: "PUT",
+      headers,
+      body: JSON.stringify(data),
     });
 
     if (!res.ok) {
-        const result = await res.json();
-        throw new Error(result.error || "Failed to update customer");
+      const result = await res.json();
+      throw new Error(result.error || "Failed to update customer");
     }
 
     return await res.json();
@@ -91,19 +96,19 @@ export async function updateCustomer(id: number, data: UpdateCustomerInput): Pro
 export async function deleteCustomer(id: number): Promise<{ message: string }> {
   try {
     const headers = await getAuthHeaders();
-    const res = await fetch(`${BACKEND_URL}/customer/${id}`, {
+    const res = await fetch(`${API_URL}/customer/${id}`, {
       method: "DELETE",
       headers,
     });
 
     if (!res.ok) {
-        const result = await res.json();
-        throw new Error(result.error || "Failed to delete customer");
+      const result = await res.json();
+      throw new Error(result.error || "Failed to delete customer");
     }
 
     return await res.json();
   } catch (error) {
-     console.error("DeleteCustomer error:", error);
-     throw error;
+    console.error("DeleteCustomer error:", error);
+    throw error;
   }
 }

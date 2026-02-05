@@ -11,16 +11,15 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export default function ScanPage() {
   const [qrString, setQrString] = useState("");
   const [status, setStatus] = useState("loading");
 
-  // Fungsi untuk mengecek QR ke backend
   const fetchQR = async () => {
     try {
-      // API endpoint is http://localhost:8000/chatbot/auth/qr
-      const res = await fetch("http://localhost:8000/chatbot/runtime");
+      const res = await fetch(`${API_URL}/chatbot/runtime`);
       const data = await res.json();
       console.log(data);
 
@@ -139,12 +138,9 @@ export default function ScanPage() {
                   ) {
                     try {
                       setStatus("loading");
-                      await fetch(
-                        "http://localhost:8000/chatbot/auth/session",
-                        {
-                          method: "DELETE",
-                        },
-                      );
+                      await fetch(`${API_URL}/chatbot/auth/session`, {
+                        method: "DELETE",
+                      });
                       // Wait a bit for server restart
                       setTimeout(() => {
                         fetchQR();

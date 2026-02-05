@@ -3,11 +3,13 @@
 import { cookies } from "next/headers";
 import { LoginRequest, LoginResponse, User } from "@/types/Auth";
 
+const API_URL = process.env.API_URL || "http://localhost:8000";
+
 export async function login(data: LoginRequest): Promise<LoginResponse> {
   const cookieStore = await cookies();
 
   try {
-    const res = await fetch("http://localhost:8000/login", {
+    const res = await fetch(`${API_URL}/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -57,7 +59,7 @@ export async function getCurrentUser(): Promise<User | null> {
   }
 
   try {
-    const res = await fetch("http://localhost:8000/me", {
+    const res = await fetch(`${API_URL}/me`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -66,7 +68,7 @@ export async function getCurrentUser(): Promise<User | null> {
     });
 
     if (!res.ok) {
-        // If 401, token might be expired.
+      // If 401, token might be expired.
       return null;
     }
 
@@ -79,6 +81,6 @@ export async function getCurrentUser(): Promise<User | null> {
 }
 
 export async function logout() {
-    const cookieStore = await cookies();
-    cookieStore.delete("token");
+  const cookieStore = await cookies();
+  cookieStore.delete("token");
 }
