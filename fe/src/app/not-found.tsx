@@ -14,7 +14,7 @@ export default function NotFound() {
             </div>
             <div className="flex flex-col leading-tight">
               <span className="text-sm font-semibold tracking-tight sm:text-base">
-                Whiizi
+                Zaptify
               </span>
               <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-emerald-400">
                 WhatsApp Automation
@@ -65,7 +65,7 @@ export default function NotFound() {
             <p className="font-medium text-slate-200">Tips:</p>
             <p className="mt-1">
               Pastikan URL yang Anda akses sudah benar, atau gunakan menu di
-              beranda untuk kembali ke fitur automasi WhatsApp Whiizi.
+              beranda untuk kembali ke fitur automasi WhatsApp Zaptify.
             </p>
           </div>
         </div>

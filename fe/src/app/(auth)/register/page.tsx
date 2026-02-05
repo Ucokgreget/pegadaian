@@ -127,7 +127,7 @@ export default function RegisterPage() {
               </div>
               <div>
                 <h2 className="text-sm font-semibold tracking-tight text-slate-50 sm:text-base">
-                  Whiizi
+                  Zaptify
                 </h2>
                 <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-emerald-400">
                   WhatsApp Automation
@@ -137,7 +137,7 @@ export default function RegisterPage() {
 
             <div className="mt-6">
               <h1 className="text-2xl font-semibold tracking-tight text-slate-50 sm:text-3xl">
-                Bergabung dengan Whiizi
+                Bergabung dengan Zaptify
               </h1>
               <p className="mt-2 text-sm text-slate-400 sm:text-base">
                 Buat akun dan mulai otomatisasi bisnis WhatsApp-mu sekarang.
@@ -298,7 +298,7 @@ export default function RegisterPage() {
                   >
                     Kebijakan Privasi
                   </a>{" "}
-                  Whiizi.
+                  Zaptify.
                 </span>
               </label>
               {errors.agreed && (

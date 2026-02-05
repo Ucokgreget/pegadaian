@@ -1,29 +1,39 @@
 "use client";
 
+import Link from "next/link";
+
 import React, { useState, useEffect } from "react";
 // Removed useSession (not used in this arch)
 // Removed React Query (using useEffect/useState)
 import { Button } from "@/components/ui/button";
-import { 
-  Bot, 
-  Settings, 
-  TestTube, 
-  Smartphone, 
-  MessageCircle, 
-  CheckCircle, 
-  XCircle, 
+import {
+  Bot,
+  Settings,
+  TestTube,
+  Smartphone,
+  MessageCircle,
+  CheckCircle,
+  XCircle,
   Send,
   Save,
-  Loader2
+  Loader2,
+  QrCode,
 } from "lucide-react";
-import { getChatbotSettings, updateChatbotSettings, testChatbot } from "@/actions/chatbot";
+import {
+  getChatbotSettings,
+  updateChatbotSettings,
+  testChatbot,
+  connectChatbot,
+  disconnectChatbot,
+} from "@/actions/chatbot";
 
 export default function ChatbotPage() {
   const [isTestModalOpen, setIsTestModalOpen] = useState(false);
   const [testMessage, setTestMessage] = useState("");
   const [testResponse, setTestResponse] = useState("");
   const [isTestLoading, setIsTestLoading] = useState(false);
-  
+  const [isChatbotOn, setIsChatbotOn] = useState(false);
+
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -50,10 +60,28 @@ export default function ChatbotPage() {
     init();
   }, []);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = async (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     const { name, value, type } = e.target;
     // Checkbox special handling
     const checked = (e.target as HTMLInputElement).checked;
+
+    if (name === "isActive") {
+      try {
+        if (checked) {
+          await connectChatbot();
+        } else {
+          await disconnectChatbot();
+        }
+      } catch (error: any) {
+        alert(
+          `Failed to ${checked ? "connect" : "disconnect"} chatbot: ${error.message}`,
+        );
+        // Optionally revert the state here if you want to enforce consistency
+        // But for now we allow the toggle to move and just alert the error
+      }
+    }
 
     setSettings((prev) => ({
       ...prev,
@@ -117,15 +145,30 @@ export default function ChatbotPage() {
             </p>
           </div>
           <div className="flex items-center space-x-3">
-            <Button 
-                onClick={() => setIsTestModalOpen(true)} 
-                variant="outline" 
-                className="border-slate-700 bg-transparent text-emerald-400 hover:bg-slate-800 hover:text-emerald-300"
+            <Link href="/user/chatbot/scan">
+              <Button
+                variant="outline"
+                className="border-slate-700 bg-transparent text-slate-200 hover:bg-slate-800 hover:text-white"
+              >
+                <QrCode className="mr-2 h-4 w-4" />
+                Scan QR
+              </Button>
+            </Link>
+            <Button
+              onClick={() => setIsTestModalOpen(true)}
+              variant="outline"
+              className="border-slate-700 bg-transparent text-emerald-400 hover:bg-slate-800 hover:text-emerald-300"
             >
               <TestTube className="mr-2 h-4 w-4" />
               Test Bot
             </Button>
-            <div className={`flex items-center space-x-2 rounded-full px-3 py-1.5 text-sm font-medium ${settings.isActive ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-red-500/10 text-red-400 border border-red-500/20"}`}>
+            <div
+              className={`flex items-center space-x-2 rounded-full px-3 py-1.5 text-sm font-medium ${
+                settings.isActive
+                  ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                  : "bg-red-500/10 text-red-400 border border-red-500/20"
+              }`}
+            >
               {settings.isActive ? (
                 <>
                   <CheckCircle className="h-4 w-4" />
@@ -153,55 +196,31 @@ export default function ChatbotPage() {
 
               <div className="space-y-4">
                 <div className="flex items-start space-x-3">
-                    <div className="flex h-6 items-center">
-                        <input 
-                            id="isActive"
-                            type="checkbox" 
-                            name="isActive" 
-                            checked={settings.isActive} 
-                            onChange={handleInputChange} 
-                            className="h-5 w-5 rounded border-slate-700 bg-slate-800 text-emerald-500 focus:ring-emerald-500 focus:ring-offset-slate-900" 
-                        />
-                    </div>
-                    <div className="text-sm">
-                        <label htmlFor="isActive" className="font-medium text-slate-200">Aktifkan Chatbot AI</label>
-                        <p className="text-slate-400">Bot akan merespon pesan WhatsApp masuk secara otomatis menggunakan AI.</p>
-                    </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Fonnte Integration */}
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-6 shadow-sm">
-              <h3 className="mb-6 flex items-center text-lg font-semibold text-slate-50">
-                <Smartphone className="mr-2 h-5 w-5 text-emerald-500" />
-                Fonnte Integration
-              </h3>
-
-              <div className="space-y-5">
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-slate-300">Fonnte Token</label>
-                  <input
-                    type="password"
-                    name="fontteToken"
-                    value={settings.fontteToken}
-                    onChange={handleInputChange}
-                    className="w-full rounded-xl border border-slate-700 bg-slate-800 px-4 py-2.5 text-slate-50 placeholder-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                    placeholder="Masukkan token Fonnte API"
-                  />
-                  <p className="mt-1.5 text-xs text-slate-500">Dapatkan token di dashboard Fonnte Anda.</p>
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-slate-300">Device ID</label>
-                  <input
-                    type="text"
-                    name="device"
-                    value={settings.device}
-                    onChange={handleInputChange}
-                    className="w-full rounded-xl border border-slate-700 bg-slate-800 px-4 py-2.5 text-slate-50 placeholder-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                    placeholder="Device ID dari Fonnte (e.g. 62812xxx)"
-                  />
+                  <div className="flex h-6 items-center">
+                    <label className="relative inline-flex cursor-pointer items-center">
+                      <input
+                        id="isActive"
+                        type="checkbox"
+                        name="isActive"
+                        checked={settings.isActive ||  false}
+                        onChange={handleInputChange}
+                        className="peer sr-only"
+                      />
+                      <div className="peer h-6 w-11 rounded-full bg-slate-700 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-emerald-500 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-800"></div>
+                    </label>
+                  </div>
+                  <div className="text-sm">
+                    <label
+                      htmlFor="isActive"
+                      className="cursor-pointer font-medium text-slate-200"
+                    >
+                      Aktifkan Chatbot AI
+                    </label>
+                    <p className="text-slate-400">
+                      Bot akan merespon pesan WhatsApp masuk secara otomatis
+                      menggunakan AI.
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -215,37 +234,44 @@ export default function ChatbotPage() {
 
               <div className="space-y-5">
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-slate-300">Welcome Message</label>
+                  <label className="mb-2 block text-sm font-medium text-slate-300">
+                    Welcome Message
+                  </label>
                   <textarea
                     name="welcomeMessage"
                     value={settings.welcomeMessage}
                     onChange={handleInputChange}
                     rows={3}
-                     className="w-full rounded-xl border border-slate-700 bg-slate-800 px-4 py-2.5 text-slate-50 placeholder-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    className="w-full rounded-xl border border-slate-700 bg-slate-800 px-4 py-2.5 text-slate-50 placeholder-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                     placeholder="Pesan pembuka untuk customer baru"
                   />
                 </div>
 
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-slate-300">AI Prompt Template</label>
+                  <label className="mb-2 block text-sm font-medium text-slate-300">
+                    AI Prompt Template
+                  </label>
                   <textarea
                     name="aiPrompt"
                     value={settings.aiPrompt}
                     onChange={handleInputChange}
                     rows={6}
-                     className="w-full rounded-xl border border-slate-700 bg-slate-800 px-4 py-2.5 text-slate-50 placeholder-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    className="w-full rounded-xl border border-slate-700 bg-slate-800 px-4 py-2.5 text-slate-50 placeholder-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                     placeholder="Anda adalah asisten virtual yang ramah..."
                   />
-                  <p className="mt-1.5 text-xs text-slate-500">Instruksi sistem untuk AI dalam menjawab pertanyaan customer.</p>
+                  <p className="mt-1.5 text-xs text-slate-500">
+                    Instruksi sistem untuk AI dalam menjawab pertanyaan
+                    customer.
+                  </p>
                 </div>
               </div>
             </div>
 
             {/* Save Button */}
             <div className="flex justify-end">
-              <Button 
-                onClick={handleSaveSettings} 
-                disabled={isSaving} 
+              <Button
+                onClick={handleSaveSettings}
+                disabled={isSaving}
                 className="bg-emerald-500 px-8 py-6 text-base font-medium text-slate-950 hover:bg-emerald-400"
               >
                 {isSaving ? (
@@ -267,44 +293,58 @@ export default function ChatbotPage() {
           <div className="space-y-6">
             {/* Quick Stats */}
             <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-6 shadow-sm">
-              <h3 className="mb-4 text-lg font-semibold text-slate-50">Quick Stats</h3>
+              <h3 className="mb-4 text-lg font-semibold text-slate-50">
+                Quick Stats
+              </h3>
               <div className="space-y-4">
                 <div className="flex items-center justify-between border-b border-slate-800 pb-3 last:border-0 last:pb-0">
                   <span className="text-sm text-slate-400">Total Messages</span>
-                  <span className="font-mono text-lg font-semibold text-emerald-400">0</span>
+                  <span className="font-mono text-lg font-semibold text-emerald-400">
+                    0
+                  </span>
                 </div>
                 <div className="flex items-center justify-between border-b border-slate-800 pb-3 last:border-0 last:pb-0">
                   <span className="text-sm text-slate-400">AI Responses</span>
-                  <span className="font-mono text-lg font-semibold text-emerald-400">0</span>
+                  <span className="font-mono text-lg font-semibold text-emerald-400">
+                    0
+                  </span>
                 </div>
                 <div className="flex items-center justify-between border-b border-slate-800 pb-3 last:border-0 last:pb-0">
                   <span className="text-sm text-slate-400">Active Chats</span>
-                  <span className="font-mono text-lg font-semibold text-emerald-400">0</span>
+                  <span className="font-mono text-lg font-semibold text-emerald-400">
+                    0
+                  </span>
                 </div>
               </div>
             </div>
 
             {/* Setup Guide */}
             <div className="rounded-2xl bg-gradient-to-br from-slate-900 to-slate-950 p-6 shadow-lg border border-slate-800">
-              <h3 className="mb-4 text-lg font-semibold text-slate-50">Setup Guide</h3>
+              <h3 className="mb-4 text-lg font-semibold text-slate-50">
+                Setup Guide
+              </h3>
               <div className="space-y-4 text-sm text-slate-300">
                 <div className="flex items-start space-x-3">
                   <div className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-bold ring-1 ring-emerald-500/50">
                     1
                   </div>
-                  <span>Daftar akaun di <strong>Fonnte.com</strong></span>
+                  <span>
+                    Klik <strong>Scan QR Code</strong> diatas
+                  </span>
                 </div>
                 <div className="flex items-start space-x-3">
                   <div className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-bold ring-1 ring-emerald-500/50">
                     2
                   </div>
-                  <span>Scan QR Code di Fonnte untuk menghubungkan WhatsApp.</span>
+                  <span>Scan QR Code untuk menghubungkan WhatsApp.</span>
                 </div>
                 <div className="flex items-start space-x-3">
                   <div className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-bold ring-1 ring-emerald-500/50">
                     3
                   </div>
-                  <span>Salin <strong>Token</strong> ke form konfigurasi ini.</span>
+                  <span>
+                    Salin <strong>Token</strong> ke form konfigurasi ini.
+                  </span>
                 </div>
                 <div className="flex items-start space-x-3">
                   <div className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-bold ring-1 ring-emerald-500/50">
@@ -322,8 +362,10 @@ export default function ChatbotPage() {
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
             <div className="w-full max-w-lg rounded-2xl border border-slate-800 bg-slate-950 p-6 shadow-2xl">
               <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-xl font-semibold text-slate-50">Test Chatbot</h2>
-                <button 
+                <h2 className="text-xl font-semibold text-slate-50">
+                  Test Chatbot
+                </h2>
+                <button
                   onClick={() => setIsTestModalOpen(false)}
                   className="rounded-full p-1 text-slate-400 hover:bg-slate-900 hover:text-slate-200"
                 >
@@ -333,19 +375,23 @@ export default function ChatbotPage() {
 
               <div className="space-y-4">
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-slate-300">Test Message</label>
+                  <label className="mb-2 block text-sm font-medium text-slate-300">
+                    Test Message
+                  </label>
                   <input
                     type="text"
                     value={testMessage}
                     onChange={(e) => setTestMessage(e.target.value)}
-                     className="w-full rounded-xl border border-slate-700 bg-slate-900 px-4 py-2.5 text-slate-50 placeholder-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    className="w-full rounded-xl border border-slate-700 bg-slate-900 px-4 py-2.5 text-slate-50 placeholder-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                     placeholder="Ketik pesan seolah-olah Anda customer..."
                   />
                 </div>
 
                 {testResponse && (
                   <div className="animate-in fade-in slide-in-from-bottom-2">
-                    <label className="mb-2 block text-sm font-medium text-emerald-400">AI Response</label>
+                    <label className="mb-2 block text-sm font-medium text-emerald-400">
+                      AI Response
+                    </label>
                     <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-4">
                       <p className="text-sm text-slate-200">{testResponse}</p>
                     </div>
@@ -353,16 +399,16 @@ export default function ChatbotPage() {
                 )}
 
                 <div className="flex space-x-3 pt-4">
-                  <Button 
-                    variant="outline" 
-                    onClick={() => setIsTestModalOpen(false)} 
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsTestModalOpen(false)}
                     className="flex-1 border-slate-700 text-slate-300 hover:bg-slate-800"
                   >
                     Close
                   </Button>
-                  <Button 
-                    onClick={handleTestBot} 
-                    disabled={isTestLoading} 
+                  <Button
+                    onClick={handleTestBot}
+                    disabled={isTestLoading}
                     className="flex-1 bg-emerald-500 text-slate-950 hover:bg-emerald-400"
                   >
                     {isTestLoading ? (
@@ -385,4 +431,4 @@ export default function ChatbotPage() {
       </div>
     </div>
   );
-};
+}

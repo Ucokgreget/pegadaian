@@ -1,13 +1,9 @@
 import { GoogleGenAI } from "@google/genai";
+
 import dotenv from "dotenv";
-import path from "path";
-import { fileURLToPath } from "url";
+dotenv.config();
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-dotenv.config({ path: path.join(__dirname, ".env") });
-
-const genAi = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-console.log("API KEY TERBACA:", process.env.GEMINI_API_KEY);
+const genAi = new GoogleGenAI(process.env.GEMINI_API_KEY);
 
 export async function askGemini(prompt) {
   try {

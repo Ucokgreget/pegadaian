@@ -145,7 +145,7 @@ export function FeaturesSection() {
             Semua yang Anda butuhkan untuk meng-automasi toko digital.
           </h2>
           <p className="mt-3 text-sm text-slate-400 sm:text-base">
-            Whiizi membantu mengelola order, pembayaran, dan pengiriman produk
+            Zaptify membantu mengelola order, pembayaran, dan pengiriman produk
             digital hanya dari WhatsApp. Tanpa ribet, tanpa coding.
           </p>
         </div>

@@ -1,0 +1,4 @@
+{
+  "watch": ["controller", "route", "service"],
+  "ignore": ["sessions/**", "bot/**", "*.json"]
+}

@@ -8,7 +8,7 @@ export default function Loading() {
         </div>
         <div className="flex flex-col items-center text-center">
           <p className="text-sm font-medium text-slate-100 sm:text-base">
-            Menyiapkan dashboard Whiizi...
+            Menyiapkan dashboard Zaptify...
           </p>
           <p className="mt-1 text-xs text-slate-400 sm:text-sm">
             Menghubungkan automasi WhatsApp dan memuat data toko Anda.

@@ -15,11 +15,11 @@ export function UserNavbar({ user }: UserNavbarProps) {
         <div className="flex items-center gap-2">
           <Link href="/user" className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-500">
-              <span className="text-sm font-bold text-slate-950">W</span>
+              <span className="text-sm font-bold text-slate-950">Z</span>
             </div>
             <div className="flex flex-col leading-tight">
               <span className="text-sm font-semibold tracking-tight text-slate-50 sm:text-base">
-                Whiizi
+                Zaptify
               </span>
               <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-emerald-400">
                 Dashboard

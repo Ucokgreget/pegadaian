@@ -60,7 +60,7 @@ const Chat: FC<ChatProps> = ({ messages, currentUser, users }) => {
           />
         </div>
         <div className="flex-1">
-          <div className="text-sm font-medium">Whiizi Bot</div>
+          <div className="text-sm font-medium">Zaptify Bot</div>
           <div className="text-xs text-gray-200">online</div>
         </div>
         <div className="flex gap-4">

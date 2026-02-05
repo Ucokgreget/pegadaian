@@ -107,7 +107,7 @@ export default function Sidebar() {
         {/* Logo Area */}
         <div className="flex items-center justify-center h-16 border-b border-slate-800">
           <span className="text-xl font-bold text-white tracking-tight">
-            Whiizi<span className="text-emerald-500">.</span>
+            Zaptify<span className="text-emerald-500">.</span>
           </span>
         </div>
 

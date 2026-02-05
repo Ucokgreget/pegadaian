@@ -16,11 +16,11 @@ export function AdminNavbar({ user }: AdminNavbarProps) {
           <Link href="/admin" className="flex items-center gap-2">
              {/* Admin logo color distinction - Purple */}
             <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-purple-500">
-              <span className="text-sm font-bold text-slate-950">W</span>
+              <span className="text-sm font-bold text-slate-950">Z</span>
             </div>
             <div className="flex flex-col leading-tight">
               <span className="text-sm font-semibold tracking-tight text-slate-50 sm:text-base">
-                Whiizi
+                Zaptify
               </span>
               <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-purple-400">
                 Admin

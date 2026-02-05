@@ -11,25 +11,25 @@ export function PhonePreview() {
     },
     {
       id: "2",
-      name: "Whiizi Bot",
+      name: "Zaptify Bot",
       message: "Halo! 👋",
       timestamp: "10:46",
     },
     {
       id: "3",
-      name: "Whiizi Bot",
+      name: "Zaptify Bot",
       message: "Silakan pilih paket di bawah ini:",
       timestamp: "10:46",
     },
     {
       id: "4",
-      name: "Whiizi Bot",
+      name: "Zaptify Bot",
       message: "💎 Paket Premium 1 Bulan\nRp45.000",
       timestamp: "10:47",
     },
     {
       id: "5",
-      name: "Whiizi Bot",
+      name: "Zaptify Bot",
       message: "✅ Pembayaran akan diproses secara otomatis",
       timestamp: "10:48",
     },
@@ -48,7 +48,7 @@ export function PhonePreview() {
                 "https://api.dicebear.com/7.x/avataaars/png?seed=Customer",
             },
             {
-              name: "Whiizi Bot",
+              name: "Zaptify Bot",
               avatar: "https://api.dicebear.com/7.x/avataaars/png?seed=Bot",
             },
           ]}

@@ -114,7 +114,7 @@ export default function LoginPage() {
               </div>
               <div>
                 <h2 className="text-sm font-semibold tracking-tight text-slate-50 sm:text-base">
-                  Whiizi
+                  Zaptify
                 </h2>
                 <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-emerald-400">
                   WhatsApp Automation
@@ -127,7 +127,7 @@ export default function LoginPage() {
                 Selamat Datang Kembali
               </h1>
               <p className="mt-2 text-sm text-slate-400 sm:text-base">
-                Masuk ke akun Whiizi Anda untuk melanjutkan.
+                Masuk ke akun Zaptify Anda untuk melanjutkan.
               </p>
             </div>
           </div>

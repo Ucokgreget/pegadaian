@@ -3,7 +3,7 @@ const steps = [
     step: "Langkah 1",
     title: "Daftar & Hubungkan",
     description:
-      "Daftar akun Whiizi dan hubungkan nomor WhatsApp Business melalui Meta Business Suite.",
+      "Daftar akun Zaptify dan hubungkan nomor WhatsApp Business melalui Meta Business Suite.",
   },
   {
     step: "Langkah 2",
@@ -40,7 +40,7 @@ export function HowItWorksSection() {
             Dari chat pertama hingga produk terkirim, semua otomatis.
           </h2>
           <p className="mt-3 text-sm text-slate-400 sm:text-base">
-            Cukup sekali setup, selanjutnya Whiizi yang meng-handle setiap
+            Cukup sekali setup, selanjutnya Zaptify yang meng-handle setiap
             percakapan, order, dan pembayaran via WhatsApp.
           </p>
         </div>
