@@ -34,6 +34,4 @@ app.use("/package", packageRoute);
 app.use("/admin", adminRoute);
 app.use("/chatbot", chatbotRoute);
 
-app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
-});
+export default app;
