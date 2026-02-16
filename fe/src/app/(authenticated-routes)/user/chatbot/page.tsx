@@ -82,7 +82,6 @@ export default function ChatbotPage() {
         // But for now we allow the toggle to move and just alert the error
       }
     }
-
     setSettings((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
@@ -163,11 +162,10 @@ export default function ChatbotPage() {
               Test Bot
             </Button>
             <div
-              className={`flex items-center space-x-2 rounded-full px-3 py-1.5 text-sm font-medium ${
-                settings.isActive
-                  ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                  : "bg-red-500/10 text-red-400 border border-red-500/20"
-              }`}
+              className={`flex items-center space-x-2 rounded-full px-3 py-1.5 text-sm font-medium ${settings.isActive
+                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                : "bg-red-500/10 text-red-400 border border-red-500/20"
+                }`}
             >
               {settings.isActive ? (
                 <>
@@ -187,43 +185,6 @@ export default function ChatbotPage() {
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
           {/* Settings Panel */}
           <div className="space-y-6 lg:col-span-2">
-            {/* Bot Status */}
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-6 shadow-sm">
-              <h3 className="mb-6 flex items-center text-lg font-semibold text-slate-50">
-                <Settings className="mr-2 h-5 w-5 text-emerald-500" />
-                Bot Configuration
-              </h3>
-
-              <div className="space-y-4">
-                <div className="flex items-start space-x-3">
-                  <div className="flex h-6 items-center">
-                    <label className="relative inline-flex cursor-pointer items-center">
-                      <input
-                        id="isActive"
-                        type="checkbox"
-                        name="isActive"
-                        checked={settings.isActive ||  false}
-                        onChange={handleInputChange}
-                        className="peer sr-only"
-                      />
-                      <div className="peer h-6 w-11 rounded-full bg-slate-700 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-emerald-500 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-800"></div>
-                    </label>
-                  </div>
-                  <div className="text-sm">
-                    <label
-                      htmlFor="isActive"
-                      className="cursor-pointer font-medium text-slate-200"
-                    >
-                      Aktifkan Chatbot AI
-                    </label>
-                    <p className="text-slate-400">
-                      Bot akan merespon pesan WhatsApp masuk secara otomatis
-                      menggunakan AI.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
 
             {/* Message Settings */}
             <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-6 shadow-sm">

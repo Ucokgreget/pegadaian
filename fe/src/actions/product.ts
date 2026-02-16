@@ -26,6 +26,14 @@ async function getAuthHeaders() {
   };
 }
 
+async function getAuthHeadersForFormData() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("token")?.value;
+  return {
+    Authorization: `Bearer ${token}`,
+  };
+}
+
 export async function getProducts(): Promise<Product[]> {
   try {
     const headers = await getAuthHeaders();
@@ -46,14 +54,24 @@ export async function getProducts(): Promise<Product[]> {
 }
 
 export async function createProduct(
-  data: CreateProductInput,
+  data: CreateProductInput | FormData,
 ): Promise<Product> {
   try {
-    const headers = await getAuthHeaders();
+    let headers;
+    let body;
+
+    if (data instanceof FormData) {
+      headers = await getAuthHeadersForFormData();
+      body = data;
+    } else {
+      headers = await getAuthHeaders();
+      body = JSON.stringify(data);
+    }
+
     const res = await fetch(`${API_URL}/product`, {
       method: "POST",
       headers,
-      body: JSON.stringify(data),
+      body,
     });
 
     if (!res.ok) {
@@ -70,14 +88,24 @@ export async function createProduct(
 
 export async function updateProduct(
   id: number,
-  data: UpdateProductInput,
+  data: UpdateProductInput | FormData,
 ): Promise<Product> {
   try {
-    const headers = await getAuthHeaders();
+    let headers;
+    let body;
+
+    if (data instanceof FormData) {
+      headers = await getAuthHeadersForFormData();
+      body = data;
+    } else {
+      headers = await getAuthHeaders();
+      body = JSON.stringify(data);
+    }
+
     const res = await fetch(`${API_URL}/product/${id}`, {
       method: "PUT",
       headers,
-      body: JSON.stringify(data),
+      body,
     });
 
     if (!res.ok) {

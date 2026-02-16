@@ -18,8 +18,11 @@ import {
   getProducts,
   createProduct,
   updateProduct,
+
   deleteProduct,
 } from "@/actions/product";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 const ProductsPage = () => {
   const queryClient = useQueryClient();
@@ -27,6 +30,8 @@ const ProductsPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -58,7 +63,7 @@ const ProductsPage = () => {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, ...data }: { id: number } & any) =>
+    mutationFn: ({ id, data }: { id: number, data: any }) =>
       updateProduct(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
@@ -86,10 +91,21 @@ const ProductsPage = () => {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
+    // Skip file input
+    if ((e.target as HTMLInputElement).type === "file") return;
+
     setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setSelectedFile(file);
+      setPreviewUrl(URL.createObjectURL(file));
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -100,18 +116,22 @@ const ProductsPage = () => {
       return;
     }
 
-    const productData = {
-      name: formData.name,
-      description: formData.description,
-      price: parseInt(formData.price),
-      stock: parseInt(formData.stock) || 0,
-      imageUrl: formData.imageUrl,
-    };
+    const data = new FormData();
+    data.append("name", formData.name);
+    data.append("description", formData.description);
+    data.append("price", formData.price);
+    data.append("stock", formData.stock || "0");
+    if (selectedFile) {
+      data.append("image", selectedFile);
+    } else if (formData.imageUrl) {
+      // Keep existing image URL if not replaced
+      data.append("imageUrl", formData.imageUrl);
+    }
 
     if (editingProduct) {
-      updateMutation.mutate({ id: editingProduct.id, ...productData });
+      updateMutation.mutate({ id: editingProduct.id, data });
     } else {
-      createMutation.mutate(productData);
+      createMutation.mutate(data);
     }
   };
 
@@ -124,6 +144,10 @@ const ProductsPage = () => {
       stock: product.stock.toString(),
       imageUrl: product.imageUrl || "",
     });
+    setSelectedFile(null);
+    // Add API_URL prefix if imageUrl is relative path from public uploads
+    const imageUrl = product.imageUrl ? (product.imageUrl.startsWith("http") ? product.imageUrl : `${API_URL}/${product.imageUrl}`) : null;
+    setPreviewUrl(imageUrl);
     setIsModalOpen(true);
   };
 
@@ -143,6 +167,8 @@ const ProductsPage = () => {
       stock: "",
       imageUrl: "",
     });
+    setSelectedFile(null);
+    setPreviewUrl(null);
   };
 
   // Filter products based on search term
@@ -265,11 +291,11 @@ const ProductsPage = () => {
                   Rp{" "}
                   {products.length > 0
                     ? Math.round(
-                        products.reduce(
-                          (sum, product) => sum + product.price,
-                          0
-                        ) / products.length
-                      ).toLocaleString("id-ID")
+                      products.reduce(
+                        (sum, product) => sum + product.price,
+                        0
+                      ) / products.length
+                    ).toLocaleString("id-ID")
                     : 0}
                 </p>
               </div>
@@ -288,10 +314,11 @@ const ProductsPage = () => {
               className="bg-slate-900 rounded-2xl overflow-hidden shadow-lg border border-slate-800 hover:border-emerald-500/50 transition-all duration-300 group"
             >
               {/* Product Image */}
+              {/* Product Image */}
               <div className="h-48 bg-slate-950 relative overflow-hidden">
                 {product.imageUrl ? (
                   <img
-                    src={product.imageUrl}
+                    src={product.imageUrl.startsWith("http") ? product.imageUrl : `${API_URL}/${product.imageUrl}`}
                     alt={product.name}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
@@ -458,25 +485,40 @@ const ProductsPage = () => {
 
                   <div>
                     <label className="block text-sm font-medium text-slate-300 mb-2">
-                      URL Gambar
+                      Gambar Produk
                     </label>
-                    <div className="flex gap-2">
-                      <input
-                        type="url"
-                        name="imageUrl"
-                        value={formData.imageUrl}
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-500 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all"
-                        placeholder="https://example.com/produk.jpg"
-                      />
-                      <div className="w-12 h-12 bg-slate-950 border border-slate-800 rounded-xl flex-shrink-0 flex items-center justify-center overflow-hidden">
-                        {formData.imageUrl ? (
+                    <div className="flex gap-4 items-start">
+                      <div className="flex-1">
+                        <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-slate-800 border-dashed rounded-xl cursor-pointer bg-slate-950 hover:bg-slate-900 transition-colors">
+                          <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                            <Upload className="w-8 h-8 text-slate-500 mb-2" />
+                            <p className="mb-2 text-sm text-slate-400">
+                              <span className="font-semibold">Klik untuk upload</span>
+                            </p>
+                            <p className="text-xs text-slate-500">
+                              PNG, JPG or WEBP (Max. 5MB)
+                            </p>
+                          </div>
+                          <input
+                            type="file"
+                            className="hidden"
+                            accept="image/*"
+                            onChange={handleFileChange}
+                          />
+                        </label>
+                      </div>
+                      <div className="w-32 h-32 bg-slate-950 border border-slate-800 rounded-xl flex-shrink-0 flex items-center justify-center overflow-hidden relative">
+                        {previewUrl ? (
                           <img
-                            src={formData.imageUrl}
+                            src={previewUrl}
                             className="w-full h-full object-cover"
+                            alt="Preview"
                           />
                         ) : (
-                          <Upload className="w-5 h-5 text-slate-600" />
+                          <div className="text-center p-2">
+                            <Package className="w-8 h-8 text-slate-700 mx-auto mb-1" />
+                            <span className="text-[10px] text-slate-600 block">No Image</span>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -501,8 +543,8 @@ const ProductsPage = () => {
                       {createMutation.isPending || updateMutation.isPending
                         ? "Menyimpan..."
                         : editingProduct
-                        ? "Simpan Perubahan"
-                        : "Buat Produk"}
+                          ? "Simpan Perubahan"
+                          : "Buat Produk"}
                     </Button>
                   </div>
                 </form>

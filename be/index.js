@@ -15,6 +15,7 @@ import chatbotRoute from "./route/chatbotRoute.js";
 //import { startBot } from "./bot/indexBot.js";
 
 app.use(express.json());
+app.use("/public", express.static("public"));
 
 app.use(
   cors({
@@ -33,7 +34,7 @@ app.use("/subscription", subscriptionRoute);
 app.use("/package", packageRoute);
 app.use("/admin", adminRoute);
 app.use("/chatbot", chatbotRoute);
-  
+
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });

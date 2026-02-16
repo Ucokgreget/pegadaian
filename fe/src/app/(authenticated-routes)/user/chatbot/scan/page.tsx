@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import QRCode from "react-qr-code";
 import Link from "next/link";
 import {
+  Settings,
   ArrowLeft,
   Loader2,
   Share2,
@@ -12,15 +13,28 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+import {
+  getChatbotSettings,
+  connectChatbot,
+  disconnectChatbot,
+} from "@/actions/chatbot";
 
 export default function ScanPage() {
   const [qrString, setQrString] = useState("");
+
+  const [isProcessing, setIsProcessing] = useState(false);
   const [status, setStatus] = useState("loading");
+  const [settings, setSettings] = useState({
+    isActive: false,
+    welcomeMessage: "",
+    fontteToken: "",
+    device: "",
+    aiPrompt: "",
+  });
 
   const fetchQR = async () => {
     try {
-      const res = await fetch(`${API_URL}/chatbot/runtime`);
-      const data = await res.json();
+      const data = await getChatbotSettings();
       console.log(data);
 
       setStatus(data?.status ?? "loading");
@@ -42,26 +56,128 @@ export default function ScanPage() {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    async function init() {
+      const data = await getChatbotSettings();
+      setSettings(data);
+    }
+    init();
+  }, []);
+
+
+  const handleConnect = async () => {
+    try {
+      setIsProcessing(true);
+
+      await connectChatbot();
+      const data = await getChatbotSettings();
+      setSettings(data);
+    } catch (error: any) {
+      alert(error.message);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleDisconnect = async () => {
+    try {
+      setIsProcessing(true);
+
+      await disconnectChatbot();
+      const data = await getChatbotSettings();
+      setSettings(data);
+    } catch (error: any) {
+      alert(error.message);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleInputChange = async (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
+    const { name, value, type } = e.target;
+    // Checkbox special handling
+    const checked = (e.target as HTMLInputElement).checked;
+
+    if (name === "isActive") {
+      try {
+        if (checked) {
+          await connectChatbot();
+        } else {
+          await disconnectChatbot();
+        }
+      } catch (error: any) {
+        alert(
+          `Failed to ${checked ? "connect" : "disconnect"} chatbot: ${error.message}`,
+        );
+        // Optionally revert the state here if you want to enforce consistency
+        // But for now we allow the toggle to move and just alert the error
+      }
+    }
+
+    setSettings((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
+
   return (
     <div className="min-h-screen">
       <div className="mx-auto px-4 py-8 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="mb-8">
-          <Link
-            href="/user/chatbot"
-            className="mb-4 inline-flex items-center text-sm text-slate-400 hover:text-emerald-400 transition-colors"
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Dashboard
-          </Link>
-          <h1 className="flex items-center text-3xl font-bold text-slate-50">
-            <Smartphone className="mr-3 h-8 w-8 text-emerald-500" />
-            Connect WhatsApp
-          </h1>
-          <p className="mt-2 text-slate-400">
-            Scan QR Code dibawah ini untuk menghubungkan bot dengan WhatsApp
-            Anda.
-          </p>
+        <div className="mb-8 flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
+          <div>
+            <Link
+              href="/user/chatbot"
+              className="mb-4 inline-flex items-center text-sm text-slate-400 hover:text-emerald-400 transition-colors"
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Dashboard
+            </Link>
+            <h1 className="flex items-center text-3xl font-bold text-slate-50">
+              <Smartphone className="mr-3 h-8 w-8 text-emerald-500" />
+              Connect WhatsApp
+            </h1>
+            <p className="mt-2 text-slate-400">
+              Scan QR Code dibawah ini untuk menghubungkan bot dengan WhatsApp
+              Anda.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            {settings.isActive ? (
+              <Button
+                onClick={handleDisconnect}
+                disabled={isProcessing}
+                className="bg-red-500 hover:bg-red-400 text-white min-w-[140px]"
+              >
+                {isProcessing ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Disconnecting...
+                  </>
+                ) : (
+                  "Disconnect"
+                )}
+              </Button>
+            ) : (
+              <Button
+                onClick={handleConnect}
+                disabled={isProcessing}
+                className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 min-w-[140px]"
+              >
+                {isProcessing ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Connecting...
+                  </>
+                ) : (
+                  "Connect"
+                )}
+              </Button>
+            )}
+          </div>
         </div>
 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
@@ -102,13 +218,12 @@ export default function ScanPage() {
             {/* Status & Action */}
             <div className="text-center space-y-4">
               <div
-                className={`inline-flex items-center rounded-full px-4 py-1.5 text-sm font-medium border ${
-                  status === "connected"
-                    ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                    : status === "disconnected" || status === "error"
-                      ? "bg-red-500/10 text-red-400 border-red-500/20"
-                      : "bg-blue-500/10 text-blue-400 border-blue-500/20"
-                }`}
+                className={`inline-flex items-center rounded-full px-4 py-1.5 text-sm font-medium border ${status === "connected"
+                  ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                  : status === "disconnected" || status === "error"
+                    ? "bg-red-500/10 text-red-400 border-red-500/20"
+                    : "bg-blue-500/10 text-blue-400 border-blue-500/20"
+                  }`}
               >
                 {status === "loading"
                   ? "Initializing..."
@@ -161,6 +276,8 @@ export default function ScanPage() {
           {/* Right: Instructions */}
           <div className="space-y-6">
             <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
+
+
               <h3 className="mb-4 text-lg font-semibold text-slate-50">
                 Panduan Koneksi
               </h3>

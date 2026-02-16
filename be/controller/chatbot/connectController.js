@@ -1,10 +1,19 @@
 import { spawnBotForUser, stopBotForUser } from "../../bot/spawnBot.js";
+import { prisma } from "../../lib/prisma.js";
 
 export const connectBot = async (req, res) => {
   try {
     const userId = parseInt(req.user.id);
     spawnBotForUser(userId);
-    return res.status(200).json({ success: true, status: "waiting for qr" });
+    const settings = await prisma.chatbotSettings.update({
+      where: {
+        userId: userId,
+      },
+      data: {
+        isActive: true,
+      },
+    });
+    return res.status(200).json({ success: true, status: "waiting for qr", settings });
   } catch (error) {
     return res.status(500).json({ error: error.message, status: "error" });
   }
@@ -14,7 +23,15 @@ export const disconnectBot = async (req, res) => {
   try {
     const userId = parseInt(req.user.id);
     stopBotForUser(userId);
-    return res.status(200).json({ success: true, status: "bot disconnected" });
+    const settings = await prisma.chatbotSettings.update({
+      where: {
+        userId: userId,
+      },
+      data: {
+        isActive: false,
+      },
+    });
+    return res.status(200).json({ success: true, status: "bot disconnected", settings });
   } catch (error) {
     return res.status(500).json({ error: error.message, status: "error" });
   }

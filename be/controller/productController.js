@@ -4,7 +4,7 @@ import { prisma } from "../lib/prisma.js";
 export const getProducts = async (req, res) => {
     try {
         const userId = parseInt(req.user?.id || "0");
-        if(!userId) {
+        if (!userId) {
             return res.status(401).json({ error: "Unauthorized" });
         }
         const products = await prisma.product.findMany({
@@ -41,8 +41,9 @@ export const getProductById = async (req, res) => {
 export const createProduct = async (req, res) => {
     try {
         const userId = parseInt(req.user?.id || "0");
-        const { name, price, stock, description, imageUrl} = req.body;
-        if (!name || !price ) {
+        const { name, price, stock, description } = req.body;
+
+        if (!name || !price) {
             return res.status(400).json({ error: "Name and price are required" });
         }
 
@@ -56,11 +57,16 @@ export const createProduct = async (req, res) => {
             return res.status(409).json({ error: "Product already exists" });
         }
 
+        let imageUrl = req.body.imageUrl;
+        if (req.file) {
+            imageUrl = req.file.path.replace(/\\/g, "/");
+        }
+
         const product = await prisma.product.create({
             data: {
                 name,
-                price:parseInt(price),
-                stock:parseInt(stock) || 0,
+                price: parseInt(price),
+                stock: parseInt(stock) || 0,
                 description,
                 imageUrl,
                 userId,
@@ -74,11 +80,11 @@ export const createProduct = async (req, res) => {
 
 export const updateProduct = async (req, res) => {
     try {
-        const {id} = req.params;
+        const { id } = req.params;
         const userId = parseInt(req.user?.id || "0");
-        const { name, price, stock, description, imageUrl } = req.body;
+        const { name, price, stock, description } = req.body;
 
-        if(!name || !price) {
+        if (!name || !price) {
             return res.status(400).json({ error: "Name and price are required" });
         }
 
@@ -92,17 +98,22 @@ export const updateProduct = async (req, res) => {
             return res.status(404).json({ error: "Product not found" });
         }
 
+        let imageUrl = req.body.imageUrl;
+        if (req.file) {
+            imageUrl = req.file.path.replace(/\\/g, "/");
+        }
+
         const updatedProduct = await prisma.product.update({
             where: { id: parseInt(id) },
             data: {
                 name,
-                price:parseInt(price),
-                stock:parseInt(stock) || 0,
+                price: parseInt(price),
+                stock: parseInt(stock) || 0,
                 description,
                 imageUrl,
             },
         });
-        return res.json(updatedProduct); 
+        return res.json(updatedProduct);
     } catch (error) {
         return res.status(500).json({ error: "Failed to update product" });
     }
@@ -110,7 +121,7 @@ export const updateProduct = async (req, res) => {
 
 export const deleteProduct = async (req, res) => {
     try {
-        const {id} = req.params;
+        const { id } = req.params;
         const userId = parseInt(req.user?.id || "0");
 
         const existingProduct = await prisma.product.findFirst({
