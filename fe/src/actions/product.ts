@@ -20,6 +20,11 @@ export type UpdateProductInput = Partial<CreateProductInput>;
 async function getAuthHeaders() {
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
+
+  if (!token) {
+    throw new Error("No auth token found");
+  }
+
   return {
     Authorization: `Bearer ${token}`,
     "Content-Type": "application/json",
@@ -29,6 +34,11 @@ async function getAuthHeaders() {
 async function getAuthHeadersForFormData() {
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
+
+  if (!token) {
+    throw new Error("No auth token found");
+  }
+
   return {
     Authorization: `Bearer ${token}`,
   };

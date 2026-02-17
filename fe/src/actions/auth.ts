@@ -27,12 +27,15 @@ export async function login(data: LoginRequest): Promise<LoginResponse> {
     }
 
     if (result.token) {
-      cookieStore.set("token", result.token, {
-        httpOnly: true,
-        path: "/",
-        secure: process.env.NODE_ENV === "production",
-        maxAge: 60 * 60 * 24 * 7, // 1 week
-      });
+      if (result.token) {
+        cookieStore.set("token", result.token, {
+          httpOnly: true,
+          path: "/",
+          secure: true,
+          sameSite: "lax",
+          maxAge: 60 * 60 * 24 * 7, // 1 week
+        });
+      }
     }
 
     return {
@@ -111,7 +114,8 @@ export async function register(data: RegisterRequest): Promise<LoginResponse> {
       cookieStore.set("token", result.token, {
         httpOnly: true,
         path: "/",
-        secure: process.env.NODE_ENV === "production",
+        secure: true,
+        sameSite: "lax",
         maxAge: 60 * 60 * 24 * 7, // 1 week
       });
     }
