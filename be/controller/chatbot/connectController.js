@@ -5,11 +5,15 @@ export const connectBot = async (req, res) => {
   try {
     const userId = parseInt(req.user.id);
     spawnBotForUser(userId);
-    const settings = await prisma.chatbotSettings.update({
+    const settings = await prisma.chatbotSettings.upsert({
       where: {
         userId: userId,
       },
-      data: {
+      update: {
+        isActive: true,
+      },
+      create: {
+        userId: userId,
         isActive: true,
       },
     });
@@ -23,11 +27,15 @@ export const disconnectBot = async (req, res) => {
   try {
     const userId = parseInt(req.user.id);
     stopBotForUser(userId);
-    const settings = await prisma.chatbotSettings.update({
+    const settings = await prisma.chatbotSettings.upsert({
       where: {
         userId: userId,
       },
-      data: {
+      update: {
+        isActive: false,
+      },
+      create: {
+        userId: userId,
         isActive: false,
       },
     });

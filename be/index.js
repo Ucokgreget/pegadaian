@@ -12,6 +12,7 @@ import subscriptionRoute from "./route/subscriptionRoute.js";
 import packageRoute from "./route/packageRoute.js";
 import adminRoute from "./route/adminRoute.js";
 import chatbotRoute from "./route/chatbotRoute.js";
+import productVariantRoute from "./route/productVariantRoute.js";
 //import { startBot } from "./bot/indexBot.js";
 
 app.use(express.json());
@@ -34,6 +35,7 @@ app.use("/subscription", subscriptionRoute);
 app.use("/package", packageRoute);
 app.use("/admin", adminRoute);
 app.use("/chatbot", chatbotRoute);
+app.use("/product-variant", productVariantRoute);
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);

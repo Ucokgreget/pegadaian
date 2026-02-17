@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 import {
+  getChatbotRuntime,
   getChatbotSettings,
   connectChatbot,
   disconnectChatbot,
@@ -34,7 +35,7 @@ export default function ScanPage() {
 
   const fetchQR = async () => {
     try {
-      const data = await getChatbotSettings();
+      const data = await getChatbotRuntime();
       console.log(data);
 
       setStatus(data?.status ?? "loading");
@@ -130,16 +131,16 @@ export default function ScanPage() {
           <div>
             <Link
               href="/user/chatbot"
-              className="mb-4 inline-flex items-center text-sm text-slate-400 hover:text-emerald-400 transition-colors"
+              className="mb-4 inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors"
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Dashboard
             </Link>
-            <h1 className="flex items-center text-3xl font-bold text-slate-50">
-              <Smartphone className="mr-3 h-8 w-8 text-emerald-500" />
+            <h1 className="flex items-center text-3xl font-bold text-foreground">
+              <Smartphone className="mr-3 h-8 w-8 text-primary" />
               Connect WhatsApp
             </h1>
-            <p className="mt-2 text-slate-400">
+            <p className="mt-2 text-muted-foreground">
               Scan QR Code dibawah ini untuk menghubungkan bot dengan WhatsApp
               Anda.
             </p>
@@ -150,7 +151,7 @@ export default function ScanPage() {
               <Button
                 onClick={handleDisconnect}
                 disabled={isProcessing}
-                className="bg-red-500 hover:bg-red-400 text-white min-w-[140px]"
+                className="bg-destructive hover:bg-destructive/90 text-destructive-foreground min-w-[140px]"
               >
                 {isProcessing ? (
                   <>
@@ -165,7 +166,7 @@ export default function ScanPage() {
               <Button
                 onClick={handleConnect}
                 disabled={isProcessing}
-                className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 min-w-[140px]"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground min-w-[140px]"
               >
                 {isProcessing ? (
                   <>
@@ -182,11 +183,11 @@ export default function ScanPage() {
 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
           {/* Left: Scan Area */}
-          <div className="flex flex-col items-center justify-center rounded-2xl border border-slate-800 bg-slate-900/50 p-8 shadow-sm">
-            <div className="relative mb-6 flex items-center justify-center rounded-xl bg-white p-4 shadow-lg ring-4 ring-slate-800">
+          <div className="flex flex-col items-center justify-center rounded-2xl border border-border bg-card p-8 shadow-sm">
+            <div className="relative mb-6 flex items-center justify-center rounded-xl bg-white p-4 shadow-lg ring-4 ring-border">
               {/* QR Display Logic */}
               {status === "connected" ? (
-                <div className="flex h-64 w-64 flex-col items-center justify-center text-emerald-600">
+                <div className="flex h-64 w-64 flex-col items-center justify-center text-primary">
                   <ShieldCheck className="h-24 w-24 mb-4" />
                   <p className="font-bold text-lg">Connected!</p>
                 </div>
@@ -200,7 +201,7 @@ export default function ScanPage() {
                   />
                 </div>
               ) : status === "disconnected" || status === "error" ? (
-                <div className="flex h-64 w-64 flex-col items-center justify-center text-red-500">
+                <div className="flex h-64 w-64 flex-col items-center justify-center text-destructive">
                   <AlertCircle className="h-12 w-12 mb-2" />
                   <p className="text-center text-sm font-medium">
                     Connection Lost <br />
@@ -208,8 +209,8 @@ export default function ScanPage() {
                   </p>
                 </div>
               ) : (
-                <div className="flex h-64 w-64 flex-col items-center justify-center text-slate-400 animate-pulse">
-                  <Loader2 className="h-10 w-10 animate-spin mb-3 text-emerald-500" />
+                <div className="flex h-64 w-64 flex-col items-center justify-center text-muted-foreground animate-pulse">
+                  <Loader2 className="h-10 w-10 animate-spin mb-3 text-primary" />
                   <p className="text-sm">Waiting for QR...</p>
                 </div>
               )}
@@ -219,10 +220,10 @@ export default function ScanPage() {
             <div className="text-center space-y-4">
               <div
                 className={`inline-flex items-center rounded-full px-4 py-1.5 text-sm font-medium border ${status === "connected"
-                  ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                  ? "bg-primary/10 text-primary border-primary/20"
                   : status === "disconnected" || status === "error"
-                    ? "bg-red-500/10 text-red-400 border-red-500/20"
-                    : "bg-blue-500/10 text-blue-400 border-blue-500/20"
+                    ? "bg-destructive/10 text-destructive border-destructive/20"
+                    : "bg-blue-500/10 text-blue-500 border-blue-500/20"
                   }`}
               >
                 {status === "loading"
@@ -233,7 +234,7 @@ export default function ScanPage() {
               </div>
 
               {/* Status Message */}
-              <p className="text-sm text-slate-400 max-w-xs mx-auto">
+              <p className="text-sm text-muted-foreground max-w-xs mx-auto">
                 {status === "scan_qr"
                   ? "Buka WhatsApp di HP > Menu Titik 3 > Perangkat Tertaut > Tautkan Perangkat"
                   : status === "connected"
@@ -266,7 +267,7 @@ export default function ScanPage() {
                     }
                   }
                 }}
-                className="border-red-500/30 text-red-500 hover:bg-red-500/10 hover:text-red-400"
+                className="border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive"
               >
                 Reset Connection
               </Button>
@@ -275,10 +276,10 @@ export default function ScanPage() {
 
           {/* Right: Instructions */}
           <div className="space-y-6">
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
+            <div className="rounded-2xl border border-border bg-card p-6">
 
 
-              <h3 className="mb-4 text-lg font-semibold text-slate-50">
+              <h3 className="mb-4 text-lg font-semibold text-foreground">
                 Panduan Koneksi
               </h3>
               <ul className="space-y-4">
@@ -303,9 +304,9 @@ export default function ScanPage() {
                 ].map((item) => (
                   <li
                     key={item.step}
-                    className="flex items-start space-x-3 text-sm text-slate-300"
+                    className="flex items-start space-x-3 text-sm text-muted-foreground"
                   >
-                    <span className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-slate-800 text-emerald-400 text-xs font-bold border border-slate-700">
+                    <span className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-muted text-primary text-xs font-bold border border-border">
                       {item.step}
                     </span>
                     <span className="pt-0.5">{item.text}</span>
@@ -314,14 +315,14 @@ export default function ScanPage() {
               </ul>
             </div>
 
-            <div className="rounded-2xl bg-gradient-to-br from-emerald-900/20 to-slate-900 border border-emerald-500/20 p-6">
+            <div className="rounded-2xl bg-gradient-to-br from-primary/10 to-card border border-primary/20 p-6">
               <div className="flex items-start space-x-4">
-                <Share2 className="h-6 w-6 text-emerald-400 mt-1" />
+                <Share2 className="h-6 w-6 text-primary mt-1" />
                 <div>
-                  <h4 className="text-base font-medium text-emerald-400">
+                  <h4 className="text-base font-medium text-primary">
                     Multi-Device Support
                   </h4>
-                  <p className="mt-1 text-sm text-slate-400">
+                  <p className="mt-1 text-sm text-muted-foreground">
                     Gunakan fitur Multi-Device WhatsApp agar bot tetap berjalan
                     meskipun HP Anda mati atau tidak ada internet.
                   </p>

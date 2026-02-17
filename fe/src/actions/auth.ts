@@ -1,7 +1,7 @@
 "use server";
 
 import { cookies } from "next/headers";
-import { LoginRequest, LoginResponse, User } from "@/types/Auth";
+import { LoginRequest, RegisterRequest, LoginResponse, User } from "@/types/Auth";
 
 const API_URL = process.env.API_URL || "http://localhost:8000";
 
@@ -83,4 +83,50 @@ export async function getCurrentUser(): Promise<User | null> {
 export async function logout() {
   const cookieStore = await cookies();
   cookieStore.delete("token");
+}
+
+
+export async function register(data: RegisterRequest): Promise<LoginResponse> {
+  const cookieStore = await cookies();
+
+  try {
+    const res = await fetch(`${API_URL}/register`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    const result = await res.json();
+
+    if (!res.ok) {
+      return {
+        status: false,
+        message: result.error || result.message || "Terjadi kesalahan saat register",
+      };
+    }
+
+    if (result.token) {
+      cookieStore.set("token", result.token, {
+        httpOnly: true,
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 60 * 60 * 24 * 7, // 1 week
+      });
+    }
+
+    return {
+      status: true,
+      message: "Register berhasil",
+      token: result.token,
+      user: result.user,
+    };
+  } catch (error) {
+    console.error("Register error:", error);
+    return {
+      status: false,
+      message: "Gagal terhubung ke server",
+    };
+  }
 }

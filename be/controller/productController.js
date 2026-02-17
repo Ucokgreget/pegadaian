@@ -41,10 +41,10 @@ export const getProductById = async (req, res) => {
 export const createProduct = async (req, res) => {
     try {
         const userId = parseInt(req.user?.id || "0");
-        const { name, price, stock, description } = req.body;
+        const { name, description } = req.body;
 
-        if (!name || !price) {
-            return res.status(400).json({ error: "Name and price are required" });
+        if (!name) {
+            return res.status(400).json({ error: "Name is required" });
         }
 
         const existingProduct = await prisma.product.findFirst({
@@ -65,8 +65,6 @@ export const createProduct = async (req, res) => {
         const product = await prisma.product.create({
             data: {
                 name,
-                price: parseInt(price),
-                stock: parseInt(stock) || 0,
                 description,
                 imageUrl,
                 userId,
@@ -82,10 +80,10 @@ export const updateProduct = async (req, res) => {
     try {
         const { id } = req.params;
         const userId = parseInt(req.user?.id || "0");
-        const { name, price, stock, description } = req.body;
+        const { name, description } = req.body;
 
-        if (!name || !price) {
-            return res.status(400).json({ error: "Name and price are required" });
+        if (!name) {
+            return res.status(400).json({ error: "Name is required" });
         }
 
         const existingProduct = await prisma.product.findFirst({
@@ -107,8 +105,6 @@ export const updateProduct = async (req, res) => {
             where: { id: parseInt(id) },
             data: {
                 name,
-                price: parseInt(price),
-                stock: parseInt(stock) || 0,
                 description,
                 imageUrl,
             },

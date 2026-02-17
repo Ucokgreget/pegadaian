@@ -3,12 +3,12 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { ThemeToggle } from "./theme-toggle";
 import {
   LayoutDashboard,
   Bot,
   Package,
   Layers,
-  ClipboardList,
   ShoppingCart,
   Wallet,
   Users,
@@ -40,13 +40,8 @@ const menuItems = [
   },
   {
     title: "Variants Products",
-    href: "/user/products/variants",
+    href: "/user/variants",
     icon: Layers,
-  },
-  {
-    title: "Kelola Stok",
-    href: "/user/stok",
-    icon: ClipboardList,
   },
   { isHeader: true, title: "Transaksi" },
   {
@@ -78,7 +73,7 @@ const menuItems = [
   { isHeader: true, title: "Akun" },
   {
     title: "Subscription",
-    href: "/user/subscription",
+    href: "/user/subscription/history",
     icon: CreditCard,
   },
 ];
@@ -92,7 +87,7 @@ export default function Sidebar() {
       {/* Mobile Trigger Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="md:hidden fixed top-3 left-4 z-50 p-2 bg-slate-900 border border-slate-800 rounded-md text-slate-300 hover:text-white shadow-lg focus:outline-none"
+        className="md:hidden fixed top-3 left-4 z-50 p-2 bg-background border border-border rounded-md text-muted-foreground hover:text-foreground shadow-lg focus:outline-none"
         aria-label="Toggle Sidebar"
       >
         {isOpen ? <X size={20} /> : <Menu size={20} />}
@@ -100,66 +95,73 @@ export default function Sidebar() {
 
       {/* Sidebar Container */}
       <aside
-        className={`fixed top-0 left-0 z-40 h-screen w-64 bg-slate-950 border-r border-slate-800 transition-transform duration-300 ease-in-out md:translate-x-0 ${
-          isOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        className={`fixed top-0 left-0 z-40 h-screen w-64 bg-sidebar border-r border-sidebar-border transition-transform duration-300 ease-in-out md:translate-x-0 ${isOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
       >
         {/* Logo Area */}
-        <div className="flex items-center justify-center h-16 border-b border-slate-800">
-          <span className="text-xl font-bold text-white tracking-tight">
-            Zaptify<span className="text-emerald-500">.</span>
+        <div className="flex items-center justify-between px-6 h-16 border-b border-sidebar-border">
+          <span className="text-xl font-bold text-sidebar-foreground tracking-tight">
+            Zaptify<span className="text-sidebar-primary">.</span>
           </span>
+          <div className="flex md:hidden">
+            <ThemeToggle />
+          </div>
         </div>
 
         {/* Scrollable Content */}
-        <div className="overflow-y-auto h-[calc(100vh-4rem)] py-4 px-3 scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent">
-          <ul className="space-y-1">
-            {menuItems.map((item, index) => {
-              if (item.isHeader) {
+        <div className="flex flex-col h-[calc(100vh-4rem)]">
+          <div className="flex-1 overflow-y-auto py-4 px-3 scrollbar-thin scrollbar-thumb-sidebar-border scrollbar-track-transparent">
+            <ul className="space-y-1">
+              {menuItems.map((item, index) => {
+                if (item.isHeader) {
+                  return (
+                    <li
+                      key={index}
+                      className="mt-6 mb-2 px-3 text-xs font-bold text-muted-foreground uppercase tracking-wider"
+                    >
+                      {item.title}
+                    </li>
+                  );
+                }
+
+                const isActive =
+                  pathname === item.href ||
+                  (item.href !== "/user" &&
+                    pathname?.startsWith(item.href || ""));
+                const Icon = item.icon;
+
                 return (
-                  <li
-                    key={index}
-                    className="mt-6 mb-2 px-3 text-xs font-bold text-slate-500 uppercase tracking-wider"
-                  >
-                    {item.title}
+                  <li key={index}>
+                    <Link
+                      href={item.href || "#"}
+                      onClick={() => setIsOpen(false)} // Close on mobile click
+                      className={`flex items-center p-2 rounded-lg group transition-colors duration-200 ${isActive
+                        ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                        : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                        }`}
+                    >
+                      {Icon && (
+                        <Icon
+                          className={`w-5 h-5 flex-shrink-0 transition duration-75 ${isActive
+                            ? "text-sidebar-primary"
+                            : "text-muted-foreground group-hover:text-sidebar-accent-foreground"
+                            }`}
+                        />
+                      )}
+                      <span className="ml-3 text-sm font-medium">
+                        {item.title}
+                      </span>
+                    </Link>
                   </li>
                 );
-              }
+              })}
+            </ul>
+          </div>
 
-              const isActive =
-                pathname === item.href ||
-                (item.href !== "/user" &&
-                  pathname?.startsWith(item.href || ""));
-              const Icon = item.icon;
-
-              return (
-                <li key={index}>
-                  <Link
-                    href={item.href || "#"}
-                    onClick={() => setIsOpen(false)} // Close on mobile click
-                    className={`flex items-center p-2 rounded-lg group transition-colors duration-200 ${
-                      isActive
-                        ? "bg-emerald-500/10 text-emerald-500"
-                        : "text-slate-400 hover:bg-slate-900 hover:text-slate-100"
-                    }`}
-                  >
-                    {Icon && (
-                      <Icon
-                        className={`w-5 h-5 flex-shrink-0 transition duration-75 ${
-                          isActive
-                            ? "text-emerald-500"
-                            : "text-slate-500 group-hover:text-slate-300"
-                        }`}
-                      />
-                    )}
-                    <span className="ml-3 text-sm font-medium">
-                      {item.title}
-                    </span>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
+          <div className="p-4 border-t border-sidebar-border flex items-center justify-between">
+            <div className="text-xs text-muted-foreground">Theme</div>
+            <ThemeToggle />
+          </div>
         </div>
       </aside>
 
@@ -173,3 +175,4 @@ export default function Sidebar() {
     </>
   );
 }
+

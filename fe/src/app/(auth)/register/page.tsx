@@ -2,6 +2,8 @@
 
 import { useState, FormEvent, ChangeEvent } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { register } from "@/actions/auth";
 
 interface FormData {
   fullName: string;
@@ -21,6 +23,7 @@ interface FormErrors {
 }
 
 export default function RegisterPage() {
+  const router = useRouter();
   const [formData, setFormData] = useState<FormData>({
     fullName: "",
     email: "",
@@ -91,55 +94,75 @@ export default function RegisterPage() {
 
     setIsLoading(true);
     setSuccessMessage("");
+    setErrors({});
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      setSuccessMessage(
-        "Registrasi berhasil! Mengarahkan ke dashboard dalam 3 detik..."
-      );
-      // Reset form
-      setFormData({
-        fullName: "",
-        email: "",
-        password: "",
-        confirmPassword: "",
-        agreed: false,
+    try {
+      const res = await register({
+        email: formData.email,
+        password: formData.password,
+        name: formData.fullName,
       });
-      // Simulate redirect after 3 seconds
-      setTimeout(() => {
-        window.location.href = "/";
-      }, 3000);
-    }, 1500);
+
+      if (res.status) {
+        setSuccessMessage(
+          "Registrasi berhasil! Mengarahkan ke dashboard dalam 3 detik..."
+        );
+        // Reset form
+        setFormData({
+          fullName: "",
+          email: "",
+          password: "",
+          confirmPassword: "",
+          agreed: false,
+        });
+
+        // Redirect after 3 seconds
+        setTimeout(() => {
+          router.push("/user");
+        }, 3000);
+      } else {
+        setErrors((prev) => ({
+          ...prev,
+          general: res.message || "Terjadi kesalahan saat registrasi",
+        }));
+      }
+    } catch (error) {
+      setErrors((prev) => ({
+        ...prev,
+        general: "Gagal terhubung ke server",
+      }));
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-slate-950 via-slate-950 to-slate-900 px-4 py-8 sm:py-12">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-background px-4 py-8 sm:py-12">
       {/* Main Card */}
       <div className="relative w-full max-w-md">
-        <div className="absolute -inset-1 rounded-3xl bg-gradient-to-b from-emerald-500/30 via-emerald-500/5 to-slate-900 blur-xl" />
-        <div className="relative overflow-hidden rounded-3xl border border-slate-800 bg-slate-950/90 p-6 shadow-[0_20px_80px_rgba(15,23,42,0.9)] sm:p-8">
+        <div className="absolute -inset-1 rounded-3xl bg-gradient-to-b from-primary/30 via-primary/5 to-transparent blur-xl" />
+        <div className="relative overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-2xl sm:p-8">
           {/* Header */}
           <div className="mb-8">
             <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-500">
-                <span className="text-sm font-bold text-slate-950">W</span>
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary">
+                <span className="text-sm font-bold text-primary-foreground">W</span>
               </div>
               <div>
-                <h2 className="text-sm font-semibold tracking-tight text-slate-50 sm:text-base">
+                <h2 className="text-sm font-semibold tracking-tight text-foreground sm:text-base">
                   Zaptify
                 </h2>
-                <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-emerald-400">
+                <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-primary">
                   WhatsApp Automation
                 </p>
               </div>
             </div>
 
             <div className="mt-6">
-              <h1 className="text-2xl font-semibold tracking-tight text-slate-50 sm:text-3xl">
+              <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
                 Bergabung dengan Zaptify
               </h1>
-              <p className="mt-2 text-sm text-slate-400 sm:text-base">
+              <p className="mt-2 text-sm text-muted-foreground sm:text-base">
                 Buat akun dan mulai otomatisasi bisnis WhatsApp-mu sekarang.
               </p>
             </div>
@@ -147,8 +170,15 @@ export default function RegisterPage() {
 
           {/* Success Message */}
           {successMessage && (
-            <div className="mb-6 rounded-2xl border border-emerald-500/40 bg-emerald-500/10 p-4 text-sm text-emerald-200">
+            <div className="mb-6 rounded-2xl border border-primary/40 bg-primary/10 p-4 text-sm text-primary">
               {successMessage}
+            </div>
+          )}
+
+          {/* General Error Message */}
+          {errors.general && (
+            <div className="mb-6 rounded-2xl border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive">
+              {errors.general}
             </div>
           )}
 
@@ -158,7 +188,7 @@ export default function RegisterPage() {
             <div>
               <label
                 htmlFor="fullName"
-                className="block text-sm font-medium text-slate-200"
+                className="block text-sm font-medium text-foreground"
               >
                 Nama Lengkap
               </label>
@@ -169,16 +199,15 @@ export default function RegisterPage() {
                 placeholder="Contoh: Budi Santoso"
                 value={formData.fullName}
                 onChange={handleChange}
-                className={`mt-2 w-full rounded-xl border px-4 py-2.5 text-sm transition focus:outline-none focus:ring-2 ${
-                  errors.fullName
-                    ? "border-red-500/50 bg-red-500/5 text-slate-50 focus:border-red-500 focus:ring-red-500/30"
-                    : "border-slate-700 bg-slate-900/50 text-slate-50 placeholder-slate-500 focus:border-emerald-500 focus:ring-emerald-500/30"
-                }`}
+                className={`mt-2 w-full rounded-xl border px-4 py-2.5 text-sm transition focus:outline-none focus:ring-2 ${errors.fullName
+                  ? "border-destructive/50 bg-destructive/5 text-foreground focus:border-destructive focus:ring-destructive/30"
+                  : "border-input bg-background/50 text-foreground placeholder-muted-foreground focus:border-primary focus:ring-primary/30"
+                  }`}
               />
               {errors.fullName && (
-                <p className="mt-1.5 text-xs text-red-400">{errors.fullName}</p>
+                <p className="mt-1.5 text-xs text-destructive">{errors.fullName}</p>
               )}
-              <p className="mt-1.5 text-xs text-slate-500">
+              <p className="mt-1.5 text-xs text-muted-foreground/70">
                 Gunakan nama sesuai rekening bank untuk kemudahan penarikan
                 dana.
               </p>
@@ -188,7 +217,7 @@ export default function RegisterPage() {
             <div>
               <label
                 htmlFor="email"
-                className="block text-sm font-medium text-slate-200"
+                className="block text-sm font-medium text-foreground"
               >
                 Email
               </label>
@@ -199,16 +228,15 @@ export default function RegisterPage() {
                 placeholder="nama@email.com"
                 value={formData.email}
                 onChange={handleChange}
-                className={`mt-2 w-full rounded-xl border px-4 py-2.5 text-sm transition focus:outline-none focus:ring-2 ${
-                  errors.email
-                    ? "border-red-500/50 bg-red-500/5 text-slate-50 focus:border-red-500 focus:ring-red-500/30"
-                    : "border-slate-700 bg-slate-900/50 text-slate-50 placeholder-slate-500 focus:border-emerald-500 focus:ring-emerald-500/30"
-                }`}
+                className={`mt-2 w-full rounded-xl border px-4 py-2.5 text-sm transition focus:outline-none focus:ring-2 ${errors.email
+                  ? "border-destructive/50 bg-destructive/5 text-foreground focus:border-destructive focus:ring-destructive/30"
+                  : "border-input bg-background/50 text-foreground placeholder-muted-foreground focus:border-primary focus:ring-primary/30"
+                  }`}
               />
               {errors.email && (
-                <p className="mt-1.5 text-xs text-red-400">{errors.email}</p>
+                <p className="mt-1.5 text-xs text-destructive">{errors.email}</p>
               )}
-              <p className="mt-1.5 text-xs text-slate-500">
+              <p className="mt-1.5 text-xs text-muted-foreground/70">
                 Email aktif untuk verifikasi dan notifikasi.
               </p>
             </div>
@@ -217,7 +245,7 @@ export default function RegisterPage() {
             <div>
               <label
                 htmlFor="password"
-                className="block text-sm font-medium text-slate-200"
+                className="block text-sm font-medium text-foreground"
               >
                 Password
               </label>
@@ -228,16 +256,15 @@ export default function RegisterPage() {
                 placeholder="Minimal 8 karakter"
                 value={formData.password}
                 onChange={handleChange}
-                className={`mt-2 w-full rounded-xl border px-4 py-2.5 text-sm transition focus:outline-none focus:ring-2 ${
-                  errors.password
-                    ? "border-red-500/50 bg-red-500/5 text-slate-50 focus:border-red-500 focus:ring-red-500/30"
-                    : "border-slate-700 bg-slate-900/50 text-slate-50 placeholder-slate-500 focus:border-emerald-500 focus:ring-emerald-500/30"
-                }`}
+                className={`mt-2 w-full rounded-xl border px-4 py-2.5 text-sm transition focus:outline-none focus:ring-2 ${errors.password
+                  ? "border-destructive/50 bg-destructive/5 text-foreground focus:border-destructive focus:ring-destructive/30"
+                  : "border-input bg-background/50 text-foreground placeholder-muted-foreground focus:border-primary focus:ring-primary/30"
+                  }`}
               />
               {errors.password && (
-                <p className="mt-1.5 text-xs text-red-400">{errors.password}</p>
+                <p className="mt-1.5 text-xs text-destructive">{errors.password}</p>
               )}
-              <p className="mt-1.5 text-xs text-slate-500">
+              <p className="mt-1.5 text-xs text-muted-foreground/70">
                 Minimal 8 karakter, disarankan kombinasi huruf & angka.
               </p>
             </div>
@@ -246,7 +273,7 @@ export default function RegisterPage() {
             <div>
               <label
                 htmlFor="confirmPassword"
-                className="block text-sm font-medium text-slate-200"
+                className="block text-sm font-medium text-foreground"
               >
                 Konfirmasi Password
               </label>
@@ -257,18 +284,17 @@ export default function RegisterPage() {
                 placeholder="Ulangi password"
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                className={`mt-2 w-full rounded-xl border px-4 py-2.5 text-sm transition focus:outline-none focus:ring-2 ${
-                  errors.confirmPassword
-                    ? "border-red-500/50 bg-red-500/5 text-slate-50 focus:border-red-500 focus:ring-red-500/30"
-                    : "border-slate-700 bg-slate-900/50 text-slate-50 placeholder-slate-500 focus:border-emerald-500 focus:ring-emerald-500/30"
-                }`}
+                className={`mt-2 w-full rounded-xl border px-4 py-2.5 text-sm transition focus:outline-none focus:ring-2 ${errors.confirmPassword
+                  ? "border-destructive/50 bg-destructive/5 text-foreground focus:border-destructive focus:ring-destructive/30"
+                  : "border-input bg-background/50 text-foreground placeholder-muted-foreground focus:border-primary focus:ring-primary/30"
+                  }`}
               />
               {errors.confirmPassword && (
-                <p className="mt-1.5 text-xs text-red-400">
+                <p className="mt-1.5 text-xs text-destructive">
                   {errors.confirmPassword}
                 </p>
               )}
-              <p className="mt-1.5 text-xs text-slate-500">
+              <p className="mt-1.5 text-xs text-muted-foreground/70">
                 Ketik ulang password untuk memastikan kecocokan.
               </p>
             </div>
@@ -281,20 +307,20 @@ export default function RegisterPage() {
                   name="agreed"
                   checked={formData.agreed}
                   onChange={handleChange}
-                  className="mt-1 h-4 w-4 rounded border-slate-700 bg-slate-900/50 accent-emerald-500 ring-1 ring-slate-700 transition focus:ring-2 focus:ring-emerald-500/30"
+                  className="mt-1 h-4 w-4 rounded border-input bg-background/50 accent-primary ring-1 ring-input transition focus:ring-2 focus:ring-primary/30"
                 />
-                <span className="flex-1 text-xs text-slate-300 sm:text-sm">
+                <span className="flex-1 text-xs text-muted-foreground sm:text-sm">
                   Saya setuju dengan{" "}
                   <a
                     href="#syarat"
-                    className="font-medium text-emerald-400 hover:text-emerald-300"
+                    className="font-medium text-primary hover:text-primary/80"
                   >
                     Syarat & Ketentuan
                   </a>{" "}
                   dan{" "}
                   <a
                     href="#privasi"
-                    className="font-medium text-emerald-400 hover:text-emerald-300"
+                    className="font-medium text-primary hover:text-primary/80"
                   >
                     Kebijakan Privasi
                   </a>{" "}
@@ -302,7 +328,7 @@ export default function RegisterPage() {
                 </span>
               </label>
               {errors.agreed && (
-                <p className="mt-2 text-xs text-red-400">{errors.agreed}</p>
+                <p className="mt-2 text-xs text-destructive">{errors.agreed}</p>
               )}
             </div>
 
@@ -310,18 +336,18 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="mt-6 w-full rounded-full bg-emerald-500 py-2.5 font-medium text-slate-950 shadow-lg shadow-emerald-500/30 transition hover:bg-emerald-400 disabled:opacity-70 disabled:cursor-not-allowed sm:py-3"
+              className="mt-6 w-full rounded-full bg-primary py-2.5 font-medium text-primary-foreground shadow-lg shadow-primary/30 transition hover:bg-primary/90 disabled:opacity-70 disabled:cursor-not-allowed sm:py-3"
             >
               {isLoading ? "Memproses..." : "Daftar Sekarang"}
             </button>
           </form>
 
           {/* Login Link */}
-          <p className="mt-5 text-center text-xs text-slate-400 sm:text-sm">
+          <p className="mt-5 text-center text-xs text-muted-foreground sm:text-sm">
             Sudah punya akun?{" "}
             <Link
               href="/login"
-              className="font-medium text-emerald-400 hover:text-emerald-300"
+              className="font-medium text-primary hover:text-primary/80"
             >
               Login di sini
             </Link>
@@ -331,27 +357,27 @@ export default function RegisterPage() {
 
       {/* Footer Badges & Links */}
       <div className="mt-8 flex flex-wrap items-center justify-center gap-2 sm:gap-3">
-        <span className="inline-flex items-center gap-1 rounded-full border border-slate-800 bg-slate-900/40 px-3 py-1 text-xs font-medium text-slate-300">
+        <span className="inline-flex items-center gap-1 rounded-full border border-border bg-card/40 px-3 py-1 text-xs font-medium text-muted-foreground">
           🎁 Trial 7 Hari
         </span>
-        <span className="inline-flex rounded-full border border-slate-800 bg-slate-900/40 px-3 py-1 text-xs font-medium text-slate-300">
+        <span className="inline-flex rounded-full border border-border bg-card/40 px-3 py-1 text-xs font-medium text-muted-foreground">
           New Users
         </span>
-        <span className="inline-flex rounded-full border border-slate-800 bg-slate-900/40 px-3 py-1 text-xs font-medium text-slate-300">
+        <span className="inline-flex rounded-full border border-border bg-card/40 px-3 py-1 text-xs font-medium text-muted-foreground">
           Setup Mudah 3 Menit
         </span>
       </div>
 
-      <div className="mt-6 flex flex-wrap items-center justify-center gap-4 text-xs text-slate-500 sm:gap-6 sm:text-sm">
-        <a href="#privasi" className="hover:text-emerald-300">
+      <div className="mt-6 flex flex-wrap items-center justify-center gap-4 text-xs text-muted-foreground sm:gap-6 sm:text-sm">
+        <a href="#privasi" className="hover:text-primary">
           Kebijakan Privasi
         </a>
-        <span className="hidden text-slate-700 sm:inline">•</span>
-        <a href="#syarat" className="hover:text-emerald-300">
+        <span className="hidden text-muted-foreground/50 sm:inline">•</span>
+        <a href="#syarat" className="hover:text-primary">
           Syarat & Ketentuan
         </a>
-        <span className="hidden text-slate-700 sm:inline">•</span>
-        <a href="#support" className="hover:text-emerald-300">
+        <span className="hidden text-muted-foreground/50 sm:inline">•</span>
+        <a href="#support" className="hover:text-primary">
           Support
         </a>
       </div>

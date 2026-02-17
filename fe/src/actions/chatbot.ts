@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 
 const API_URL = process.env.API_URL || "http://localhost:8000";
 
-export async function getChatbotSettings() {
+export async function getChatbotRuntime() {
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
 
@@ -15,18 +15,48 @@ export async function getChatbotSettings() {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
+      next: { tags: ['chatbot-runtime'] }
     });
 
     if (!res.ok) {
-      // If 404, might return default settings
       if (res.status === 404) {
         return {
           isActive: false,
-          welcomeMessage: "",
-          fontteToken: "",
-          device: "",
-          aiPrompt: "",
+          status: "disconnected",
+          qr: null,
         };
+      }
+      throw new Error("Failed to fetch runtime");
+    }
+
+    return await res.json();
+  } catch (error) {
+    console.error("GetChatbotRuntime error:", error);
+    return {
+      isActive: false,
+      status: "error",
+      qr: null,
+    };
+  }
+}
+
+export async function getChatbotSettings() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("token")?.value;
+
+  try {
+    const res = await fetch(`${API_URL}/chatbot/setting`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      next: { tags: ['chatbot-settings'] }
+    });
+
+    if (!res.ok) {
+      if (res.status === 404) {
+        return null;
       }
       throw new Error("Failed to fetch settings");
     }
@@ -50,7 +80,7 @@ export async function updateChatbotSettings(data: any) {
   const token = cookieStore.get("token")?.value;
 
   try {
-    const res = await fetch(`${API_URL}/chatbot/settings`, {
+    const res = await fetch(`${API_URL}/chatbot/setting`, {
       method: "PUT",
       headers: {
         Authorization: `Bearer ${token}`,

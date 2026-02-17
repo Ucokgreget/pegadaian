@@ -135,11 +135,11 @@ export default function ChatbotPage() {
         {/* Header */}
         <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
-            <h1 className="flex items-center text-3xl font-bold text-slate-50">
-              <Bot className="mr-3 h-8 w-8 text-emerald-500" />
+            <h1 className="flex items-center text-3xl font-bold text-foreground">
+              <Bot className="mr-3 h-8 w-8 text-primary" />
               WhatsApp AI Chatbot
             </h1>
-            <p className="mt-2 text-slate-400">
+            <p className="mt-2 text-muted-foreground">
               Konfigurasi dan kelola chatbot AI untuk auto-reply WhatsApp Anda.
             </p>
           </div>
@@ -147,7 +147,7 @@ export default function ChatbotPage() {
             <Link href="/user/chatbot/scan">
               <Button
                 variant="outline"
-                className="border-slate-700 bg-transparent text-slate-200 hover:bg-slate-800 hover:text-white"
+                className="border-input bg-background/50 text-foreground hover:bg-accent hover:text-accent-foreground"
               >
                 <QrCode className="mr-2 h-4 w-4" />
                 Scan QR
@@ -156,15 +156,15 @@ export default function ChatbotPage() {
             <Button
               onClick={() => setIsTestModalOpen(true)}
               variant="outline"
-              className="border-slate-700 bg-transparent text-emerald-400 hover:bg-slate-800 hover:text-emerald-300"
+              className="border-input bg-background/50 text-primary hover:bg-accent hover:text-primary"
             >
               <TestTube className="mr-2 h-4 w-4" />
               Test Bot
             </Button>
             <div
               className={`flex items-center space-x-2 rounded-full px-3 py-1.5 text-sm font-medium ${settings.isActive
-                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                : "bg-red-500/10 text-red-400 border border-red-500/20"
+                ? "bg-primary/10 text-primary border border-primary/20"
+                : "bg-destructive/10 text-destructive border border-destructive/20"
                 }`}
             >
               {settings.isActive ? (
@@ -187,15 +187,15 @@ export default function ChatbotPage() {
           <div className="space-y-6 lg:col-span-2">
 
             {/* Message Settings */}
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-6 shadow-sm">
-              <h3 className="mb-6 flex items-center text-lg font-semibold text-slate-50">
-                <MessageCircle className="mr-2 h-5 w-5 text-emerald-500" />
+            <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+              <h3 className="mb-6 flex items-center text-lg font-semibold text-foreground">
+                <MessageCircle className="mr-2 h-5 w-5 text-primary" />
                 Message Settings
               </h3>
 
               <div className="space-y-5">
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-slate-300">
+                  <label className="mb-2 block text-sm font-medium text-foreground">
                     Welcome Message
                   </label>
                   <textarea
@@ -203,13 +203,13 @@ export default function ChatbotPage() {
                     value={settings.welcomeMessage}
                     onChange={handleInputChange}
                     rows={3}
-                    className="w-full rounded-xl border border-slate-700 bg-slate-800 px-4 py-2.5 text-slate-50 placeholder-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                     placeholder="Pesan pembuka untuk customer baru"
                   />
                 </div>
 
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-slate-300">
+                  <label className="mb-2 block text-sm font-medium text-foreground">
                     AI Prompt Template
                   </label>
                   <textarea
@@ -217,10 +217,10 @@ export default function ChatbotPage() {
                     value={settings.aiPrompt}
                     onChange={handleInputChange}
                     rows={6}
-                    className="w-full rounded-xl border border-slate-700 bg-slate-800 px-4 py-2.5 text-slate-50 placeholder-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                     placeholder="Anda adalah asisten virtual yang ramah..."
                   />
-                  <p className="mt-1.5 text-xs text-slate-500">
+                  <p className="mt-1.5 text-xs text-muted-foreground">
                     Instruksi sistem untuk AI dalam menjawab pertanyaan
                     customer.
                   </p>
@@ -233,7 +233,7 @@ export default function ChatbotPage() {
               <Button
                 onClick={handleSaveSettings}
                 disabled={isSaving}
-                className="bg-emerald-500 px-8 py-6 text-base font-medium text-slate-950 hover:bg-emerald-400"
+                className="bg-primary px-8 py-6 text-base font-medium text-primary-foreground hover:bg-primary/90"
               >
                 {isSaving ? (
                   <>
@@ -253,26 +253,26 @@ export default function ChatbotPage() {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Quick Stats */}
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-6 shadow-sm">
-              <h3 className="mb-4 text-lg font-semibold text-slate-50">
+            <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+              <h3 className="mb-4 text-lg font-semibold text-foreground">
                 Quick Stats
               </h3>
               <div className="space-y-4">
-                <div className="flex items-center justify-between border-b border-slate-800 pb-3 last:border-0 last:pb-0">
-                  <span className="text-sm text-slate-400">Total Messages</span>
-                  <span className="font-mono text-lg font-semibold text-emerald-400">
+                <div className="flex items-center justify-between border-b border-border pb-3 last:border-0 last:pb-0">
+                  <span className="text-sm text-muted-foreground">Total Messages</span>
+                  <span className="font-mono text-lg font-semibold text-primary">
                     0
                   </span>
                 </div>
-                <div className="flex items-center justify-between border-b border-slate-800 pb-3 last:border-0 last:pb-0">
-                  <span className="text-sm text-slate-400">AI Responses</span>
-                  <span className="font-mono text-lg font-semibold text-emerald-400">
+                <div className="flex items-center justify-between border-b border-border pb-3 last:border-0 last:pb-0">
+                  <span className="text-sm text-muted-foreground">AI Responses</span>
+                  <span className="font-mono text-lg font-semibold text-primary">
                     0
                   </span>
                 </div>
-                <div className="flex items-center justify-between border-b border-slate-800 pb-3 last:border-0 last:pb-0">
-                  <span className="text-sm text-slate-400">Active Chats</span>
-                  <span className="font-mono text-lg font-semibold text-emerald-400">
+                <div className="flex items-center justify-between border-b border-border pb-3 last:border-0 last:pb-0">
+                  <span className="text-sm text-muted-foreground">Active Chats</span>
+                  <span className="font-mono text-lg font-semibold text-primary">
                     0
                   </span>
                 </div>
@@ -280,13 +280,13 @@ export default function ChatbotPage() {
             </div>
 
             {/* Setup Guide */}
-            <div className="rounded-2xl bg-gradient-to-br from-slate-900 to-slate-950 p-6 shadow-lg border border-slate-800">
-              <h3 className="mb-4 text-lg font-semibold text-slate-50">
+            <div className="rounded-2xl bg-gradient-to-br from-card to-background p-6 shadow-lg border border-border">
+              <h3 className="mb-4 text-lg font-semibold text-foreground">
                 Setup Guide
               </h3>
-              <div className="space-y-4 text-sm text-slate-300">
+              <div className="space-y-4 text-sm text-muted-foreground">
                 <div className="flex items-start space-x-3">
-                  <div className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-bold ring-1 ring-emerald-500/50">
+                  <div className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-primary/20 text-primary text-xs font-bold ring-1 ring-primary/50">
                     1
                   </div>
                   <span>
@@ -294,13 +294,13 @@ export default function ChatbotPage() {
                   </span>
                 </div>
                 <div className="flex items-start space-x-3">
-                  <div className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-bold ring-1 ring-emerald-500/50">
+                  <div className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-primary/20 text-primary text-xs font-bold ring-1 ring-primary/50">
                     2
                   </div>
                   <span>Scan QR Code untuk menghubungkan WhatsApp.</span>
                 </div>
                 <div className="flex items-start space-x-3">
-                  <div className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-bold ring-1 ring-emerald-500/50">
+                  <div className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-primary/20 text-primary text-xs font-bold ring-1 ring-primary/50">
                     3
                   </div>
                   <span>
@@ -308,7 +308,7 @@ export default function ChatbotPage() {
                   </span>
                 </div>
                 <div className="flex items-start space-x-3">
-                  <div className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-bold ring-1 ring-emerald-500/50">
+                  <div className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-primary/20 text-primary text-xs font-bold ring-1 ring-primary/50">
                     4
                   </div>
                   <span>Aktifkan Chatbot di atas.</span>
@@ -321,14 +321,14 @@ export default function ChatbotPage() {
         {/* Test Modal */}
         {isTestModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
-            <div className="w-full max-w-lg rounded-2xl border border-slate-800 bg-slate-950 p-6 shadow-2xl">
+            <div className="w-full max-w-lg rounded-2xl border border-border bg-background p-6 shadow-2xl">
               <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-xl font-semibold text-slate-50">
+                <h2 className="text-xl font-semibold text-foreground">
                   Test Chatbot
                 </h2>
                 <button
                   onClick={() => setIsTestModalOpen(false)}
-                  className="rounded-full p-1 text-slate-400 hover:bg-slate-900 hover:text-slate-200"
+                  className="rounded-full p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
                 >
                   <XCircle className="h-6 w-6" />
                 </button>
@@ -336,25 +336,25 @@ export default function ChatbotPage() {
 
               <div className="space-y-4">
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-slate-300">
+                  <label className="mb-2 block text-sm font-medium text-foreground">
                     Test Message
                   </label>
                   <input
                     type="text"
                     value={testMessage}
                     onChange={(e) => setTestMessage(e.target.value)}
-                    className="w-full rounded-xl border border-slate-700 bg-slate-900 px-4 py-2.5 text-slate-50 placeholder-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                     placeholder="Ketik pesan seolah-olah Anda customer..."
                   />
                 </div>
 
                 {testResponse && (
                   <div className="animate-in fade-in slide-in-from-bottom-2">
-                    <label className="mb-2 block text-sm font-medium text-emerald-400">
+                    <label className="mb-2 block text-sm font-medium text-primary">
                       AI Response
                     </label>
-                    <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-4">
-                      <p className="text-sm text-slate-200">{testResponse}</p>
+                    <div className="rounded-xl border border-primary/20 bg-primary/10 p-4">
+                      <p className="text-sm text-foreground">{testResponse}</p>
                     </div>
                   </div>
                 )}
@@ -363,14 +363,14 @@ export default function ChatbotPage() {
                   <Button
                     variant="outline"
                     onClick={() => setIsTestModalOpen(false)}
-                    className="flex-1 border-slate-700 text-slate-300 hover:bg-slate-800"
+                    className="flex-1 border-input text-muted-foreground hover:bg-accent"
                   >
                     Close
                   </Button>
                   <Button
                     onClick={handleTestBot}
                     disabled={isTestLoading}
-                    className="flex-1 bg-emerald-500 text-slate-950 hover:bg-emerald-400"
+                    className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
                   >
                     {isTestLoading ? (
                       <>

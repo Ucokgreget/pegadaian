@@ -13,6 +13,12 @@ export interface LoginRequest {
   password: string;
 }
 
+export interface RegisterRequest {
+  email: string;
+  password: string;
+  name: string;
+}
+
 export interface LoginResponse {
   status: boolean;
   message: string;

@@ -79,7 +79,7 @@ const IphoneFrame: FC<IphoneFrameProps> = ({ children, className = "" }) => {
       <div
         className="
           w-full h-full
-         (bg-white dark:bg-black)
+          bg-white dark:bg-black
           rounded-[34px] 
           overflow-hidden
           pt-8 

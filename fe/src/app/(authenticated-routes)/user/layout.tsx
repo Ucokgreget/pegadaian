@@ -11,7 +11,7 @@ export default async function UserLayout({
   const user = await getCurrentUser();
 
   return (
-    <div className="min-h-screen bg-slate-950 flex">
+    <div className="min-h-screen bg-background flex">
       {/* Sidebar Component */}
       <Sidebar />
 

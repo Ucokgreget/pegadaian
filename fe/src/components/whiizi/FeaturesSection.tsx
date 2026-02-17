@@ -7,7 +7,7 @@ const features: { title: string; description: string; icon: ReactNode }[] = [
       "Bot WhatsApp yang mengerti konteks percakapan dan membantu customer hingga checkout.",
     icon: (
       <svg
-        className="h-6 w-6 text-emerald-400"
+        className="h-6 w-6 text-primary"
         viewBox="0 0 24 24"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
@@ -28,7 +28,7 @@ const features: { title: string; description: string; icon: ReactNode }[] = [
       "Transaksi tetap berjalan walau Anda sedang tidur. Bot aktif 24 jam.",
     icon: (
       <svg
-        className="h-6 w-6 text-emerald-400"
+        className="h-6 w-6 text-primary"
         viewBox="0 0 24 24"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
@@ -49,7 +49,7 @@ const features: { title: string; description: string; icon: ReactNode }[] = [
     description: "Tampilkan katalog produk langsung di dalam chat WhatsApp.",
     icon: (
       <svg
-        className="h-6 w-6 text-emerald-400"
+        className="h-6 w-6 text-primary"
         viewBox="0 0 24 24"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
@@ -78,7 +78,7 @@ const features: { title: string; description: string; icon: ReactNode }[] = [
       "Dukungan QRIS, transfer bank, dan e-wallet untuk pembayaran instan.",
     icon: (
       <svg
-        className="h-6 w-6 text-emerald-400"
+        className="h-6 w-6 text-primary"
         viewBox="0 0 24 24"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
@@ -113,7 +113,7 @@ const features: { title: string; description: string; icon: ReactNode }[] = [
       "Setelah pembayaran terverifikasi, sistem langsung mengirim file atau akun ke customer.",
     icon: (
       <svg
-        className="h-6 w-6 text-emerald-400"
+        className="h-6 w-6 text-primary"
         viewBox="0 0 24 24"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
@@ -134,17 +134,17 @@ export function FeaturesSection() {
   return (
     <section
       id="fitur"
-      className="relative border-t border-slate-800 bg-slate-950/40 py-16 sm:py-20"
+      className="relative border-t border-border bg-card/10 py-16 sm:py-20"
     >
       <div className="mx-auto flex max-w-6xl flex-col gap-10 px-4 sm:px-6 lg:px-8">
         <div className="max-w-xl">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-400">
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-primary">
             Fitur Unggulan
           </p>
-          <h2 className="mt-3 text-2xl font-semibold tracking-tight text-slate-50 sm:text-3xl">
+          <h2 className="mt-3 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
             Semua yang Anda butuhkan untuk meng-automasi toko digital.
           </h2>
-          <p className="mt-3 text-sm text-slate-400 sm:text-base">
+          <p className="mt-3 text-sm text-muted-foreground sm:text-base">
             Zaptify membantu mengelola order, pembayaran, dan pengiriman produk
             digital hanya dari WhatsApp. Tanpa ribet, tanpa coding.
           </p>
@@ -154,15 +154,18 @@ export function FeaturesSection() {
           {features.map((feature) => (
             <div
               key={feature.title}
-              className="group flex flex-col gap-3 rounded-2xl border border-slate-800/80 bg-slate-900/40 p-5 shadow-[0_0_0_1px_rgba(15,23,42,0.6)] transition hover:border-emerald-500/60 hover:bg-slate-900/80"
+              className="group flex flex-col gap-3 rounded-2xl border border-border bg-card p-5 shadow-sm transition hover:border-primary/60 hover:bg-accent/50"
             >
-              <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 ring-1 ring-emerald-500/40">
+              <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/40">
+                {/* Icon color needs to optionally change if it's SVG with 'text-emerald-400' inside features array. 
+                      However, the features array is defined OUTSIDE the component with hardcoded JSX. 
+                      I need to update the features array too. */}
                 {feature.icon}
               </div>
-              <h3 className="text-base font-semibold text-slate-50">
+              <h3 className="text-base font-semibold text-foreground">
                 {feature.title}
               </h3>
-              <p className="text-sm text-slate-400">{feature.description}</p>
+              <p className="text-sm text-muted-foreground">{feature.description}</p>
             </div>
           ))}
         </div>

@@ -33,7 +33,7 @@ export default function Home() {
   );
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-50">
+    <div className="min-h-screen bg-background text-foreground">
       <Navbar />
 
       {/* Hero + Preview */}
@@ -49,17 +49,17 @@ export default function Home() {
         {/* FAQ */}
         <section
           id="faq"
-          className="mt-4 border-t border-slate-800 bg-slate-950/60 py-16 sm:py-20"
+          className="mt-4 border-t border-border bg-card/10 py-16 sm:py-20"
         >
           <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
             <div className="max-w-xl">
-              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-400">
+              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-primary">
                 FAQ
               </p>
-              <h2 className="mt-3 text-2xl font-semibold tracking-tight text-slate-50 sm:text-3xl">
+              <h2 className="mt-3 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
                 Pertanyaan yang sering ditanyakan.
               </h2>
-              <p className="mt-3 text-sm text-slate-400 sm:text-base">
+              <p className="mt-3 text-sm text-muted-foreground sm:text-base">
                 Jika Anda masih ragu, berikut beberapa hal yang paling sering
                 ditanyakan oleh para seller sebelum mulai menggunakan Whiizi.
               </p>
@@ -71,7 +71,7 @@ export default function Home() {
                 return (
                   <div
                     key={item.question}
-                    className="overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-900/40"
+                    className="overflow-hidden rounded-2xl border border-border bg-card/50"
                   >
                     <button
                       type="button"
@@ -82,15 +82,15 @@ export default function Home() {
                         )
                       }
                     >
-                      <span className="text-sm font-medium text-slate-50 sm:text-base">
+                      <span className="text-sm font-medium text-foreground sm:text-base">
                         {item.question}
                       </span>
-                      <span className="ml-4 inline-flex h-6 w-6 items-center justify-center rounded-full border border-slate-700 text-xs text-slate-300">
+                      <span className="ml-4 inline-flex h-6 w-6 items-center justify-center rounded-full border border-border text-xs text-muted-foreground">
                         {isOpen ? "−" : "+"}
                       </span>
                     </button>
                     {isOpen && (
-                      <div className="border-t border-slate-800/70 px-4 py-3 text-sm text-slate-300 sm:px-5 sm:py-4">
+                      <div className="border-t border-border px-4 py-3 text-sm text-muted-foreground sm:px-5 sm:py-4">
                         {item.answer}
                       </div>
                     )}

@@ -36,16 +36,24 @@ export const updateSetting = async (req, res) => {
     const { isActive, welcomeMessage, fontteToken, device, aiPrompt } =
       req.body;
 
-    const setting = await prisma.chatbotSettings.update({
+    const setting = await prisma.chatbotSettings.upsert({
       where: {
         userId: userId,
       },
-      data: {
+      update: {
         isActive: isActive,
         welcomeMessage: welcomeMessage,
         fontteToken: fontteToken,
         device: device,
         aiPrompt: aiPrompt,
+      },
+      create: {
+        userId: userId,
+        isActive: isActive ?? false,
+        welcomeMessage: welcomeMessage ?? "Halo! Terima kasih telah menghubungi kami. Ada yang bisa saya bantu?",
+        fontteToken: fontteToken ?? "",
+        device: device ?? "",
+        aiPrompt: aiPrompt ?? "",
       },
     });
 

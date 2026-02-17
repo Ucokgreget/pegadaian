@@ -29,17 +29,17 @@ export function HowItWorksSection() {
   return (
     <section
       id="cara-kerja"
-      className="relative border-t border-slate-800 bg-slate-950 py-16 sm:py-20"
+      className="relative border-t border-border bg-background py-16 sm:py-20"
     >
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         <div className="max-w-xl">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-400">
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-primary">
             Cara Kerja
           </p>
-          <h2 className="mt-3 text-2xl font-semibold tracking-tight text-slate-50 sm:text-3xl">
+          <h2 className="mt-3 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
             Dari chat pertama hingga produk terkirim, semua otomatis.
           </h2>
-          <p className="mt-3 text-sm text-slate-400 sm:text-base">
+          <p className="mt-3 text-sm text-muted-foreground sm:text-base">
             Cukup sekali setup, selanjutnya Zaptify yang meng-handle setiap
             percakapan, order, dan pembayaran via WhatsApp.
           </p>
@@ -49,15 +49,15 @@ export function HowItWorksSection() {
           {steps.map((step) => (
             <div
               key={step.title}
-              className="relative flex flex-col gap-2 rounded-2xl border border-slate-800/80 bg-slate-900/40 p-5"
+              className="relative flex flex-col gap-2 rounded-2xl border border-border bg-card p-5"
             >
-              <span className="inline-flex w-fit rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-medium uppercase tracking-wide text-emerald-400 ring-1 ring-emerald-500/40">
+              <span className="inline-flex w-fit rounded-full bg-primary/10 px-3 py-1 text-xs font-medium uppercase tracking-wide text-primary ring-1 ring-primary/40">
                 {step.step}
               </span>
-              <h3 className="mt-1 text-base font-semibold text-slate-50">
+              <h3 className="mt-1 text-base font-semibold text-foreground">
                 {step.title}
               </h3>
-              <p className="text-sm text-slate-400">{step.description}</p>
+              <p className="text-sm text-muted-foreground">{step.description}</p>
             </div>
           ))}
         </div>
