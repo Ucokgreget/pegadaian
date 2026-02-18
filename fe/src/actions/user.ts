@@ -2,7 +2,7 @@
 
 import { cookies } from "next/headers";
 
-const API_URL = process.env.API_URL || "http://localhost:8000";
+const API_URL = process.env.API_URL;
 
 async function getAuthHeaders() {
   const cookieStore = await cookies();

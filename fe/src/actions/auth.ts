@@ -3,7 +3,7 @@
 import { cookies } from "next/headers";
 import { LoginRequest, RegisterRequest, LoginResponse, User } from "@/types/Auth";
 
-const API_URL = process.env.API_URL || "http://localhost:8000";
+const API_URL = process.env.API_URL;
 
 export async function login(data: LoginRequest): Promise<LoginResponse> {
   const cookieStore = await cookies();

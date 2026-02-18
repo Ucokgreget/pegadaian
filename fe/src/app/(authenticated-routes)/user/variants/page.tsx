@@ -23,7 +23,7 @@ import {
 } from "@/actions/productVariant";
 import { getProducts, Product } from "@/actions/product";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const ProductVariantsPage = () => {
   const queryClient = useQueryClient();
