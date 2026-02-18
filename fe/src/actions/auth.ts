@@ -31,7 +31,7 @@ export async function login(data: LoginRequest): Promise<LoginResponse> {
         cookieStore.set("token", result.token, {
           httpOnly: true,
           path: "/",
-          secure: true,
+          secure: false,
           sameSite: "lax",
           maxAge: 60 * 60 * 24 * 7, // 1 week
         });
@@ -114,7 +114,7 @@ export async function register(data: RegisterRequest): Promise<LoginResponse> {
       cookieStore.set("token", result.token, {
         httpOnly: true,
         path: "/",
-        secure: true,
+        secure: false,
         sameSite: "lax",
         maxAge: 60 * 60 * 24 * 7, // 1 week
       });

@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import React from "react";
 import { UserNavbar } from "@/components/dashboard/UserNavbar";
 import { getCurrentUser } from "@/actions/auth";
@@ -9,6 +10,10 @@ export default async function UserLayout({
   children: React.ReactNode;
 }) {
   const user = await getCurrentUser();
+
+  if (!user) {
+    redirect("/login");
+  }
 
   return (
     <div className="min-h-screen bg-background flex">
