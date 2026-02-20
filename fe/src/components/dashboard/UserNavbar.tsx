@@ -32,13 +32,16 @@ export function UserNavbar({ user }: UserNavbarProps) {
           <div className="hidden text-sm text-muted-foreground sm:block">
             Halo, {user?.name || "User"}
           </div>
-          <Link
-            href="/logout"
+          <button
+            onClick={() => {
+              localStorage.removeItem("token");
+              window.location.href = "/login";
+            }}
             className="inline-flex items-center gap-2 rounded-lg border border-border bg-secondary px-3 py-1.5 text-sm text-secondary-foreground hover:border-border hover:text-foreground transition-colors"
           >
             <LogOut className="h-4 w-4" />
             <span className="hidden sm:inline">Keluar</span>
-          </Link>
+          </button>
         </div>
       </nav>
     </header>

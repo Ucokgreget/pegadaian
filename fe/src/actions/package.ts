@@ -1,7 +1,5 @@
 "use server";
 
-import { cookies } from "next/headers";
-
 const API_URL = process.env.API_URL;
 
 export interface Package {
@@ -9,7 +7,7 @@ export interface Package {
   name: string;
   price: number;
   durationDays: number;
-  subscriptions?: any[]; // Simplified for display count
+  subscriptions?: any[];
   createdAt: string;
 }
 
@@ -19,18 +17,16 @@ export type CreatePackageInput = Omit<
 >;
 export type UpdatePackageInput = Partial<CreatePackageInput>;
 
-async function getAuthHeaders() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("token")?.value;
+function getAuthHeaders(token: string) {
   return {
     Authorization: `Bearer ${token}`,
     "Content-Type": "application/json",
   };
 }
 
-export async function getPackages(): Promise<Package[]> {
+export async function getPackages(token: string): Promise<Package[]> {
   try {
-    const headers = await getAuthHeaders();
+    const headers = getAuthHeaders(token);
     const res = await fetch(`${API_URL}/package`, {
       method: "GET",
       headers,
@@ -48,10 +44,11 @@ export async function getPackages(): Promise<Package[]> {
 }
 
 export async function createPackage(
+  token: string,
   data: CreatePackageInput,
 ): Promise<Package> {
   try {
-    const headers = await getAuthHeaders();
+    const headers = getAuthHeaders(token);
     const res = await fetch(`${API_URL}/package`, {
       method: "POST",
       headers,
@@ -71,11 +68,12 @@ export async function createPackage(
 }
 
 export async function updatePackage(
+  token: string,
   id: number,
   data: UpdatePackageInput,
 ): Promise<Package> {
   try {
-    const headers = await getAuthHeaders();
+    const headers = getAuthHeaders(token);
     const res = await fetch(`${API_URL}/package/${id}`, {
       method: "PUT",
       headers,
@@ -94,9 +92,9 @@ export async function updatePackage(
   }
 }
 
-export async function deletePackage(id: number): Promise<{ message: string }> {
+export async function deletePackage(token: string, id: number): Promise<{ message: string }> {
   try {
-    const headers = await getAuthHeaders();
+    const headers = getAuthHeaders(token);
     const res = await fetch(`${API_URL}/package/${id}`, {
       method: "DELETE",
       headers,

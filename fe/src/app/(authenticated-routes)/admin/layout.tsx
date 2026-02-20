@@ -1,17 +1,25 @@
-import { redirect } from "next/navigation";
-import { AdminNavbar } from "@/components/dashboard/AdminNavbar";
-import { getCurrentUser } from "@/actions/auth";
+"use client";
 
-export default async function AdminLayout({
+import React from "react";
+import { AdminNavbar } from "@/components/dashboard/AdminNavbar";
+import { useAuth } from "@/hooks/useAuth";
+
+export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const user = await getCurrentUser();
+  const { user, loading } = useAuth();
 
-  if (!user) {
-    redirect("/admin/login");
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-950">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+      </div>
+    );
   }
+
+  if (!user) return null;
 
   return (
     <div className="min-h-screen bg-slate-950">

@@ -27,6 +27,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const ProductVariantsPage = () => {
   const queryClient = useQueryClient();
+  const token = typeof window !== "undefined" ? localStorage.getItem("token") || "" : "";
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingVariant, setEditingVariant] = useState<ProductVariant | null>(null);
@@ -48,17 +49,17 @@ const ProductVariantsPage = () => {
     error,
   } = useQuery<ProductVariant[]>({
     queryKey: ["product-variants"],
-    queryFn: async () => await getProductVariants(),
+    queryFn: async () => await getProductVariants(token),
   });
 
   const { data: products = [] } = useQuery<Product[]>({
     queryKey: ["products"],
-    queryFn: async () => await getProducts(),
+    queryFn: async () => await getProducts(token),
   });
 
   // Mutations
   const createMutation = useMutation({
-    mutationFn: (data: any) => createProductVariant(data),
+    mutationFn: (data: any) => createProductVariant(token, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["product-variants"] });
       handleCloseModal();
@@ -71,7 +72,7 @@ const ProductVariantsPage = () => {
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: any }) =>
-      updateProductVariant(id, data),
+      updateProductVariant(token, id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["product-variants"] });
       handleCloseModal();
@@ -83,7 +84,7 @@ const ProductVariantsPage = () => {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: number) => deleteProductVariant(id),
+    mutationFn: (id: number) => deleteProductVariant(token, id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["product-variants"] });
       alert("Variant deleted successfully!");

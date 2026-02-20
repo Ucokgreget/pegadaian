@@ -76,15 +76,16 @@ export default function LoginPage() {
         password: formData.password,
       });
 
-      if (response.status && response.user) {
+      if (response.status && response.token && response.user) {
         setSuccessMessage("Login berhasil! Mengarahkan ke dashboard...");
+
+        // Store token in localStorage
+        localStorage.setItem("token", response.token);
 
         // Determine redirect path based on role
         const redirectPath = response.user.role === "ADMIN" ? "/admin" : "/user";
 
-        setTimeout(() => {
-          router.push(redirectPath);
-        }, 1500);
+        window.location.href = redirectPath;
       } else {
         setErrors({
           general: response.message || "Email atau password salah.",
@@ -164,8 +165,8 @@ export default function LoginPage() {
                 value={formData.email}
                 onChange={handleChange}
                 className={`mt-2 w-full rounded-xl border px-4 py-2.5 text-sm transition focus:outline-none focus:ring-2 ${errors.email
-                    ? "border-destructive/50 bg-destructive/5 text-foreground focus:border-destructive focus:ring-destructive/30"
-                    : "border-input bg-background/50 text-foreground placeholder-muted-foreground focus:border-primary focus:ring-primary/30"
+                  ? "border-destructive/50 bg-destructive/5 text-foreground focus:border-destructive focus:ring-destructive/30"
+                  : "border-input bg-background/50 text-foreground placeholder-muted-foreground focus:border-primary focus:ring-primary/30"
                   }`}
               />
               {errors.email && (
@@ -194,8 +195,8 @@ export default function LoginPage() {
                 value={formData.password}
                 onChange={handleChange}
                 className={`mt-2 w-full rounded-xl border px-4 py-2.5 text-sm transition focus:outline-none focus:ring-2 ${errors.password
-                    ? "border-destructive/50 bg-destructive/5 text-foreground focus:border-destructive focus:ring-destructive/30"
-                    : "border-input bg-background/50 text-foreground placeholder-muted-foreground focus:border-primary focus:ring-primary/30"
+                  ? "border-destructive/50 bg-destructive/5 text-foreground focus:border-destructive focus:ring-destructive/30"
+                  : "border-input bg-background/50 text-foreground placeholder-muted-foreground focus:border-primary focus:ring-primary/30"
                   }`}
               />
               {errors.password && (

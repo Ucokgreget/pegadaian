@@ -1,21 +1,16 @@
 "use server";
 
-import { cookies } from "next/headers";
-
 const API_URL = process.env.API_URL;
 
 export interface Blast {
   id: number;
   message: string;
-  recipients: string[]; // Frontend sends/receives array, DB might store JSON string
+  recipients: string[];
   status: "PENDING" | "COMPLETED" | "FAILED";
   createdAt: string;
 }
 
-export async function getBlastMessages(): Promise<Blast[]> {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("token")?.value;
-
+export async function getBlastMessages(token: string): Promise<Blast[]> {
   try {
     const res = await fetch(`${API_URL}/chatbot/blast`, {
       method: "GET",
@@ -26,15 +21,10 @@ export async function getBlastMessages(): Promise<Blast[]> {
     });
 
     if (!res.ok) {
-      // If 404/Empty
       return [];
     }
 
     const data = await res.json();
-
-    // Ensure recipients is parsed if it comes as string (depending on backend implementation)
-    // Assuming backend returns it properly formatted or strings.
-    // Generally standardizing on array for UI.
     return data;
   } catch (error) {
     console.error("GetBlastMessages error:", error);
@@ -42,10 +32,7 @@ export async function getBlastMessages(): Promise<Blast[]> {
   }
 }
 
-export async function createBlast(message: string, recipients: string[]) {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("token")?.value;
-
+export async function createBlast(token: string, message: string, recipients: string[]) {
   try {
     const res = await fetch(`${API_URL}/chatbot/blast`, {
       method: "POST",

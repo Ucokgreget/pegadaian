@@ -1,41 +1,31 @@
 "use server";
 
-import { cookies } from "next/headers";
-import { LoginRequest, RegisterRequest, LoginResponse, User } from "@/types/Auth";
+import type {
+  LoginRequest,
+  RegisterRequest,
+  LoginResponse,
+  User,
+} from "@/types/Auth";
 
 const API_URL = process.env.API_URL;
 
+/* ================= LOGIN ================= */
 export async function login(data: LoginRequest): Promise<LoginResponse> {
-  const cookieStore = await cookies();
-
   try {
     const res = await fetch(`${API_URL}/login`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
+      cache: "no-store",
     });
 
-    const result = await res.json();
+    const result = await res.json().catch(() => null);
 
-    if (!res.ok) {
+    if (!res.ok || !result?.token) {
       return {
         status: false,
-        message: result.message || "Terjadi kesalahan saat login",
+        message: result?.message || "Login gagal",
       };
-    }
-
-    if (result.token) {
-      if (result.token) {
-        cookieStore.set("token", result.token, {
-          httpOnly: true,
-          path: "/",
-          secure: true,
-          sameSite: "lax",
-          maxAge: 60 * 60 * 24 * 7, // 1 week
-        });
-      }
     }
 
     return {
@@ -44,80 +34,31 @@ export async function login(data: LoginRequest): Promise<LoginResponse> {
       token: result.token,
       user: result.user,
     };
-  } catch (error) {
-    console.error("Login error:", error);
-    return {
-      status: false,
-      message: "Gagal terhubung ke server",
-    };
+  } catch (err) {
+    console.error("LOGIN ERROR:", err);
+    return { status: false, message: "Server tidak merespon" };
   }
 }
 
-export async function getCurrentUser(): Promise<User | null> {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("token")?.value;
-
-  if (!token) {
-    return null;
-  }
-
-  try {
-    const res = await fetch(`${API_URL}/me`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (!res.ok) {
-      // If 401, token might be expired.
-      return null;
-    }
-
-    const user: User = await res.json();
-    return user;
-  } catch (error) {
-    console.error("GetCurrentUser error:", error);
-    return null;
-  }
-}
-
-export async function logout() {
-  const cookieStore = await cookies();
-  cookieStore.delete("token");
-}
-
-
-export async function register(data: RegisterRequest): Promise<LoginResponse> {
-  const cookieStore = await cookies();
-
+/* ================= REGISTER ================= */
+export async function register(
+  data: RegisterRequest
+): Promise<LoginResponse> {
   try {
     const res = await fetch(`${API_URL}/register`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
+      cache: "no-store",
     });
 
-    const result = await res.json();
+    const result = await res.json().catch(() => null);
 
-    if (!res.ok) {
+    if (!res.ok || !result?.token) {
       return {
         status: false,
-        message: result.error || result.message || "Terjadi kesalahan saat register",
+        message: result?.message || "Register gagal",
       };
-    }
-
-    if (result.token) {
-      cookieStore.set("token", result.token, {
-        httpOnly: true,
-        path: "/",
-        secure: true,
-        sameSite: "lax",
-        maxAge: 60 * 60 * 24 * 7, // 1 week
-      });
     }
 
     return {
@@ -126,11 +67,30 @@ export async function register(data: RegisterRequest): Promise<LoginResponse> {
       token: result.token,
       user: result.user,
     };
-  } catch (error) {
-    console.error("Register error:", error);
-    return {
-      status: false,
-      message: "Gagal terhubung ke server",
-    };
+  } catch (err) {
+    console.error("REGISTER ERROR:", err);
+    return { status: false, message: "Server tidak merespon" };
+  }
+}
+
+/* ================= CURRENT USER ================= */
+export async function getCurrentUser(token: string): Promise<User | null> {
+  if (!token) return null;
+
+  try {
+    const res = await fetch(`${API_URL}/me`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+      },
+      cache: "no-store",
+    });
+
+    if (!res.ok) return null;
+
+    return await res.json();
+  } catch (err) {
+    console.error("GET USER ERROR:", err);
+    return null;
   }
 }

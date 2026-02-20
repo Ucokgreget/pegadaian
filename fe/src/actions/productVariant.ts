@@ -1,7 +1,5 @@
 "use server";
 
-import { cookies } from "next/headers";
-
 const API_URL = process.env.API_URL;
 
 export interface ProductVariant {
@@ -21,26 +19,22 @@ export interface ProductVariant {
 export type CreateProductVariantInput = Omit<ProductVariant, "id" | "createdAt" | "updatedAt" | "sku" | "isActive"> & { sku?: string };
 export type UpdateProductVariantInput = Partial<CreateProductVariantInput>;
 
-async function getAuthHeaders() {
-    const cookieStore = await cookies();
-    const token = cookieStore.get("token")?.value;
+function getAuthHeaders(token: string) {
     return {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
     };
 }
 
-async function getAuthHeadersForFormData() {
-    const cookieStore = await cookies();
-    const token = cookieStore.get("token")?.value;
+function getAuthHeadersForFormData(token: string) {
     return {
         Authorization: `Bearer ${token}`,
     };
 }
 
-export async function getProductVariants(): Promise<ProductVariant[]> {
+export async function getProductVariants(token: string): Promise<ProductVariant[]> {
     try {
-        const headers = await getAuthHeaders();
+        const headers = getAuthHeaders(token);
         const res = await fetch(`${API_URL}/product-variant`, {
             method: "GET",
             headers,
@@ -57,9 +51,9 @@ export async function getProductVariants(): Promise<ProductVariant[]> {
     }
 }
 
-export async function getProductVariantById(id: number): Promise<ProductVariant | null> {
+export async function getProductVariantById(token: string, id: number): Promise<ProductVariant | null> {
     try {
-        const headers = await getAuthHeaders();
+        const headers = getAuthHeaders(token);
         const res = await fetch(`${API_URL}/product-variant/${id}`, {
             method: "GET",
             headers,
@@ -78,6 +72,7 @@ export async function getProductVariantById(id: number): Promise<ProductVariant 
 }
 
 export async function createProductVariant(
+    token: string,
     data: CreateProductVariantInput | FormData,
 ): Promise<ProductVariant> {
     try {
@@ -85,10 +80,10 @@ export async function createProductVariant(
         let body;
 
         if (data instanceof FormData) {
-            headers = await getAuthHeadersForFormData();
+            headers = getAuthHeadersForFormData(token);
             body = data;
         } else {
-            headers = await getAuthHeaders();
+            headers = getAuthHeaders(token);
             body = JSON.stringify(data);
         }
 
@@ -111,6 +106,7 @@ export async function createProductVariant(
 }
 
 export async function updateProductVariant(
+    token: string,
     id: number,
     data: UpdateProductVariantInput | FormData,
 ): Promise<ProductVariant> {
@@ -119,10 +115,10 @@ export async function updateProductVariant(
         let body;
 
         if (data instanceof FormData) {
-            headers = await getAuthHeadersForFormData();
+            headers = getAuthHeadersForFormData(token);
             body = data;
         } else {
-            headers = await getAuthHeaders();
+            headers = getAuthHeaders(token);
             body = JSON.stringify(data);
         }
 
@@ -144,9 +140,9 @@ export async function updateProductVariant(
     }
 }
 
-export async function deleteProductVariant(id: number): Promise<{ message: string }> {
+export async function deleteProductVariant(token: string, id: number): Promise<{ message: string }> {
     try {
-        const headers = await getAuthHeaders();
+        const headers = getAuthHeaders(token);
         const res = await fetch(`${API_URL}/product-variant/${id}`, {
             method: "DELETE",
             headers,

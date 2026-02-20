@@ -1,13 +1,8 @@
 "use server";
 
-import { cookies } from "next/headers";
-
 const API_URL = process.env.API_URL;
 
-export async function getChatbotRuntime() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("token")?.value;
-
+export async function getChatbotRuntime(token: string) {
   try {
     const res = await fetch(`${API_URL}/chatbot/runtime`, {
       method: "GET",
@@ -40,10 +35,7 @@ export async function getChatbotRuntime() {
   }
 }
 
-export async function getChatbotSettings() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("token")?.value;
-
+export async function getChatbotSettings(token: string) {
   try {
     const res = await fetch(`${API_URL}/chatbot/setting`, {
       method: "GET",
@@ -64,7 +56,6 @@ export async function getChatbotSettings() {
     return await res.json();
   } catch (error) {
     console.error("GetChatbotSettings error:", error);
-    // Return default empty settings on error to prevent crash
     return {
       isActive: false,
       welcomeMessage: "",
@@ -75,10 +66,7 @@ export async function getChatbotSettings() {
   }
 }
 
-export async function updateChatbotSettings(data: any) {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("token")?.value;
-
+export async function updateChatbotSettings(token: string, data: any) {
   try {
     const res = await fetch(`${API_URL}/chatbot/setting`, {
       method: "PUT",
@@ -101,10 +89,7 @@ export async function updateChatbotSettings(data: any) {
   }
 }
 
-export async function testChatbot(message: string, customPrompt?: string) {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("token")?.value;
-
+export async function testChatbot(token: string, message: string, customPrompt?: string) {
   try {
     const res = await fetch(`${API_URL}/chatbot/test`, {
       method: "POST",
@@ -127,10 +112,7 @@ export async function testChatbot(message: string, customPrompt?: string) {
   }
 }
 
-export async function connectChatbot() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("token")?.value;
-
+export async function connectChatbot(token: string) {
   try {
     const res = await fetch(`${API_URL}/chatbot/connect`, {
       method: "POST",
@@ -152,10 +134,7 @@ export async function connectChatbot() {
   }
 }
 
-export async function disconnectChatbot() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("token")?.value;
-
+export async function disconnectChatbot(token: string) {
   try {
     const res = await fetch(`${API_URL}/chatbot/disconnect`, {
       method: "POST",

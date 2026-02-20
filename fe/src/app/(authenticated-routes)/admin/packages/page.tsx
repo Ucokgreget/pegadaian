@@ -2,29 +2,30 @@
 
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { 
-  Plus, 
-  Edit2, 
-  Trash2, 
-  Package, 
-  Users, 
+import {
+  Plus,
+  Edit2,
+  Trash2,
+  Package,
+  Users,
   Calendar,
   Loader2,
-  X 
+  X
 } from "lucide-react";
-import { 
-  getPackages, 
-  createPackage, 
-  updatePackage, 
-  deletePackage, 
+import {
+  getPackages,
+  createPackage,
+  updatePackage,
+  deletePackage,
   Package as PackageType,
   CreatePackageInput
 } from "@/actions/package";
 
 export default function PackagesPage() {
+  const token = typeof window !== "undefined" ? localStorage.getItem("token") || "" : "";
   const [packages, setPackages] = useState<PackageType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPackage, setEditingPackage] = useState<PackageType | null>(null);
   const [formData, setFormData] = useState({
@@ -41,7 +42,7 @@ export default function PackagesPage() {
   const loadPackages = async () => {
     setIsLoading(true);
     try {
-      const data = await getPackages();
+      const data = await getPackages(token);
       setPackages(data);
     } catch (error) {
       console.error(error);
@@ -75,10 +76,10 @@ export default function PackagesPage() {
       };
 
       if (editingPackage) {
-        await updatePackage(editingPackage.id, packageData);
+        await updatePackage(token, editingPackage.id, packageData);
         alert("Package updated successfully!");
       } else {
-        await createPackage(packageData);
+        await createPackage(token, packageData);
         alert("Package created successfully!");
       }
 
@@ -104,8 +105,8 @@ export default function PackagesPage() {
   const handleDelete = async (id: number) => {
     if (confirm("Are you sure you want to delete this package?")) {
       try {
-        await deletePackage(id);
-         setPackages(prev => prev.filter(p => p.id !== id));
+        await deletePackage(token, id);
+        setPackages(prev => prev.filter(p => p.id !== id));
       } catch (error: any) {
         alert(`Error: ${error.message}`);
       }
@@ -135,8 +136,8 @@ export default function PackagesPage() {
         <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
             <h1 className="flex items-center text-3xl font-bold text-slate-50">
-                <Package className="mr-3 h-8 w-8 text-emerald-500" />
-                Package Management
+              <Package className="mr-3 h-8 w-8 text-emerald-500" />
+              Package Management
             </h1>
             <p className="mt-2 text-slate-400">Manage subscription packages for your platform</p>
           </div>
@@ -155,15 +156,15 @@ export default function PackagesPage() {
                   <Package className="h-6 w-6" />
                 </div>
                 <div className="flex space-x-2">
-                  <button 
-                    onClick={() => handleEdit(pkg)} 
+                  <button
+                    onClick={() => handleEdit(pkg)}
                     className="rounded-lg p-2 text-emerald-500 hover:bg-emerald-500/10"
                     title="Edit Package"
                   >
                     <Edit2 className="h-4 w-4" />
                   </button>
-                  <button 
-                    onClick={() => handleDelete(pkg.id)} 
+                  <button
+                    onClick={() => handleDelete(pkg.id)}
                     className="rounded-lg p-2 text-red-500 hover:bg-red-500/10"
                     title="Delete Package"
                   >
@@ -192,14 +193,14 @@ export default function PackagesPage() {
         {packages.length === 0 && (
           <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-slate-800 bg-slate-900/30 py-20 text-center">
             <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-800 text-slate-500">
-                <Package className="h-8 w-8" />
+              <Package className="h-8 w-8" />
             </div>
             <h3 className="text-lg font-medium text-slate-200">No packages yet</h3>
             <p className="mt-1 text-slate-500">Create your first package to get started</p>
-             <Button onClick={() => setIsModalOpen(true)} className="mt-6 bg-emerald-500 text-slate-950 hover:bg-emerald-400">
-                <Plus className="mr-2 h-4 w-4" />
-                Add Package
-             </Button>
+            <Button onClick={() => setIsModalOpen(true)} className="mt-6 bg-emerald-500 text-slate-950 hover:bg-emerald-400">
+              <Plus className="mr-2 h-4 w-4" />
+              Add Package
+            </Button>
           </div>
         )}
 
@@ -209,7 +210,7 @@ export default function PackagesPage() {
             <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-950 p-6 shadow-2xl">
               <div className="mb-6 flex items-center justify-between">
                 <h2 className="text-xl font-semibold text-slate-50">{editingPackage ? "Edit Package" : "Add New Package"}</h2>
-                <button 
+                <button
                   onClick={handleCloseModal}
                   className="rounded-full p-1 text-slate-400 hover:bg-slate-900 hover:text-slate-200"
                 >
@@ -260,26 +261,26 @@ export default function PackagesPage() {
                 </div>
 
                 <div className="flex space-x-3 pt-4">
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    onClick={handleCloseModal} 
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleCloseModal}
                     className="flex-1 border-slate-700 text-slate-300 hover:bg-slate-800"
                   >
                     Cancel
                   </Button>
-                  <Button 
-                    type="submit" 
+                  <Button
+                    type="submit"
                     disabled={isSubmitting}
                     className="flex-1 bg-emerald-500 text-slate-950 hover:bg-emerald-400"
                   >
                     {isSubmitting ? (
-                         <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Saving...
-                        </>
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Saving...
+                      </>
                     ) : (
-                        editingPackage ? "Update" : "Create"
+                      editingPackage ? "Update" : "Create"
                     )}
                   </Button>
                 </div>

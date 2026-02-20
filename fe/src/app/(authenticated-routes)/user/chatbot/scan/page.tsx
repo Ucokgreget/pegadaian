@@ -21,6 +21,7 @@ import {
 } from "@/actions/chatbot";
 
 export default function ScanPage() {
+  const token = typeof window !== "undefined" ? localStorage.getItem("token") || "" : "";
   const [qrString, setQrString] = useState("");
 
   const [isProcessing, setIsProcessing] = useState(false);
@@ -35,7 +36,7 @@ export default function ScanPage() {
 
   const fetchQR = async () => {
     try {
-      const data = await getChatbotRuntime();
+      const data = await getChatbotRuntime(token);
       console.log(data);
 
       setStatus(data?.status ?? "loading");
@@ -59,7 +60,7 @@ export default function ScanPage() {
 
   useEffect(() => {
     async function init() {
-      const data = await getChatbotSettings();
+      const data = await getChatbotSettings(token);
       setSettings(data);
     }
     init();
@@ -70,8 +71,8 @@ export default function ScanPage() {
     try {
       setIsProcessing(true);
 
-      await connectChatbot();
-      const data = await getChatbotSettings();
+      await connectChatbot(token);
+      const data = await getChatbotSettings(token);
       setSettings(data);
     } catch (error: any) {
       alert(error.message);
@@ -84,8 +85,8 @@ export default function ScanPage() {
     try {
       setIsProcessing(true);
 
-      await disconnectChatbot();
-      const data = await getChatbotSettings();
+      await disconnectChatbot(token);
+      const data = await getChatbotSettings(token);
       setSettings(data);
     } catch (error: any) {
       alert(error.message);
@@ -104,9 +105,9 @@ export default function ScanPage() {
     if (name === "isActive") {
       try {
         if (checked) {
-          await connectChatbot();
+          await connectChatbot(token);
         } else {
-          await disconnectChatbot();
+          await disconnectChatbot(token);
         }
       } catch (error: any) {
         alert(

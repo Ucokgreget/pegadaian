@@ -15,6 +15,7 @@ import {
 import { getBlastMessages, createBlast, Blast } from "@/actions/wablast";
 
 export default function WaBlastPage() {
+  const token = typeof window !== "undefined" ? localStorage.getItem("token") || "" : "";
   const [blasts, setBlasts] = useState<Blast[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -27,7 +28,7 @@ export default function WaBlastPage() {
   const loadBlasts = async () => {
     setIsLoading(true);
     try {
-      const data = await getBlastMessages();
+      const data = await getBlastMessages(token);
       setBlasts(data);
     } catch (error) {
       console.error(error);
@@ -53,7 +54,7 @@ export default function WaBlastPage() {
         .map((n) => n.trim())
         .filter((n) => n.length > 0);
 
-      await createBlast(message, recipientList);
+      await createBlast(token, message, recipientList);
 
       alert("Broadcast berhasil ditambahkan!");
       setIsModalOpen(false);

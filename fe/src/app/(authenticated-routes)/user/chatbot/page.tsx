@@ -28,6 +28,7 @@ import {
 } from "@/actions/chatbot";
 
 export default function ChatbotPage() {
+  const token = typeof window !== "undefined" ? localStorage.getItem("token") || "" : "";
   const [isTestModalOpen, setIsTestModalOpen] = useState(false);
   const [testMessage, setTestMessage] = useState("");
   const [testResponse, setTestResponse] = useState("");
@@ -49,7 +50,7 @@ export default function ChatbotPage() {
   useEffect(() => {
     async function init() {
       try {
-        const data = await getChatbotSettings();
+        const data = await getChatbotSettings(token);
         if (data) setSettings(data);
       } catch (e) {
         console.error("Failed to load settings", e);
@@ -70,9 +71,9 @@ export default function ChatbotPage() {
     if (name === "isActive") {
       try {
         if (checked) {
-          await connectChatbot();
+          await connectChatbot(token);
         } else {
-          await disconnectChatbot();
+          await disconnectChatbot(token);
         }
       } catch (error: any) {
         alert(
@@ -91,7 +92,7 @@ export default function ChatbotPage() {
   const handleSaveSettings = async () => {
     setIsSaving(true);
     try {
-      await updateChatbotSettings(settings);
+      await updateChatbotSettings(token, settings);
       alert("Settings updated successfully!");
     } catch (error: any) {
       alert(`Error: ${error.message}`);
@@ -109,7 +110,7 @@ export default function ChatbotPage() {
     setIsTestLoading(true);
     setTestResponse(""); // Clear previous
     try {
-      const result = await testChatbot(testMessage, settings.aiPrompt);
+      const result = await testChatbot(token, testMessage, settings.aiPrompt);
       setTestResponse(result.response);
     } catch (error: any) {
       setTestResponse(`Test failed: ${error.message}`);

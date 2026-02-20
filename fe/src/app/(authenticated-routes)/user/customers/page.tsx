@@ -27,6 +27,7 @@ import {
 } from "@/actions/customer";
 
 export default function CustomersPage() {
+  const token = typeof window !== "undefined" ? localStorage.getItem("token") || "" : "";
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -50,7 +51,7 @@ export default function CustomersPage() {
   const loadCustomers = async () => {
     setIsLoading(true);
     try {
-      const data = await getCustomers();
+      const data = await getCustomers(token);
       setCustomers(data);
     } catch (error) {
       console.error(error);
@@ -73,10 +74,10 @@ export default function CustomersPage() {
 
     try {
       if (modalType === "add") {
-        await createCustomer(formData);
+        await createCustomer(token, formData);
         alert("Customer successfully added!");
       } else if (modalType === "edit" && editingCustomer) {
-        await updateCustomer(editingCustomer.id, formData);
+        await updateCustomer(token, editingCustomer.id, formData);
         alert("Customer successfully updated!");
       }
       handleCloseModal();
@@ -91,7 +92,7 @@ export default function CustomersPage() {
   const handleDelete = async (id: number) => {
     if (confirm("Are you user you want to delete this customer? This action cannot be undone.")) {
       try {
-        await deleteCustomer(id);
+        await deleteCustomer(token, id);
         setCustomers((prev) => prev.filter((c) => c.id !== id));
       } catch (error: any) {
         alert(`Error: ${error.message}`);

@@ -103,10 +103,14 @@ export default function RegisterPage() {
         name: formData.fullName,
       });
 
-      if (res.status) {
+      if (res.status && res.token) {
         setSuccessMessage(
-          "Registrasi berhasil! Mengarahkan ke dashboard dalam 3 detik..."
+          "Registrasi berhasil! Mengarahkan ke dashboard..."
         );
+
+        // Store token in localStorage
+        localStorage.setItem("token", res.token);
+
         // Reset form
         setFormData({
           fullName: "",
@@ -116,10 +120,8 @@ export default function RegisterPage() {
           agreed: false,
         });
 
-        // Redirect after 3 seconds
-        setTimeout(() => {
-          router.push("/user");
-        }, 3000);
+        // Hard redirect
+        window.location.href = "/user";
       } else {
         setErrors((prev) => ({
           ...prev,

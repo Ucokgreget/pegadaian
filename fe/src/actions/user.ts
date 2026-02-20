@@ -1,21 +1,17 @@
 "use server";
 
-import { cookies } from "next/headers";
-
 const API_URL = process.env.API_URL;
 
-async function getAuthHeaders() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("token")?.value;
+function getAuthHeaders(token: string) {
   return {
     Authorization: `Bearer ${token}`,
     "Content-Type": "application/json",
   };
 }
 
-export async function getUsersWithAnalytics() {
+export async function getUsersWithAnalytics(token: string) {
   try {
-    const headers = await getAuthHeaders();
+    const headers = getAuthHeaders(token);
     const res = await fetch(`${API_URL}/user-analytics`, {
       method: "GET",
       headers,
@@ -28,7 +24,6 @@ export async function getUsersWithAnalytics() {
     return await res.json();
   } catch (error) {
     console.error("GetUsersWithAnalytics error:", error);
-    // Return safe default struct
     return {
       users: [],
       analytics: {
@@ -41,9 +36,9 @@ export async function getUsersWithAnalytics() {
   }
 }
 
-export async function deleteUser(id: number) {
+export async function deleteUser(token: string, id: number) {
   try {
-    const headers = await getAuthHeaders();
+    const headers = getAuthHeaders(token);
     const res = await fetch(`${API_URL}/user/${id}`, {
       method: "DELETE",
       headers,
@@ -62,12 +57,13 @@ export async function deleteUser(id: number) {
 }
 
 export async function updateUserRole(
+  token: string,
   id: number,
   role: "USER" | "ADMIN",
   name?: string,
 ) {
   try {
-    const headers = await getAuthHeaders();
+    const headers = getAuthHeaders(token);
     const res = await fetch(`${API_URL}/user/${id}`, {
       method: "PUT",
       headers,
