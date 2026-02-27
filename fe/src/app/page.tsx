@@ -9,8 +9,6 @@ import { TestimonialsSection } from "@/components/whiizi/TestimonialsSection";
 import { PricingSection } from "@/components/whiizi/PricingSection";
 import { Footer } from "@/components/whiizi/Footer";
 
-export const dynamic = "force-dynamic"
-
 const faqItems = [
   {
     question: "Apakah perlu coding?",
