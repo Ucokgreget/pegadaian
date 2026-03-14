@@ -1,0 +1,491 @@
+/* Sidebar.module.css */
+
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap");
+
+/* ─── Variables ──────────────────────────────────────────────────────── */
+
+:root {
+  --sidebar-w: 256px;
+  --sidebar-collapsed-w: 68px;
+  --sidebar-transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --green: #22c55e;
+  --green-dark: #16a34a;
+  --green-muted: rgba(34, 197, 94, 0.1);
+  --green-border: rgba(34, 197, 94, 0.2);
+}
+
+/* ─── Mobile Toggle Button ───────────────────────────────────────────── */
+
+.mobileToggle {
+  display: none;
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 50;
+  width: 40px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--background);
+  color: var(--muted-foreground);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.mobileToggle:hover {
+  color: var(--green);
+  border-color: var(--green-border);
+  background: var(--green-muted);
+}
+
+@media (max-width: 767px) {
+  .mobileToggle {
+    display: flex;
+  }
+}
+
+/* ─── Sidebar ────────────────────────────────────────────────────────── */
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 40;
+  height: 100vh;
+  width: var(--sidebar-w);
+  background: var(--sidebar, var(--background));
+  border-right: 1px solid var(--sidebar-border, var(--border));
+  box-shadow:
+    4px 0 16px rgba(0, 0, 0, 0.06),
+    1px 0 0 rgba(34, 197, 94, 0.06);
+  display: flex;
+  flex-direction: column;
+  transition:
+    width var(--sidebar-transition),
+    transform var(--sidebar-transition);
+  overflow: hidden;
+  font-family: "Plus Jakarta Sans", sans-serif;
+}
+
+/* Subtle green ambient top glow */
+.sidebar::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 180px;
+  background: radial-gradient(
+    ellipse 100% 100% at 50% 0%,
+    rgba(34, 197, 94, 0.07) 0%,
+    transparent 70%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Collapsed state (desktop) */
+.sidebar.collapsed {
+  width: var(--sidebar-collapsed-w);
+}
+
+/* Mobile hidden */
+@media (max-width: 767px) {
+  .sidebar {
+    transform: translateX(-100%);
+    width: var(--sidebar-w) !important; /* always full width on mobile */
+  }
+
+  .sidebar.mobileOpen {
+    transform: translateX(0);
+  }
+}
+
+/* ─── Header / Logo Area ─────────────────────────────────────────────── */
+
+.header {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+  padding: 0 1rem;
+  border-bottom: 1px solid var(--sidebar-border, var(--border));
+  flex-shrink: 0;
+  gap: 0.5rem;
+}
+
+.logoWrap {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  overflow: hidden;
+  flex: 1;
+  min-width: 0;
+}
+
+.logoImg {
+  height: auto;
+  width: 100%;
+  max-width: 200px;
+  border-radius: 6px;
+  object-fit: contain;
+  flex-shrink: 0;
+  transition:
+    max-width 0.3s ease,
+    opacity 0.3s ease;
+}
+
+.sidebar.collapsed .logoImg {
+  max-width: 36px;
+  object-fit: cover;
+  object-position: left center;
+  opacity: 0.8;
+}
+
+/* Fallback logo (SVG/text) shown when no image */
+.logoFallback {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--green), var(--green-dark));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 3px 10px rgba(34, 197, 94, 0.3);
+  transition:
+    width 0.3s ease,
+    height 0.3s ease;
+}
+
+.sidebar.collapsed .logoFallback {
+  width: 36px;
+  height: 36px;
+}
+
+.logoFallbackSvg {
+  width: 18px;
+  height: 18px;
+  fill: white;
+}
+
+.logoText {
+  overflow: hidden;
+  white-space: nowrap;
+  transition:
+    opacity var(--sidebar-transition),
+    max-width var(--sidebar-transition);
+  max-width: 160px;
+  opacity: 1;
+}
+
+.sidebar.collapsed .logoText {
+  max-width: 0;
+  opacity: 0;
+}
+
+.logoName {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--sidebar-foreground, var(--foreground));
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.logoSub {
+  font-size: 0.6rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--green);
+  line-height: 1;
+}
+
+/* ─── Collapse Toggle Button (desktop) ──────────────────────────────── */
+
+.collapseBtn {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--background);
+  color: var(--muted-foreground);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.collapseBtn:hover {
+  color: var(--green);
+  border-color: var(--green-border);
+  background: var(--green-muted);
+}
+
+.collapseBtnIcon {
+  width: 14px;
+  height: 14px;
+  transition: transform var(--sidebar-transition);
+}
+
+.sidebar.collapsed .collapseBtnIcon {
+  transform: rotate(180deg);
+}
+
+/* Hide collapse btn on mobile (mobile uses its own toggle) */
+@media (max-width: 767px) {
+  .collapseBtn {
+    display: none;
+  }
+}
+
+/* ─── Scrollable Nav Area ────────────────────────────────────────────── */
+
+.nav {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0.75rem 0.625rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.nav::-webkit-scrollbar {
+  width: 4px;
+}
+
+.nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.nav::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 99px;
+}
+
+.navList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* ─── Section Header ─────────────────────────────────────────────────── */
+
+.sectionHeader {
+  margin-top: 1.25rem;
+  margin-bottom: 0.35rem;
+  padding: 0 0.625rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted-foreground);
+  white-space: nowrap;
+  overflow: hidden;
+  transition:
+    opacity var(--sidebar-transition),
+    max-height var(--sidebar-transition);
+  max-height: 2rem;
+  opacity: 1;
+}
+
+.navList > li:first-child .sectionHeader {
+  margin-top: 0;
+}
+
+.sidebar.collapsed .sectionHeader {
+  opacity: 0;
+  max-height: 0;
+  margin: 0;
+}
+
+/* ─── Nav Item ───────────────────────────────────────────────────────── */
+
+.navItem {
+  position: relative;
+}
+
+.navLink {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: 10px;
+  text-decoration: none;
+  color: var(--muted-foreground);
+  transition: all 0.18s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  position: relative;
+}
+
+.navLink:hover {
+  background: var(--green-muted);
+  color: var(--sidebar-foreground, var(--foreground));
+}
+
+.navLink:hover .navIcon {
+  color: var(--green);
+}
+
+/* Active state */
+.navLinkActive {
+  background: var(--green-muted);
+  color: var(--sidebar-foreground, var(--foreground));
+}
+
+.navLinkActive::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 20%;
+  bottom: 20%;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--green);
+}
+
+.navLinkActive .navIcon {
+  color: var(--green);
+}
+
+/* Icon */
+.navIcon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  transition: color 0.18s ease;
+}
+
+/* Label */
+.navLabel {
+  font-size: 0.8375rem;
+  font-weight: 500;
+  flex: 1;
+  overflow: hidden;
+  transition:
+    opacity var(--sidebar-transition),
+    max-width var(--sidebar-transition);
+  max-width: 160px;
+  opacity: 1;
+}
+
+.sidebar.collapsed .navLabel {
+  max-width: 0;
+  opacity: 0;
+}
+
+/* Tooltip on collapsed */
+.navTooltip {
+  position: absolute;
+  left: calc(var(--sidebar-collapsed-w) + 8px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--foreground);
+  color: var(--background);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.35rem 0.7rem;
+  border-radius: 8px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 100;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.navTooltip::before {
+  content: "";
+  position: absolute;
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 5px solid transparent;
+  border-right-color: var(--foreground);
+}
+
+.sidebar.collapsed .navItem:hover .navTooltip {
+  opacity: 1;
+}
+
+/* ─── Footer ─────────────────────────────────────────────────────────── */
+
+.footer {
+  position: relative;
+  z-index: 1;
+  border-top: 1px solid var(--sidebar-border, var(--border));
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  gap: 0.5rem;
+  overflow: hidden;
+}
+
+.footerLabel {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--muted-foreground);
+  white-space: nowrap;
+  overflow: hidden;
+  transition:
+    opacity var(--sidebar-transition),
+    max-width var(--sidebar-transition);
+  max-width: 80px;
+  opacity: 1;
+}
+
+.sidebar.collapsed .footerLabel {
+  max-width: 0;
+  opacity: 0;
+}
+
+/* ─── Overlay ────────────────────────────────────────────────────────── */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
+  animation: overlayIn 0.25s ease;
+}
+
+@keyframes overlayIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ─── Active dot indicator ───────────────────────────────────────────── */
+
+.activeDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  flex-shrink: 0;
+  transition: opacity var(--sidebar-transition);
+  opacity: 1;
+}
+
+.sidebar.collapsed .activeDot {
+  opacity: 0;
+}

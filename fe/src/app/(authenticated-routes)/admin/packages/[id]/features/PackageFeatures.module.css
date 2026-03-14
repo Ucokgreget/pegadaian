@@ -1,0 +1,412 @@
+/* PackageFeatures.module.css */
+
+.page {
+  min-height: 100vh;
+  background: var(--background);
+  color: var(--foreground);
+}
+
+.container {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem;
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.backBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--foreground);
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+  flex-shrink: 0;
+}
+
+.backBtn:hover {
+  background: var(--muted);
+  border-color: var(--ring);
+}
+
+.backIcon {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--foreground);
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+  margin: 0.2rem 0 0;
+}
+
+/* Add Card */
+.addCard {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.addCardInner {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.addInputWrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--background);
+  border: 1px solid var(--input);
+  border-radius: var(--radius-md);
+  padding: 0 0.75rem;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+
+.addInputWrap:focus-within {
+  border-color: var(--ring);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring) 15%, transparent);
+}
+
+.addInput {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 0.65rem 0;
+  font-size: 0.9rem;
+  color: var(--foreground);
+}
+
+.addInput::placeholder {
+  color: var(--muted-foreground);
+  opacity: 0.6;
+}
+
+.addBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 0.6rem 1.1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  white-space: nowrap;
+}
+
+.addBtn:hover:not(:disabled) {
+  opacity: 0.88;
+}
+.addBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.plusIcon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.addHint {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+  margin: 0.75rem 0 0;
+}
+
+.hintStar {
+  width: 0.75rem;
+  height: 0.75rem;
+  color: var(--chart-4);
+}
+
+/* List */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.empty {
+  text-align: center;
+  padding: 3rem;
+  color: var(--muted-foreground);
+  font-size: 0.875rem;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-xl);
+}
+
+/* Item */
+.item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 0.875rem 1rem;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s,
+    opacity 0.15s,
+    transform 0.15s;
+  cursor: default;
+}
+
+.item:hover {
+  border-color: color-mix(in oklch, var(--ring) 40%, transparent);
+}
+
+.itemDragging {
+  opacity: 0.4;
+  transform: scale(0.98);
+  box-shadow: 0 8px 24px color-mix(in oklch, var(--foreground) 10%, transparent);
+}
+
+.itemDragOver {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px color-mix(in oklch, var(--primary) 25%, transparent);
+  background: color-mix(in oklch, var(--primary) 4%, var(--card));
+}
+
+/* Drag handle */
+.dragHandle {
+  display: flex;
+  align-items: center;
+  cursor: grab;
+  color: var(--muted-foreground);
+  flex-shrink: 0;
+}
+
+.dragHandle:active {
+  cursor: grabbing;
+}
+.gripIcon {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* Feature row */
+.featureRow {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.featureLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.starBadge {
+  width: 0.9rem;
+  height: 0.9rem;
+  color: var(--chart-4);
+  flex-shrink: 0;
+}
+
+.featureText {
+  font-size: 0.9rem;
+  color: var(--foreground);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.featureTextBold {
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.featureActions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+.editBtn,
+.deleteBtn,
+.saveBtn,
+.cancelBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.editBtn:hover {
+  background: var(--muted);
+}
+.editIcon {
+  width: 0.8rem;
+  height: 0.8rem;
+  color: var(--muted-foreground);
+}
+
+.deleteBtn:hover {
+  background: color-mix(in oklch, var(--destructive) 12%, transparent);
+}
+.deleteIcon {
+  width: 0.8rem;
+  height: 0.8rem;
+  color: var(--destructive);
+}
+
+.saveBtn {
+  background: color-mix(in oklch, var(--primary) 12%, transparent);
+}
+.saveBtn:hover {
+  background: color-mix(in oklch, var(--primary) 20%, transparent);
+}
+.checkIcon {
+  width: 0.9rem;
+  height: 0.9rem;
+  color: var(--primary);
+}
+
+.cancelBtn:hover {
+  background: var(--muted);
+}
+.xIcon {
+  width: 0.9rem;
+  height: 0.9rem;
+  color: var(--muted-foreground);
+}
+
+/* Edit row */
+.editRow {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.editInput {
+  flex: 1;
+  background: var(--background);
+  border: 1px solid var(--ring);
+  border-radius: var(--radius-sm);
+  padding: 0.4rem 0.6rem;
+  font-size: 0.9rem;
+  color: var(--foreground);
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring) 15%, transparent);
+}
+
+/* Highlight toggle */
+.highlightToggle {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.hiddenCheckbox {
+  display: none;
+}
+
+.starIcon {
+  width: 1.1rem;
+  height: 1.1rem;
+  color: var(--muted-foreground);
+  transition:
+    color 0.15s,
+    fill 0.15s;
+}
+
+.starActive {
+  color: var(--chart-4);
+  fill: var(--chart-4);
+}
+
+/* Drag hint */
+.dragHint {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+  margin-top: 1rem;
+  justify-content: center;
+}
+
+.hintGrip {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+/* Loading */
+.loadingWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  gap: 1rem;
+  color: var(--muted-foreground);
+}
+
+.spinner {
+  width: 2rem;
+  height: 2rem;
+  color: var(--primary);
+  animation: spin 1s linear infinite;
+}
+
+.spinSm {
+  width: 0.9rem;
+  height: 0.9rem;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

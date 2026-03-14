@@ -1,0 +1,192 @@
+/* ConfirmModal.module.css */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: color-mix(in oklch, var(--background) 75%, transparent);
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.15s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal {
+  width: 100%;
+  max-width: 400px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-2xl);
+  padding: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: 0 20px 60px
+    color-mix(in oklch, var(--foreground) 12%, transparent);
+  animation: slideUp 0.2s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Icon */
+.iconWrap {
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.icon_danger {
+  background: color-mix(in oklch, var(--destructive) 12%, transparent);
+}
+.icon_warning {
+  background: color-mix(in oklch, var(--chart-4) 15%, transparent);
+}
+.icon_default {
+  background: color-mix(in oklch, var(--primary) 12%, transparent);
+}
+
+.icon {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.icon_danger .icon,
+.icon_danger + * .icon {
+  color: var(--destructive);
+}
+
+/* easier: just use currentColor on the wrap */
+.icon_danger {
+  color: var(--destructive);
+}
+.icon_warning {
+  color: var(--chart-4);
+}
+.icon_default {
+  color: var(--primary);
+}
+
+/* Content */
+.content {
+  text-align: center;
+}
+
+.title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--card-foreground);
+  margin: 0 0 0.4rem;
+}
+
+.message {
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Actions */
+.actions {
+  display: flex;
+  gap: 0.75rem;
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+.cancelBtn {
+  flex: 1;
+  padding: 0.6rem 1rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted-foreground);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+
+.cancelBtn:hover:not(:disabled) {
+  background: var(--muted);
+  color: var(--foreground);
+}
+
+.cancelBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.confirmBtn {
+  flex: 1;
+  padding: 0.6rem 1rem;
+  border-radius: var(--radius-lg);
+  border: none;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  transition: opacity 0.15s;
+}
+
+.confirmBtn:hover:not(:disabled) {
+  opacity: 0.88;
+}
+.confirmBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.confirm_danger {
+  background: var(--destructive);
+  color: #fff;
+}
+.confirm_warning {
+  background: var(--chart-4);
+  color: var(--background);
+}
+.confirm_default {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.spinner {
+  width: 0.9rem;
+  height: 0.9rem;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

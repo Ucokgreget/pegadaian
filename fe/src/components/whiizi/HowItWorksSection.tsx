@@ -3,7 +3,7 @@ const steps = [
     step: "Langkah 1",
     title: "Daftar & Hubungkan",
     description:
-      "Daftar akun Zaptify dan hubungkan nomor WhatsApp Business melalui Meta Business Suite.",
+      "Daftar akun Sijaka.id dan hubungkan nomor WhatsApp Business melalui Meta Business Suite.",
   },
   {
     step: "Langkah 2",
@@ -40,7 +40,7 @@ export function HowItWorksSection() {
             Dari chat pertama hingga produk terkirim, semua otomatis.
           </h2>
           <p className="mt-3 text-sm text-muted-foreground sm:text-base">
-            Cukup sekali setup, selanjutnya Zaptify yang meng-handle setiap
+            Cukup sekali setup, selanjutnya Sijaka.id yang meng-handle setiap
             percakapan, order, dan pembayaran via WhatsApp.
           </p>
         </div>
@@ -57,7 +57,9 @@ export function HowItWorksSection() {
               <h3 className="mt-1 text-base font-semibold text-foreground">
                 {step.title}
               </h3>
-              <p className="text-sm text-muted-foreground">{step.description}</p>
+              <p className="text-sm text-muted-foreground">
+                {step.description}
+              </p>
             </div>
           ))}
         </div>

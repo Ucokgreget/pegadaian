@@ -3,7 +3,7 @@ const testimonials = [
     name: "Rizky Pratama",
     role: "Owner Toko Akun Premium",
     quote:
-      "Sejak pakai Zaptify, jualan akun premium jadi otomatis! Omset naik 300%.",
+      "Sejak pakai Sijaka.id, jualan akun premium jadi otomatis! Omset naik 300%.",
   },
   {
     name: "Dewi Lestari",
@@ -29,7 +29,7 @@ export function TestimonialsSection() {
               Dipercaya seller digital di seluruh Indonesia.
             </h2>
             <p className="mt-3 text-sm text-muted-foreground sm:text-base">
-              Dari penjual akun streaming hingga e-course, Zaptify membantu
+              Dari penjual akun streaming hingga e-course, Sijaka.id membantu
               mengotomasi order tanpa harus balas chat satu per satu.
             </p>
           </div>

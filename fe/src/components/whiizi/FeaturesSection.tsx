@@ -145,8 +145,8 @@ export function FeaturesSection() {
             Semua yang Anda butuhkan untuk meng-automasi toko digital.
           </h2>
           <p className="mt-3 text-sm text-muted-foreground sm:text-base">
-            Zaptify membantu mengelola order, pembayaran, dan pengiriman produk
-            digital hanya dari WhatsApp. Tanpa ribet, tanpa coding.
+            Sijaka.id membantu mengelola order, pembayaran, dan pengiriman
+            produk digital hanya dari WhatsApp. Tanpa ribet, tanpa coding.
           </p>
         </div>
 
@@ -165,7 +165,9 @@ export function FeaturesSection() {
               <h3 className="text-base font-semibold text-foreground">
                 {feature.title}
               </h3>
-              <p className="text-sm text-muted-foreground">{feature.description}</p>
+              <p className="text-sm text-muted-foreground">
+                {feature.description}
+              </p>
             </div>
           ))}
         </div>

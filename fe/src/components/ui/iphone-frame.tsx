@@ -22,15 +22,14 @@ const IphoneFrame: FC<IphoneFrameProps> = ({ children, className = "" }) => {
   return (
     // The main phone body
     <div
-      className={`
-        relative mx-auto
+      className={`relative mx-auto
         border-[10px] border-gray-900 bg-[#212121]
         dark:border-gray-200 dark:bg-gray-100
         rounded-[44px]
         shadow-xl
         overflow-hidden
-        w-[300px] h-[600px]
-        sm:w-[350px] sm:h-[700px]
+        w-[250px] h-[500px]  /* Disesuaikan ukuran ponsel */
+        sm:w-[300px] sm:h-[600px]  /* Disesuaikan untuk versi lebih besar */
         ${className}
       `}
     >
@@ -44,8 +43,7 @@ const IphoneFrame: FC<IphoneFrameProps> = ({ children, className = "" }) => {
 
         {/* Notch (center) */}
         <div
-          className="
-            absolute top-0 left-1/2 -translate-x-1/2
+          className="absolute top-0 left-1/2 -translate-x-1/2
             w-[45%] h-[24px]
             bg-black dark:bg-gray-100
             rounded-b-xl
@@ -54,18 +52,8 @@ const IphoneFrame: FC<IphoneFrameProps> = ({ children, className = "" }) => {
           "
         >
           {/* Notch Details (Speaker/Camera) */}
-          <div
-            className="
-            w-10 h-2 rounded-full
-            bg-white dark:bg-black
-          "
-          ></div>
-          <div
-            className="
-            w-2 h-2 rounded-full
-            bg-white dark:bg-black
-          "
-          ></div>
+          <div className="w-10 h-2 rounded-full bg-white dark:bg-black"></div>
+          <div className="w-2 h-2 rounded-full bg-white dark:bg-black"></div>
         </div>
 
         {/* Right side - WiFi and Battery */}
@@ -77,12 +65,11 @@ const IphoneFrame: FC<IphoneFrameProps> = ({ children, className = "" }) => {
 
       {/* The screen area */}
       <div
-        className="
-          w-full h-full
+        className="w-full h-full
           bg-white dark:bg-black
-          rounded-[34px] 
+          rounded-[34px]
           overflow-hidden
-          pt-8 
+          pt-8
         "
       >
         {children}
@@ -90,32 +77,11 @@ const IphoneFrame: FC<IphoneFrameProps> = ({ children, className = "" }) => {
 
       {/* Side Buttons */}
       {/* Volume Up */}
-      <div
-        className="
-        absolute -left-[12px] top-[100px] w-[4px] h-[50px] rounded-l-md
-
-        bg-gray-800 dark:bg-gray-300
-       
-      "
-      ></div>
+      <div className="absolute -left-[12px] top-[100px] w-[4px] h-[50px] rounded-l-md bg-gray-800 dark:bg-gray-300"></div>
       {/* Volume Down */}
-      <div
-        className="
-        absolute -left-[12px] top-[160px] w-[4px] h-[50px] rounded-l-md
-       
-        bg-gray-800 dark:bg-gray-300
-        
-      "
-      ></div>
+      <div className="absolute -left-[12px] top-[160px] w-[4px] h-[50px] rounded-l-md bg-gray-800 dark:bg-gray-300"></div>
       {/* Power/Side Button */}
-      <div
-        className="
-        absolute -right-[12px] top-[130px] w-[4px] h-[80px] rounded-r-md
-        
-        bg-gray-800 dark:bg-gray-300
-        
-      "
-      ></div>
+      <div className="absolute -right-[12px] top-[130px] w-[4px] h-[80px] rounded-r-md bg-gray-800 dark:bg-gray-300"></div>
     </div>
   );
 };

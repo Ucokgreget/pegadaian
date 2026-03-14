@@ -3,88 +3,85 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
-  id              Int                @id @default(autoincrement())
+  id              Int               @id @default(autoincrement())
   name            String?
-  email           String             @unique
+  email           String            @unique
   password        String
-  role            Role               @default(USER)
-  createdAt       DateTime           @default(now()) @map("created_at")
-  updatedAt       DateTime           @updatedAt @map("updated_at")
+  role            Role              @default(USER)
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+
+  accessToken   String?  @db.Text
+  refreshToken  String?  @db.Text
+  rememberToken String?  @db.Text
+
+  // Relations
+  devices         Device[]
   chatbotSettings ChatbotSettings?
   conversations   Conversation[]
   customers       Customer[]
+  contactLists    ContactList[]
   products        Product[]
-  subscriptions   UserSubscription[]
+  subscriptions   Subscription[]
+  orders          Order[]
+  invoices        Invoice[]         // FIX: tambah relasi balik dari Invoice
+  payments        Payment[]         // FIX: tambah relasi balik dari Payment
 
   @@map("users")
 }
 
-model Package {
-  id            Int                @id @default(autoincrement())
-  name          String             @unique
-  price         Int
-  durationDays  Int                @default(30) @map("duration_days")
-  createdAt     DateTime           @default(now()) @map("created_at")
-  updatedAt     DateTime           @updatedAt @map("updated_at")
-  subscriptions UserSubscription[]
+model Device {
+  id              Int              @id @default(autoincrement())
+  userId          Int
+  deviceName      String?
+  phone           String
+  status          String           @default("DISCONNECTED")
+  packageName     String           @default("FREE")
+  expiredAt       DateTime?
+  isActive        Boolean          @default(true)
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
 
-  @@map("packages")
+  user            User             @relation(fields: [userId], references: [id])
+  chatbotSettings ChatbotSettings? // FIX: relasi balik sudah ada di ChatbotSettings
+
+  @@map("devices")
 }
 
-model UserSubscription {
-  id               Int                @id @default(autoincrement())
-  userId           Int                @map("user_id")
-  packageId        Int                @map("package_id")
-  status           SubscriptionStatus @default(PENDING)
-  startDate        DateTime?          @map("started_at")
-  endDate          DateTime?          @map("expires_at")
-  paymentProofUrl  String?            @map("payment_proof_url")
-  paymentProofName String?            @map("payment_proof_name")
-  adminNotes       String?            @map("admin_notes")
-  createdAt        DateTime           @default(now()) @map("created_at")
-  updatedAt        DateTime           @updatedAt @map("updated_at")
-  package          Package            @relation(fields: [packageId], references: [id], onDelete: Cascade)
-  user             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+model ChatbotSettings {
+  id             Int      @id @default(autoincrement())
+  deviceId       Int      @unique  // FIX: tambah @unique untuk one-to-one relation
+  userId         Int      @unique  // FIX: pisahkan foreign key untuk User
+  isActive       Boolean  @default(false)
+  welcomeMessage String   @default("Halo! Terima kasih telah menghubungi kami. Ada yang bisa saya bantu?")
+  device         String?
+  aiPrompt       String?
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
 
-  @@map("user_subscriptions")
+  deviceRelation Device   @relation(fields: [deviceId], references: [id]) // FIX: relasi ke Device (bukan User)
+  user           User     @relation(fields: [userId], references: [id])   // FIX: relasi ke User dengan FK terpisah
+
+  @@map("chatbot_settings")
 }
 
-model Product {
-  id          Int      @id @default(autoincrement())
-  name        String
-  description String?
-  imageUrl    String?  @map("image_url")
-  userId      Int      @map("user_id")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  variants    ProductVariant[]
+model Conversation {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  sender     String
+  message    String
+  response   String?
+  isIncoming Boolean  @default(true) @map("is_incoming")
+  createdAt  DateTime @default(now()) @map("created_at")
 
-  @@index([userId])
-  @@map("products")
-}
+  user       User     @relation(fields: [userId], references: [id])
 
-model ProductVariant {
-  id          Int      @id @default(autoincrement())
-  name        String
-  description String?
-  price       Int
-  stock       Int      @default(0)
-  imageUrl    String?  @map("image_url")
-  productId   Int      @map("product_id")
-  sku         String?  @unique
-  isActive    Boolean  @default(true) @map("is_active")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-
-  @@unique([productId, name])
-  @@index([productId])
-  @@map("product_variants")
+  @@map("conversations")
 }
 
 model Customer {
@@ -94,52 +91,269 @@ model Customer {
   phone     String?
   address   String?
   notes     String?
-  userId    Int      @map("user_id")
+  userId    Int
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  user      User     @relation(fields: [userId], references: [id])
 
   @@map("customers")
 }
 
-model ChatbotSettings {
-  id             Int      @id @default(autoincrement())
-  userId         Int      @unique @map("user_id")
-  isActive       Boolean  @default(false) @map("is_active")
-  welcomeMessage String   @default("Halo! Terima kasih telah menghubungi kami. Ada yang bisa saya bantu?") @map("welcome_message")
-  fontteToken    String?  @map("fonnte_token")
-  device         String?
-  aiPrompt       String?  @map("ai_prompt")
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+model ContactList {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  name      String?
+  phone     String
+  category  String?
+  createdAt DateTime @default(now()) @map("created_at")
 
-  @@map("chatbot_settings")
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@map("contact_lists")
 }
 
-model Conversation {
-  id         Int      @id @default(autoincrement())
-  userId     Int      @map("user_id")
-  sender     String
-  message    String
-  response   String?
-  isIncoming Boolean  @default(true) @map("is_incoming")
-  createdAt  DateTime @default(now()) @map("created_at")
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+model Product {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  price       Int
+  stock       Int      @default(0)
+  imageUrl    String?
+  userId      Int
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
-  @@map("conversations")
+  user        User     @relation(fields: [userId], references: [id])
+
+  @@map("products")
 }
 
-model BlastMessage {
-  id         Int      @id @default(autoincrement())
-  userId     Int
-  message    String
-  recipients String
-  status     String   @default("PENDING")
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+model Order {
+  id              Int         @id @default(autoincrement())
+  userId          Int
+  packageId       Int
+  addonId         Int?
+  orderCode       String      @unique
+  type            String
+  reference       String?
+  amount          Int
+  paidAt          DateTime?
+  status          OrderStatus @default(PENDING)
+  tripayReference String?
+  tripayPayload   Json?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
 
-  
+  user       User        @relation(fields: [userId], references: [id])
+  package    Package     @relation(fields: [packageId], references: [id])
+  orderItems OrderItem[]
+  invoice    Invoice?
+  addon      Addon? @relation(fields: [addonId], references: [id])
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id           Int     @id @default(autoincrement())
+  orderId      Int
+  packageId    Int     // FIX: tambah packageId FK
+  itemType     String
+  itemName     String
+  reference    String?
+  qty          Int     @default(1)
+  price        Int
+  total        Int
+  durationDays Int
+
+  order   Order   @relation(fields: [orderId], references: [id])
+  package Package @relation(fields: [packageId], references: [id]) // FIX: tambah relasi ke Package
+
+  @@map("order_items")
+}
+
+model Package {
+  id            Int      @id @default(autoincrement())
+  key           String   @unique
+  name          String
+  price         Int
+  priceLabel    String?
+  billingPeriod String   @default("monthly")
+  isPopular     Boolean  @default(false)
+  isCustomPrice Boolean  @default(false)
+  isActive      Boolean  @default(true)
+  sortOrder     Int      @default(0)
+  durationDays  Int      @default(30)
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  subscriptions   Subscription[]
+  orders          Order[]          // FIX: tambah relasi balik dari Order
+  orderItems      OrderItem[]      // FIX: relasi balik dari OrderItem (sudah ada, perlu relasi di OrderItem)
+  packageFeatures PackageFeature[] // FIX: tambah relasi balik dari PackageFeature
+  invoiceItems    InvoiceItem[]    // FIX: tambah relasi balik dari InvoiceItem
+  // REMOVED: packages Package[] — self-relation tidak valid tanpa konfigurasi yang benar
+
+  @@map("packages")
+}
+
+model PackageFeature {
+  id            Int      @id @default(autoincrement())
+  packageId     Int
+  featureText   String
+  isHighlighted Boolean  @default(false)
+  sortOrder     Int      @default(0)
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  package Package @relation(fields: [packageId], references: [id]) // FIX: relasi balik sudah ditambah di Package
+
+  @@map("package_features")
+}
+
+model Subscription {
+  id               Int                @id @default(autoincrement())
+  userId           Int
+  packageId        Int
+  invoiceId        Int?               @unique // FIX: tambah @unique untuk one-to-one dengan Invoice
+  startedAt        DateTime
+  expiredAt        DateTime
+  cancelledAt      DateTime?
+  gracePeriodUntil DateTime?
+  status           SubscriptionStatus @default(ACTIVE)
+  createdAt        DateTime           @default(now()) @map("created_at")
+  updatedAt        DateTime           @updatedAt @map("updated_at")
+
+  user    User     @relation(fields: [userId], references: [id])
+  package Package  @relation(fields: [packageId], references: [id])
+  invoice Invoice? @relation(fields: [invoiceId], references: [id]) // FIX: relasi balik ditambah di Invoice
+
+  @@map("subscriptions")
+}
+
+model SubscriptionFeature {
+  id          Int      @id @default(autoincrement())
+  featureKey  String   @unique
+  featureName String
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("subscription_features")
+}
+
+model Invoice {
+  id            Int           @id @default(autoincrement())
+  userId        Int
+  invoiceNumber String        @unique
+  orderId       Int           @unique // FIX: tambah @unique untuk one-to-one dengan Order
+  subtotal      Float
+  tax           Float         @default(0.00)
+  total         Float
+  status        InvoiceStatus @default(UNPAID)
+  issuedAt      DateTime
+  dueDate       DateTime?
+  paidAt        DateTime?
+  meta          Json?
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  user         User          @relation(fields: [userId], references: [id])   // FIX: relasi balik ditambah di User
+  order        Order         @relation(fields: [orderId], references: [id])
+  subscription Subscription?  // FIX: relasi balik dari Subscription
+  payments     Payment[]
+  invoiceItems InvoiceItem[]
+
+  @@map("invoices")
+}
+
+model InvoiceItem {
+  id           Int      @id @default(autoincrement())
+  invoiceId    Int
+  packageId    Int
+  description  String
+  qty          Int      @default(1)
+  price        Float
+  total        Float
+  durationDays Int
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id])
+  package Package @relation(fields: [packageId], references: [id]) // FIX: relasi balik ditambah di Package
+
+  @@map("invoice_items")
+}
+
+model Payment {
+  id              Int           @id @default(autoincrement())
+  userId          Int
+  invoiceId       Int
+  tripayReference String        @unique
+  merchantRef     String
+  paymentMethod   String
+  amount          Float
+  status          PaymentStatus @default(PENDING)
+  payload         Json?
+  paidAt          DateTime?
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  user    User    @relation(fields: [userId], references: [id])    // FIX: relasi balik ditambah di User
+  invoice Invoice @relation(fields: [invoiceId], references: [id])
+
+  @@map("payments")
+}
+
+model PromoCode {
+  id          Int       @id @default(autoincrement()) @db.UnsignedInt
+  code        String    @unique
+  type        PromoType
+  value       Int
+  maxDiscount Int?      @map("max_discount")
+  quota       Int?
+  used        Int       @default(0)
+  startAt     DateTime  @map("start_at") @db.Date
+  endAt       DateTime  @map("end_at") @db.Date
+  isActive    Boolean   @default(true) @map("is_active")
+  createdAt   DateTime? @default(now()) @map("created_at")
+  updatedAt   DateTime? @updatedAt @map("updated_at")
+
+  @@map("promo_codes")
+}
+
+model Addon {
+  id          Int      @id @default(autoincrement())
+  key         String   @unique
+  name        String
+  description String?
+  price       Int
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  orderItems  OrderItem[]
+
+  @@map("addons")
+}
+
+enum PromoType {
+  fixed
+  percent
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  FAILED
+  EXPIRED
+}
+
+enum InvoiceStatus {
+  UNPAID
+  PAID
+  CANCELLED
+  REFUNDED
 }
 
 enum Role {
@@ -147,8 +361,15 @@ enum Role {
   USER
 }
 
-enum SubscriptionStatus {
+enum PaymentStatus {
   PENDING
+  PAID
+  FAILED
+  EXPIRED
+}
+
+enum SubscriptionStatus {
   ACTIVE
   EXPIRED
+  CANCELLED
 }

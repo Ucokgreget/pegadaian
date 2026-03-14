@@ -1,0 +1,500 @@
+/* Header.module.css */
+
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap");
+
+/* ─── Variables ──────────────────────────────────────────────────────── */
+
+:root {
+  --green: #22c55e;
+  --green-dark: #16a34a;
+  --green-muted: rgba(34, 197, 94, 0.1);
+  --green-border: rgba(34, 197, 94, 0.2);
+  --header-h: 64px;
+}
+
+/* ─── Header ─────────────────────────────────────────────────────────── */
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 39; /* just below sidebar z-index 40 */
+  height: var(--header-h);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.25rem 0 1.5rem;
+  background: oklch(from var(--background) l c h / 0.92);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow:
+    0 1px 0 rgba(34, 197, 94, 0.05),
+    0 2px 8px rgba(0, 0, 0, 0.04);
+  font-family: "Plus Jakarta Sans", sans-serif;
+}
+
+/* ─── Left side: greeting ────────────────────────────────────────────── */
+
+.greeting {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.greetingLabel {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--muted-foreground);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  line-height: 1;
+}
+
+.greetingName {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--foreground);
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+/* Hide text on very small screens */
+@media (max-width: 480px) {
+  .greeting {
+    display: none;
+  }
+}
+
+/* ─── Right side actions ─────────────────────────────────────────────── */
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* ─── Icon button base ───────────────────────────────────────────────── */
+
+.iconBtn {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--background);
+  color: var(--muted-foreground);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.iconBtn:hover {
+  border-color: var(--green-border);
+  background: var(--green-muted);
+  color: var(--green);
+}
+
+.iconBtn svg {
+  width: 17px;
+  height: 17px;
+}
+
+/* ─── Notification badge ─────────────────────────────────────────────── */
+
+.badge {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--green);
+  border: 2px solid var(--background);
+  animation: badgePulse 2s ease-in-out infinite;
+}
+
+@keyframes badgePulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(34, 197, 94, 0);
+  }
+}
+
+/* ─── Avatar button ──────────────────────────────────────────────────── */
+
+.avatarBtn {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  background:
+    linear-gradient(var(--background), var(--background)) padding-box,
+    linear-gradient(135deg, var(--green), var(--green-dark)) border-box;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatarBtn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2);
+}
+
+.avatarBtn.open {
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.25);
+}
+
+.avatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.avatarFallback {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--green), var(--green-dark));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: white;
+  letter-spacing: -0.01em;
+}
+
+/* ─── Dropdown base ──────────────────────────────────────────────────── */
+
+.dropdownWrap {
+  position: relative;
+}
+
+.dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  min-width: 240px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  isolation: isolate;
+  box-shadow:
+    0 4px 6px rgba(0, 0, 0, 0.08),
+    0 16px 40px rgba(0, 0, 0, 0.18),
+    0 0 0 1px rgba(34, 197, 94, 0.08);
+  overflow: hidden;
+  z-index: 100;
+  animation: dropIn 0.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+  transform-origin: top right;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+/* Notif dropdown narrower */
+.dropdownNotif {
+  min-width: 300px;
+}
+
+@keyframes dropIn {
+  from {
+    opacity: 0;
+    transform: scale(0.93) translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* ─── Dropdown arrow ─────────────────────────────────────────────────── */
+
+.dropdown::before {
+  content: "";
+  position: absolute;
+  top: -5px;
+  right: 14px;
+  width: 10px;
+  height: 10px;
+  background: var(--card);
+  border-left: 1px solid var(--border);
+  border-top: 1px solid var(--border);
+  transform: rotate(45deg);
+  border-radius: 2px;
+}
+
+/* ─── Profile dropdown header ────────────────────────────────────────── */
+
+.profileHeader {
+  padding: 1rem 1rem 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  border-bottom: 1px solid var(--border);
+  background: inherit;
+}
+
+.profileAvatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--green), var(--green-dark));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: white;
+  flex-shrink: 0;
+}
+
+.profileInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.profileName {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--foreground);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.profileEmail {
+  font-size: 0.7rem;
+  color: var(--muted-foreground);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 1px;
+}
+
+.profileBadge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  background: var(--green-muted);
+  border: 1px solid var(--green-border);
+  padding: 0.1rem 0.5rem;
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: var(--green);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-top: 3px;
+}
+
+/* ─── Dropdown menu items ────────────────────────────────────────────── */
+
+.menuSection {
+  padding: 0.4rem;
+}
+
+.menuItem {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: 10px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 0.8375rem;
+  font-weight: 500;
+  color: var(--foreground);
+  text-decoration: none;
+  transition: all 0.15s ease;
+  text-align: left;
+}
+
+.menuItem:hover {
+  background: var(--green-muted);
+  color: var(--foreground);
+}
+
+.menuItem:hover .menuItemIcon {
+  color: var(--green);
+}
+
+.menuItemIcon {
+  width: 16px;
+  height: 16px;
+  color: var(--muted-foreground);
+  flex-shrink: 0;
+  transition: color 0.15s ease;
+}
+
+.menuItemDanger {
+  color: var(--destructive);
+}
+
+.menuItemDanger:hover {
+  background: rgba(239, 68, 68, 0.07);
+  color: var(--destructive);
+}
+
+.menuItemDanger .menuItemIcon {
+  color: var(--destructive);
+}
+
+.menuItemDanger:hover .menuItemIcon {
+  color: var(--destructive);
+}
+
+.menuDivider {
+  height: 1px;
+  background: var(--border);
+  margin: 0.25rem 0.4rem;
+}
+
+/* ─── Notification dropdown ──────────────────────────────────────────── */
+
+.notifHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.875rem 1rem 0.625rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.notifTitle {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--foreground);
+}
+
+.notifMarkAll {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--green);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  transition: color 0.15s;
+}
+
+.notifMarkAll:hover {
+  color: var(--green-dark);
+}
+
+.notifList {
+  max-height: 280px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.notifItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid oklch(from var(--border) l c h / 0.5);
+  transition: background 0.15s;
+  cursor: pointer;
+}
+
+.notifItem:last-child {
+  border-bottom: none;
+}
+
+.notifItem:hover {
+  background: var(--green-muted);
+}
+
+.notifItem.unread {
+  background: rgba(34, 197, 94, 0.03);
+}
+
+.notifDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--green);
+  flex-shrink: 0;
+  margin-top: 5px;
+}
+
+.notifDotRead {
+  background: var(--border);
+}
+
+.notifContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.notifText {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--foreground);
+  line-height: 1.4;
+}
+
+.notifTime {
+  font-size: 0.7rem;
+  color: var(--muted-foreground);
+  margin-top: 2px;
+}
+
+.notifEmpty {
+  padding: 2rem 1rem;
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--muted-foreground);
+}
+
+.notifEmptyIcon {
+  font-size: 1.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.notifFooter {
+  padding: 0.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.notifFooterBtn {
+  width: 100%;
+  padding: 0.5rem;
+  border-radius: 10px;
+  border: none;
+  background: none;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--green);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.notifFooterBtn:hover {
+  background: var(--green-muted);
+}
+
+/* ─── Click-outside overlay ──────────────────────────────────────────── */
+
+.clickOutside {
+  position: fixed;
+  inset: 0;
+  z-index: 99;
+}
