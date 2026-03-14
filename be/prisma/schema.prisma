@@ -149,7 +149,6 @@ model Order {
   package    Package     @relation(fields: [packageId], references: [id])
   orderItems OrderItem[]
   invoice    Invoice?
-  addon      Addon? @relation(fields: [addonId], references: [id])
 
   @@map("orders")
 }
@@ -168,7 +167,7 @@ model OrderItem {
 
   order   Order   @relation(fields: [orderId], references: [id])
   package Package @relation(fields: [packageId], references: [id]) // FIX: tambah relasi ke Package
-
+  addon      Addon? @relation(fields: [addonId], references: [id])
   @@map("order_items")
 }
 
