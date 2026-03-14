@@ -133,7 +133,6 @@ model Order {
   id              Int         @id @default(autoincrement())
   userId          Int
   packageId       Int
-  addonId         Int?
   orderCode       String      @unique
   type            String
   reference       String?
@@ -156,6 +155,7 @@ model Order {
 model OrderItem {
   id           Int     @id @default(autoincrement())
   orderId      Int
+  addonId      Int?
   packageId    Int     // FIX: tambah packageId FK
   itemType     String
   itemName     String
