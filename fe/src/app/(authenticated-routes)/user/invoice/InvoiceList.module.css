@@ -1,0 +1,445 @@
+/* InvoiceList.module.css */
+
+.page {
+  min-height: 100vh;
+  background: var(--background);
+  padding: 2rem 0 4rem;
+}
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.loadingWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  gap: 1rem;
+  color: var(--muted-foreground);
+}
+.spinner {
+  width: 2rem;
+  height: 2rem;
+  color: var(--primary);
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Header */
+.pageHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+.pageTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--foreground);
+  margin: 0;
+  letter-spacing: -0.03em;
+}
+.pageTitleIcon {
+  width: 1.4rem;
+  height: 1.4rem;
+  color: var(--primary);
+}
+.pageSubtitle {
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+  margin: 0.3rem 0 0;
+}
+.newOrderBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border: none;
+  border-radius: var(--radius-lg);
+  padding: 0.6rem 1.2rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  white-space: nowrap;
+}
+.newOrderBtn:hover {
+  opacity: 0.88;
+}
+
+/* Stats */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.75rem;
+}
+@media (max-width: 640px) {
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.statCard {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: 1.1rem 1.25rem;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+  animation: fadeUp 0.4s ease both;
+}
+.statCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px color-mix(in oklch, var(--foreground) 6%, transparent);
+}
+
+.statIconWrap {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.statIconBlue {
+  background: color-mix(in oklch, #3b82f6 12%, transparent);
+  color: #3b82f6;
+}
+.statIconGreen {
+  background: color-mix(in oklch, #22c55e 12%, transparent);
+  color: #22c55e;
+}
+.statIconYellow {
+  background: color-mix(in oklch, #f59e0b 12%, transparent);
+  color: #f59e0b;
+}
+.statIconPrimary {
+  background: color-mix(in oklch, var(--primary) 12%, transparent);
+  color: var(--primary);
+}
+.statIcon {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.statValue {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--foreground);
+  margin: 0;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+.statLabel {
+  font-size: 0.72rem;
+  color: var(--muted-foreground);
+  margin: 0.25rem 0 0;
+}
+
+/* Toolbar */
+.toolbar {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.searchWrap {
+  flex: 1;
+  min-width: 200px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 0 0.875rem;
+  transition: border-color 0.15s;
+}
+.searchWrap:focus-within {
+  border-color: var(--ring);
+}
+.searchIcon {
+  width: 0.9rem;
+  height: 0.9rem;
+  color: var(--muted-foreground);
+  flex-shrink: 0;
+}
+.searchInput {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 0.65rem 0;
+  font-size: 0.875rem;
+  color: var(--foreground);
+}
+.searchInput::placeholder {
+  color: var(--muted-foreground);
+  opacity: 0.6;
+}
+
+.filterWrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 0 0.875rem;
+}
+.filterIcon {
+  width: 0.85rem;
+  height: 0.85rem;
+  color: var(--muted-foreground);
+  flex-shrink: 0;
+}
+.filterSelect {
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 0.65rem 0;
+  font-size: 0.875rem;
+  color: var(--foreground);
+  cursor: pointer;
+}
+
+/* Invoice list */
+.invoiceList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.invoiceRow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: 1.1rem 1.25rem;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+  animation: fadeUp 0.4s ease both;
+  text-decoration: none;
+}
+
+.invoiceRow:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in oklch, var(--primary) 35%, transparent);
+  box-shadow: 0 8px 24px color-mix(in oklch, var(--foreground) 6%, transparent);
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Status dot */
+.statusDot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.dot_paid {
+  background: #22c55e;
+}
+.dot_unpaid {
+  background: #f59e0b;
+  animation: pulse 2s ease infinite;
+}
+.dot_cancelled {
+  background: var(--muted-foreground);
+}
+.dot_refunded {
+  background: #8b5cf6;
+}
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(0.8);
+  }
+}
+
+/* Invoice info */
+.invoiceInfo {
+  flex: 1;
+  min-width: 0;
+}
+.invoiceTop {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.3rem;
+  flex-wrap: wrap;
+}
+.invoiceNumber {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--foreground);
+  font-family: monospace;
+}
+.invoiceMeta {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+.packageName {
+  font-size: 0.8rem;
+  color: var(--foreground);
+  font-weight: 500;
+}
+.metaDot {
+  color: var(--muted-foreground);
+  font-size: 0.75rem;
+}
+.orderCode {
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+  font-family: monospace;
+}
+.invoiceDate {
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+
+/* Status badge */
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.badgeIcon {
+  width: 0.7rem;
+  height: 0.7rem;
+}
+.badge_paid {
+  background: color-mix(in oklch, #22c55e 12%, transparent);
+  color: #22c55e;
+}
+.badge_unpaid {
+  background: color-mix(in oklch, #f59e0b 12%, transparent);
+  color: #f59e0b;
+}
+.badge_cancelled {
+  background: color-mix(in oklch, var(--muted-foreground) 12%, transparent);
+  color: var(--muted-foreground);
+}
+.badge_refunded {
+  background: color-mix(in oklch, #8b5cf6 12%, transparent);
+  color: #8b5cf6;
+}
+
+/* Amount */
+.invoiceAmount {
+  text-align: right;
+  flex-shrink: 0;
+}
+.amountValue {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--foreground);
+}
+.amountPaid {
+  color: #22c55e;
+}
+.dueDate {
+  display: block;
+  font-size: 0.72rem;
+  color: #f59e0b;
+  margin-top: 0.2rem;
+}
+.paidDate {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--muted-foreground);
+  margin-top: 0.2rem;
+}
+
+/* Arrow */
+.arrowIcon {
+  width: 1rem;
+  height: 1rem;
+  color: var(--muted-foreground);
+  flex-shrink: 0;
+  transition:
+    transform 0.2s ease,
+    color 0.2s ease;
+}
+.invoiceRow:hover .arrowIcon {
+  transform: translateX(3px);
+  color: var(--primary);
+}
+
+/* Empty */
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 4rem 1rem;
+  background: var(--card);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-xl);
+  text-align: center;
+}
+.emptyIcon {
+  width: 3rem;
+  height: 3rem;
+  color: var(--muted-foreground);
+  opacity: 0.3;
+}
+.emptyTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--foreground);
+  margin: 0;
+}
+.emptyDesc {
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+  margin: 0;
+}

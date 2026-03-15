@@ -1,12 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useRef, useEffect } from "react";
-import { Bell, Settings, LogOut, ChevronDown, House } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { useState } from "react";
+import { Bell, Settings, LogOut, House, ChevronRight } from "lucide-react";
 import { User } from "@/types/Auth";
 import s from "./Header.module.css";
-
-// ─── Types ────────────────────────────────────────────────────────────────────
 
 interface UserNavbarProps {
   user?: User | null;
@@ -18,8 +17,6 @@ interface Notification {
   time: string;
   read: boolean;
 }
-
-// ─── Mock notifications — ganti dengan data asli dari API ─────────────────────
 
 const mockNotifications: Notification[] = [
   {
@@ -48,7 +45,37 @@ const mockNotifications: Notification[] = [
   },
 ];
 
-// ─── Helper: get initials from name ──────────────────────────────────────────
+// Map segment → label yang tampil di breadcrumb
+const SEGMENT_LABELS: Record<string, string> = {
+  user: "Dashboard",
+  admin: "Admin",
+  invoice: "Invoice",
+  checkout: "Checkout",
+  profile: "Profil",
+  subscription: "Langganan",
+  history: "Riwayat",
+  packages: "Paket",
+  promo: "Promo",
+  features: "Fitur",
+  settings: "Pengaturan",
+};
+
+function buildBreadcrumbs(pathname: string) {
+  const segments = pathname.split("/").filter(Boolean);
+  const crumbs: { label: string; href: string; isLast: boolean }[] = [];
+
+  segments.forEach((seg, i) => {
+    const href = "/" + segments.slice(0, i + 1).join("/");
+    // Kalau segment adalah angka (dynamic id) — skip atau tampil sebagai "Detail"
+    const isId = /^\d+$/.test(seg);
+    const label = isId
+      ? "Detail"
+      : SEGMENT_LABELS[seg] || seg.charAt(0).toUpperCase() + seg.slice(1);
+    crumbs.push({ label, href, isLast: i === segments.length - 1 });
+  });
+
+  return crumbs;
+}
 
 function getInitials(name?: string | null): string {
   if (!name) return "U";
@@ -60,8 +87,6 @@ function getInitials(name?: string | null): string {
     .toUpperCase();
 }
 
-// ─── Notification Dropdown ────────────────────────────────────────────────────
-
 function NotifDropdown({
   notifications,
   onMarkAll,
@@ -72,33 +97,15 @@ function NotifDropdown({
   onClose: () => void;
 }) {
   const unreadCount = notifications.filter((n) => !n.read).length;
-
   return (
     <>
       <div className={s.clickOutside} onClick={onClose} />
       <div className={`${s.dropdown} ${s.dropdownNotif}`}>
-        {/* Header */}
         <div className={s.notifHeader}>
           <span className={s.notifTitle}>
             Notifikasi
             {unreadCount > 0 && (
-              <span
-                style={{
-                  marginLeft: "0.4rem",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  width: "18px",
-                  height: "18px",
-                  borderRadius: "50%",
-                  background: "var(--green)",
-                  color: "white",
-                  fontSize: "0.65rem",
-                  fontWeight: 700,
-                }}
-              >
-                {unreadCount}
-              </span>
+              <span className={s.notifCount}>{unreadCount}</span>
             )}
           </span>
           {unreadCount > 0 && (
@@ -107,8 +114,6 @@ function NotifDropdown({
             </button>
           )}
         </div>
-
-        {/* List */}
         <div className={s.notifList}>
           {notifications.length === 0 ? (
             <div className={s.notifEmpty}>
@@ -132,8 +137,6 @@ function NotifDropdown({
             ))
           )}
         </div>
-
-        {/* Footer */}
         <div className={s.notifFooter}>
           <button className={s.notifFooterBtn} onClick={onClose}>
             Lihat semua notifikasi →
@@ -144,8 +147,6 @@ function NotifDropdown({
   );
 }
 
-// ─── Profile Dropdown ─────────────────────────────────────────────────────────
-
 function ProfileDropdown({
   user,
   onClose,
@@ -155,28 +156,21 @@ function ProfileDropdown({
 }) {
   const handleLogout = async () => {
     try {
-      const response = await fetch("/api/logout", {
+      const res = await fetch("/api/logout", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
       });
-
-      if (response.ok) {
-        window.location.href = "/login";
-      } else {
-        alert("Logout gagal! Silakan coba lagi.");
-      }
-    } catch (error) {
-      console.error("Error saat logout:", error);
-      alert("Terjadi kesalahan saat logout. Silakan coba lagi.");
+      if (res.ok) window.location.href = "/login";
+      else alert("Logout gagal! Silakan coba lagi.");
+    } catch (err) {
+      console.error("Error saat logout:", err);
     }
   };
+
   return (
     <>
       <div className={s.clickOutside} onClick={onClose} />
       <div className={s.dropdown}>
-        {/* Profile info */}
         <div className={s.profileHeader}>
           <div className={s.profileAvatar}>{getInitials(user?.name)}</div>
           <div className={s.profileInfo}>
@@ -187,39 +181,16 @@ function ProfileDropdown({
             </div>
           </div>
         </div>
-
-        {/* Menu items */}
         <div className={s.menuSection}>
           <Link href="/user/profile" className={s.menuItem} onClick={onClose}>
             <Settings className={s.menuItemIcon} />
             Pengaturan Profil
           </Link>
-
-          <Link
-            href="/user/subscription/history"
-            className={s.menuItem}
-            onClick={onClose}
-          >
-            <svg
-              className={s.menuItemIcon}
-              viewBox="0 0 16 16"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-            >
-              <rect x="1" y="3" width="14" height="10" rx="2" />
-              <path d="M1 6h14" strokeLinecap="round" />
-            </svg>
-            Langganan Saya
-          </Link>
-
           <Link href="/" className={s.menuItem} onClick={onClose}>
             <House className={s.menuItemIcon} />
             Beranda
           </Link>
-
           <div className={s.menuDivider} />
-
           <button
             onClick={handleLogout}
             className={`${s.menuItem} ${s.menuItemDanger}`}
@@ -233,25 +204,22 @@ function ProfileDropdown({
   );
 }
 
-// ─── Main Component ───────────────────────────────────────────────────────────
-
 export function UserNavbar({ user }: UserNavbarProps) {
+  const pathname = usePathname();
   const [notifOpen, setNotifOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [notifications, setNotifications] =
     useState<Notification[]>(mockNotifications);
-
   const unreadCount = notifications.filter((n) => !n.read).length;
 
-  const handleMarkAll = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-  };
+  const crumbs = buildBreadcrumbs(pathname);
 
+  const handleMarkAll = () =>
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
   const toggleNotif = () => {
     setNotifOpen((v) => !v);
     setProfileOpen(false);
   };
-
   const toggleProfile = () => {
     setProfileOpen((v) => !v);
     setNotifOpen(false);
@@ -259,15 +227,24 @@ export function UserNavbar({ user }: UserNavbarProps) {
 
   return (
     <header className={s.header}>
-      {/* Left: greeting */}
-      <div className={s.greeting}>
-        <span className={s.greetingLabel}>Selamat datang kembali</span>
-        <span className={s.greetingName}>{user?.name || "User"} 👋</span>
-      </div>
+      {/* Left: breadcrumb */}
+      <nav className={s.breadcrumb} aria-label="Breadcrumb">
+        {crumbs.map((crumb, i) => (
+          <span key={crumb.href} className={s.breadcrumbItem}>
+            {i > 0 && <ChevronRight className={s.breadcrumbSep} />}
+            {crumb.isLast ? (
+              <span className={s.breadcrumbCurrent}>{crumb.label}</span>
+            ) : (
+              <Link href={crumb.href} className={s.breadcrumbLink}>
+                {crumb.label}
+              </Link>
+            )}
+          </span>
+        ))}
+      </nav>
 
       {/* Right: actions */}
       <div className={s.actions}>
-        {/* ── Notification button ── */}
         <div className={s.dropdownWrap}>
           <button
             className={s.iconBtn}
@@ -277,7 +254,6 @@ export function UserNavbar({ user }: UserNavbarProps) {
             <Bell />
             {unreadCount > 0 && <span className={s.badge} />}
           </button>
-
           {notifOpen && (
             <NotifDropdown
               notifications={notifications}
@@ -287,7 +263,6 @@ export function UserNavbar({ user }: UserNavbarProps) {
           )}
         </div>
 
-        {/* ── Profile button ── */}
         <div className={s.dropdownWrap}>
           <button
             className={`${s.avatarBtn} ${profileOpen ? s.open : ""}`}
@@ -296,7 +271,6 @@ export function UserNavbar({ user }: UserNavbarProps) {
           >
             <div className={s.avatarFallback}>{getInitials(user?.name)}</div>
           </button>
-
           {profileOpen && (
             <ProfileDropdown
               user={user}

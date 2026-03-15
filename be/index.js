@@ -23,6 +23,7 @@ import { getPublicPackages } from "./controller/packageController.js";
 import { getPublicFeatures } from "./controller/packageFeatureController.js";
 import checkoutRoute from "./route/checkoutRoute.js";
 import { validatePromoCode } from "./controller/promoCodeController.js";
+import { handleCallback } from "./controller/checkoutController.js";
 
 app.use(express.json());
 app.use("/public", express.static("public"));
@@ -39,6 +40,7 @@ app.use("/", authRoute);
 app.get("/package/public", getPublicPackages);
 app.get("/package/public/:id/features", getPublicFeatures);
 app.post("/promo/validate", validatePromoCode);
+app.post("/checkout/callback", handleCallback);
 // ─── Protected routes (wajib login) ────────────────────────────────────────
 app.use("/post", requireAuth, postRoute);
 app.use("/customer", requireAuth, customerRoute);

@@ -19,6 +19,7 @@ import {
   ChevronLeft,
   Menu,
   X,
+  ReceiptIcon,
 } from "lucide-react";
 import s from "./Sidebar.module.css";
 import { useSidebar } from "./SidebarContext";
@@ -44,6 +45,11 @@ const menuItems = [
     title: "Subscription",
     href: "/user/subscription/history",
     icon: CreditCard,
+  },
+  {
+    title: "Invoice",
+    href: "/user/invoice",
+    icon: ReceiptIcon,
   },
 ];
 
