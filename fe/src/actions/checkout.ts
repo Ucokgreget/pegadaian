@@ -98,16 +98,13 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
   return data;
 }
 
-export async function getInvoice(id: number): Promise<Invoice | null> {
-  try {
-    const res = await fetch(`${API_URL}/checkout/invoice/${id}`, {
-      headers: await getAuthHeaders(),
-    });
-    if (!res.ok) return null;
-    return await res.json();
-  } catch {
-    return null;
-  }
+export async function getInvoice(invoiceNumber: string): Promise<Invoice | null> {
+  const encoded = encodeURIComponent(invoiceNumber);
+  const res = await fetch(`${API_URL}/checkout/invoice/${encoded}`, {
+    headers: await getAuthHeaders(),
+  });
+  if (!res.ok) return null;
+  return await res.json();
 }
 
 export async function getUserInvoices(): Promise<Invoice[]> {

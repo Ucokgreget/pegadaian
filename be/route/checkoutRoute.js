@@ -11,6 +11,5 @@ const router = express.Router();
 router.get("/payment-channels", getPaymentChannels);
 router.post("/order", createOrder);
 router.get("/invoice", getUserInvoices);
-router.get("/invoice/:id", getInvoice);
-
+router.get("/invoice/:invoiceNumber", getInvoice);
 export default router;

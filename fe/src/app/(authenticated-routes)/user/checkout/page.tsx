@@ -232,7 +232,7 @@ export default function CheckoutPage() {
         addonIds: selectedAddons,
         promoCode: promoResult?.valid ? promoResult.promo.code : undefined,
       });
-      router.push(`/user/invoice/${result.invoiceId}`);
+      router.push(`/user/invoice/${encodeURIComponent(result.invoiceNumber)}`);
     } catch (err: any) {
       toast.error(err.message || "Gagal membuat order");
     } finally {

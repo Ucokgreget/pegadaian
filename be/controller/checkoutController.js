@@ -10,14 +10,10 @@ const TRIPAY_BASE_URL =
     ? "https://tripay.co.id/api"
     : "https://tripay.co.id/api-sandbox";
 
-// ── Helper: generate order code ───────────────────────────────────────────
 const generateOrderCode = () => `INV-${Date.now()}-${nanoid(6).toUpperCase()}`;
-
-// ── Helper: generate invoice number ──────────────────────────────────────
 const generateInvoiceNumber = () =>
   `INV/${new Date().getFullYear()}/${nanoid(8).toUpperCase()}`;
 
-// ── Helper: tripay signature ──────────────────────────────────────────────
 const generateSignature = (merchantRef, amount) => {
   return crypto
     .createHmac("sha256", TRIPAY_PRIVATE_KEY)
@@ -54,7 +50,6 @@ export const createOrder = async (req, res) => {
         .json({ error: "packageId dan paymentMethod wajib diisi" });
     }
 
-    // Ambil package
     const pkg = await prisma.package.findUnique({
       where: { id: parseInt(packageId) },
     });
@@ -70,9 +65,7 @@ export const createOrder = async (req, res) => {
     const orderCode = generateOrderCode();
     const invoiceNumber = generateInvoiceNumber();
     const amount = pkg.price;
-    const dueDate = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 jam
-
-    // Buat tripay transaction
+    const dueDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
     const signature = generateSignature(orderCode, amount);
 
     const tripayPayload = {
@@ -88,12 +81,12 @@ export const createOrder = async (req, res) => {
           name: pkg.name,
           price: amount,
           quantity: 1,
-          product_url: process.env.NEXT_PUBLIC_BASE_URL || "https://sijaka.id",
+          product_url: process.env.FRONTEND_URL || "https://sijaka.id",
           image_url: "",
         },
       ],
-      callback_url: `${process.env.NEXT_PUBLIC_BASE_URL}/api/payment/callback`,
-      return_url: `${process.env.NEXT_PUBLIC_BASE_URL}/user/invoice`,
+      callback_url: `${process.env.BACKEND_URL}/checkout/callback`,
+      return_url: `${process.env.FRONTEND_URL}/user/invoice`,
       expired_time: Math.floor(dueDate.getTime() / 1000),
       signature,
     };
@@ -108,7 +101,6 @@ export const createOrder = async (req, res) => {
     });
 
     const tripayData = await tripayRes.json();
-
     if (!tripayData.success) {
       return res.status(400).json({
         error: tripayData.message || "Gagal membuat transaksi Tripay",
@@ -117,9 +109,7 @@ export const createOrder = async (req, res) => {
 
     const tripayTransaction = tripayData.data;
 
-    // Simpan ke DB dalam satu transaction
     const result = await prisma.$transaction(async (tx) => {
-      // 1. Buat Order
       const order = await tx.order.create({
         data: {
           userId,
@@ -134,7 +124,6 @@ export const createOrder = async (req, res) => {
         },
       });
 
-      // 2. Buat OrderItem
       await tx.orderItem.create({
         data: {
           orderId: order.id,
@@ -148,7 +137,6 @@ export const createOrder = async (req, res) => {
         },
       });
 
-      // 3. Buat Invoice
       const invoice = await tx.invoice.create({
         data: {
           userId,
@@ -168,7 +156,6 @@ export const createOrder = async (req, res) => {
         },
       });
 
-      // 4. Buat InvoiceItem
       await tx.invoiceItem.create({
         data: {
           invoiceId: invoice.id,
@@ -185,7 +172,6 @@ export const createOrder = async (req, res) => {
     });
 
     return res.status(201).json({
-      invoiceId: result.invoice.id,
       invoiceNumber: result.invoice.invoiceNumber,
       paymentUrl: tripayTransaction.checkout_url,
       reference: tripayTransaction.reference,
@@ -198,19 +184,20 @@ export const createOrder = async (req, res) => {
   }
 };
 
-// ── GET invoice detail ────────────────────────────────────────────────────
+// ── GET invoice by invoiceNumber (ownership check) ────────────────────────
 export const getInvoice = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { invoiceNumber } = req.params;
     const userId = parseInt(req.user.id);
 
     const invoice = await prisma.invoice.findFirst({
-      where: { id: parseInt(id), userId },
+      where: {
+        invoiceNumber: decodeURIComponent(invoiceNumber),
+        userId,
+      },
       include: {
         order: true,
-        invoiceItems: {
-          include: { package: true },
-        },
+        invoiceItems: { include: { package: true } },
         user: { select: { id: true, name: true, email: true } },
       },
     });
@@ -246,7 +233,6 @@ export const getUserInvoices = async (req, res) => {
 // ── POST tripay callback (webhook) ────────────────────────────────────────
 export const handleCallback = async (req, res) => {
   try {
-    // Verifikasi signature dari Tripay
     const callbackSignature = req.headers["x-callback-signature"];
     const json = JSON.stringify(req.body);
     const expectedSignature = crypto
@@ -269,7 +255,6 @@ export const handleCallback = async (req, res) => {
       });
     }
 
-    // Cari order
     const order = await prisma.order.findUnique({
       where: { orderCode: merchant_ref },
       include: { package: true },
@@ -288,19 +273,16 @@ export const handleCallback = async (req, res) => {
     );
 
     await prisma.$transaction(async (tx) => {
-      // 1. Update order
       await tx.order.update({
         where: { id: order.id },
         data: { status: "PAID", paidAt: now, reference },
       });
 
-      // 2. Update invoice
       const invoice = await tx.invoice.update({
         where: { orderId: order.id },
         data: { status: "PAID", paidAt: now },
       });
 
-      // 3. Nonaktifkan subscription lama jika ada
       await tx.subscription.updateMany({
         where: {
           userId: order.userId,
@@ -310,7 +292,6 @@ export const handleCallback = async (req, res) => {
         data: { status: "CANCELLED", cancelledAt: now },
       });
 
-      // 4. Buat subscription baru
       await tx.subscription.create({
         data: {
           userId: order.userId,

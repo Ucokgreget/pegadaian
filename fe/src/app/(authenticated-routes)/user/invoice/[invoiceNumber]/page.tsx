@@ -29,9 +29,9 @@ export default function InvoicePage() {
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isPolling, setIsPolling] = useState(false);
-
+  const { invoiceNumber } = useParams<{ invoiceNumber: string }>();
   const loadInvoice = async () => {
-    const data = await getInvoice(parseInt(id));
+    const data = await getInvoice(decodeURIComponent(invoiceNumber));
     setInvoice(data);
     setIsLoading(false);
   };
@@ -45,7 +45,7 @@ export default function InvoicePage() {
     if (!invoice || invoice.status !== "UNPAID") return;
     setIsPolling(true);
     const interval = setInterval(async () => {
-      const data = await getInvoice(parseInt(id));
+      const data = await getInvoice(decodeURIComponent(invoiceNumber));
       setInvoice(data);
       if (data?.status === "PAID") {
         clearInterval(interval);
