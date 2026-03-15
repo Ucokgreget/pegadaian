@@ -4,16 +4,13 @@ import {
   createOrder,
   getInvoice,
   getUserInvoices,
-  handleCallback,
 } from "../controller/checkoutController.js";
-import requireAuth from "../middleware/requireAuth.js";
 
 const router = express.Router();
 
-router.post("/callback", handleCallback);
-router.get("/payment-channels", requireAuth, getPaymentChannels);
-router.post("/order", requireAuth, createOrder);
-router.get("/invoice", requireAuth, getUserInvoices);
-router.get("/invoice/:id", requireAuth, getInvoice);
+router.get("/payment-channels", getPaymentChannels);
+router.post("/order", createOrder);
+router.get("/invoice", getUserInvoices);
+router.get("/invoice/:id", getInvoice);
 
 export default router;

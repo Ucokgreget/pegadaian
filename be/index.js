@@ -35,22 +35,22 @@ app.use(
   }),
 );
 
-// ─── Public routes (tanpa auth) ────────────────────────────────────────────
+// ─── Public routes ────────────────────────────────────────────────────────
 app.use("/", authRoute);
 app.get("/package/public", getPublicPackages);
 app.get("/package/public/:id/features", getPublicFeatures);
 app.post("/promo/validate", validatePromoCode);
 app.post("/checkout/callback", handleCallback);
-// ─── Protected routes (wajib login) ────────────────────────────────────────
+
+// ─── Protected routes ─────────────────────────────────────────────────────
 app.use("/post", requireAuth, postRoute);
 app.use("/customer", requireAuth, customerRoute);
 app.use("/product", requireAuth, productRoute);
 app.use("/subscription", requireAuth, subscriptionRoute);
 app.use("/chatbot", requireAuth, chatbotRoute);
 app.use("/product-variant", requireAuth, productVariantRoute);
-app.use("/checkout", requireAuth, checkoutRoute);
 
-// ─── Admin only routes ──────────────────────────────────────────────────────
+// ─── Admin only ───────────────────────────────────────────────────────────
 app.use(
   "/package/:packageId/features",
   requireAuth,
@@ -60,8 +60,9 @@ app.use(
 app.use("/package", requireAuth, requireAdmin, packageRoute);
 app.use("/admin", requireAuth, requireAdmin, adminRoute);
 app.use("/promo", requireAuth, requireAdmin, promoCodeRoute);
+app.use("/checkout", requireAuth, checkoutRoute);
 
-// ─── Wildcard user route — HARUS PALING BAWAH ──────────────────────────────
+// ─── Wildcard — PALING BAWAH ──────────────────────────────────────────────
 app.use("/", requireAuth, userRoute);
 
 app.listen(port, () => {
