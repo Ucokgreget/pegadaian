@@ -42,7 +42,7 @@ export const getPaymentChannels = async (req, res) => {
 export const createOrder = async (req, res) => {
   try {
     const userId = parseInt(req.user.id);
-    const { packageId, paymentMethod } = req.body;
+    const { packageId, paymentMethod, promoCode } = req.body;
 
     if (!packageId || !paymentMethod) {
       return res
