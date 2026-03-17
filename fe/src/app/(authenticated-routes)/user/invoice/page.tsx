@@ -206,7 +206,11 @@ export default function InvoiceListPage() {
                 <div
                   key={inv.id}
                   className={s.invoiceRow}
-                  onClick={() => router.push(`/user/invoice/${inv.id}`)}
+                  onClick={() =>
+                    router.push(
+                      `/user/invoice/${encodeURIComponent(inv.invoiceNumber)}`,
+                    )
+                  }
                   style={{ animationDelay: `${i * 0.05}s` }}
                 >
                   {/* Status indicator */}

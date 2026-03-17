@@ -152,6 +152,7 @@ export const createOrder = async (req, res) => {
             paymentMethod,
             paymentUrl: tripayTransaction.checkout_url,
             tripayReference: tripayTransaction.reference,
+            promoCode: promoCode || null,
           },
         },
       });
@@ -272,6 +273,10 @@ export const handleCallback = async (req, res) => {
       now.getTime() + order.package.durationDays * 24 * 60 * 60 * 1000,
     );
 
+    const existingInvoice = await prisma.invoice.findUnique({
+      where: { orderId: order.id },
+    });
+
     await prisma.$transaction(async (tx) => {
       await tx.order.update({
         where: { id: order.id },
@@ -282,6 +287,14 @@ export const handleCallback = async (req, res) => {
         where: { orderId: order.id },
         data: { status: "PAID", paidAt: now },
       });
+
+      const promoCode = existingInvoice?.meta?.promoCode;
+      if (promoCode) {
+        await tx.promoCode.updateMany({
+          where: { code: promoCode },
+          data: { used: { increment: 1 } },
+        });
+      }
 
       await tx.subscription.updateMany({
         where: {
