@@ -22,7 +22,7 @@ export async function middleware(request: NextRequest) {
 
     if (isAuthPath) {
       return NextResponse.redirect(
-        new URL(role === "ADMIN" ? "/admin" : "/user", request.url)
+        new URL(role === "ADMIN" ? "/admin" : "/user", request.url),
       );
     }
 
@@ -45,5 +45,7 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|public).*)"],
+  matcher: [
+    "/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+  ],
 };

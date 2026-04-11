@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Link as ScrollLink } from "react-scroll";
 import Link from "next/link";
+import Image from "next/image";
 import { ThemeToggle } from "../ui/theme-toggle";
 
 export function Navbar() {
@@ -13,12 +14,13 @@ export function Navbar() {
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
         <div className="flex items-center gap-2">
           <Link href="/">
-            <img
-              src="https://cdn.aceimg.com/92020e260.png"
+            <Image
+              src="/logo-sijaka-png-transparent.png"
               alt="Sijaka.id Logo"
               width={1080}
               height={1080}
               className="w-auto h-12 rounded-xl"
+              unoptimized
             />
           </Link>
         </div>
