@@ -10,6 +10,8 @@ import {
   getRuntimeConfigByDevice,
   saveConversation,
   updateDeviceForUser,
+  checkIfUserExists,
+  markUserAsInteracted
 } from "../service/chatbot.service.js";
 
 import { askGemini } from "./gemini.js";

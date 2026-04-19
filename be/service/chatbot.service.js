@@ -37,27 +37,46 @@ export async function saveConversation({
 }
 
 export async function updateDeviceForUser(userId, devicePhone) {
-  const foundDevice = await prisma.device.findFirst({
+  let foundDevice = await prisma.device.findFirst({
     where: {
       userId,
-      device: {
-        phone: devicePhone,
-      },
+      phone: devicePhone,
     },
   });
 
   if (!foundDevice) {
-    throw new Error("Device gak ketemu");
+    foundDevice = await prisma.device.create({
+      data: {
+        userId,
+        phone: devicePhone,
+        status: "CONNECTED",
+        packageName: "FREE",
+        isActive: true,
+      }
+    });
+  } else {
+    foundDevice = await prisma.device.update({
+      where: { id: foundDevice.id },
+      data: { status: "CONNECTED" }
+    });
   }
 
-  const setting = await prisma.chatbotSettings.findFirst({
+  let setting = await prisma.chatbotSettings.findFirst({
     where: {
       userId,
     },
   });
 
   if (!setting) {
-    throw new Error("Chatbot Setting gak ketemu");
+    return prisma.chatbotSettings.create({
+      data: {
+        userId,
+        deviceId: foundDevice.id,
+        isActive: true,
+        welcomeMessage: "Halo! Terima kasih telah menghubungi kami. Ada yang bisa saya bantu?",
+        aiPrompt: "",
+      }
+    });
   }
 
   return prisma.chatbotSettings.update({
@@ -66,6 +85,29 @@ export async function updateDeviceForUser(userId, devicePhone) {
     },
     data: {
       deviceId: foundDevice.id,
+      isActive: true,
+    },
+  });
+}
+
+export async function checkIfUserExists(userId, sender) {
+  const count = await prisma.conversation.count({
+    where: {
+      userId,
+      sender,
+    },
+  });
+  return count > 0;
+}
+
+export async function markUserAsInteracted(userId, sender) {
+  return prisma.conversation.create({
+    data: {
+      userId,
+      sender,
+      message: "SYSTEM_EVENT: FIRST_INTERACTION",
+      response: "GREETING_SENT",
+      isIncoming: true,
     },
   });
 }

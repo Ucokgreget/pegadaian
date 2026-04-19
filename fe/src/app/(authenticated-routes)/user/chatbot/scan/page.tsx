@@ -61,11 +61,12 @@ export default function ScanPage() {
   useEffect(() => {
     async function init() {
       const data = await getChatbotSettings(token);
-      setSettings(data);
+      if (data) {
+        setSettings(data);
+      }
     }
     init();
   }, []);
-
 
   const handleConnect = async () => {
     try {
@@ -73,7 +74,9 @@ export default function ScanPage() {
 
       await connectChatbot(token);
       const data = await getChatbotSettings(token);
-      setSettings(data);
+      if (data) {
+        setSettings(data);
+      }
     } catch (error: any) {
       alert(error.message);
     } finally {
@@ -87,7 +90,9 @@ export default function ScanPage() {
 
       await disconnectChatbot(token);
       const data = await getChatbotSettings(token);
-      setSettings(data);
+      if (data) {
+        setSettings(data);
+      }
     } catch (error: any) {
       alert(error.message);
     } finally {
@@ -220,12 +225,13 @@ export default function ScanPage() {
             {/* Status & Action */}
             <div className="text-center space-y-4">
               <div
-                className={`inline-flex items-center rounded-full px-4 py-1.5 text-sm font-medium border ${status === "connected"
-                  ? "bg-primary/10 text-primary border-primary/20"
-                  : status === "disconnected" || status === "error"
-                    ? "bg-destructive/10 text-destructive border-destructive/20"
-                    : "bg-blue-500/10 text-blue-500 border-blue-500/20"
-                  }`}
+                className={`inline-flex items-center rounded-full px-4 py-1.5 text-sm font-medium border ${
+                  status === "connected"
+                    ? "bg-primary/10 text-primary border-primary/20"
+                    : status === "disconnected" || status === "error"
+                      ? "bg-destructive/10 text-destructive border-destructive/20"
+                      : "bg-blue-500/10 text-blue-500 border-blue-500/20"
+                }`}
               >
                 {status === "loading"
                   ? "Initializing..."
@@ -278,8 +284,6 @@ export default function ScanPage() {
           {/* Right: Instructions */}
           <div className="space-y-6">
             <div className="rounded-2xl border border-border bg-card p-6">
-
-
               <h3 className="mb-4 text-lg font-semibold text-foreground">
                 Panduan Koneksi
               </h3>

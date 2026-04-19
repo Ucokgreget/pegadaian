@@ -11,14 +11,20 @@ export const getUserSetting = async (req, res) => {
     });
 
     if (!setting) {
+      const device = await prisma.device.findFirst({ where: { userId } });
+      if (!device) {
+        return res
+          .status(404)
+          .json({ error: "Device not found. Please add a device first." });
+      }
+
       setting = await prisma.chatbotSettings.create({
         data: {
           userId: userId,
+          deviceId: device.id,
           isActive: false,
           welcomeMessage:
             "Halo! Terima kasih telah menghubungi kami. Ada yang bisa saya bantu?",
-          fontteToken: "",
-          device: "",
           aiPrompt: "",
         },
       });
@@ -33,8 +39,14 @@ export const getUserSetting = async (req, res) => {
 export const updateSetting = async (req, res) => {
   try {
     const userId = parseInt(req.user.id);
-    const { isActive, welcomeMessage, fontteToken, device, aiPrompt } =
-      req.body;
+    const { isActive, welcomeMessage, aiPrompt } = req.body;
+
+    const device = await prisma.device.findFirst({ where: { userId } });
+    if (!device) {
+      return res
+        .status(404)
+        .json({ error: "Device not found. Please add a device first." });
+    }
 
     const setting = await prisma.chatbotSettings.upsert({
       where: {
@@ -43,16 +55,15 @@ export const updateSetting = async (req, res) => {
       update: {
         isActive: isActive,
         welcomeMessage: welcomeMessage,
-        fontteToken: fontteToken,
-        device: device,
         aiPrompt: aiPrompt,
       },
       create: {
         userId: userId,
+        deviceId: device.id,
         isActive: isActive ?? false,
-        welcomeMessage: welcomeMessage ?? "Halo! Terima kasih telah menghubungi kami. Ada yang bisa saya bantu?",
-        fontteToken: fontteToken ?? "",
-        device: device ?? "",
+        welcomeMessage:
+          welcomeMessage ??
+          "Halo! Terima kasih telah menghubungi kami. Ada yang bisa saya bantu?",
         aiPrompt: aiPrompt ?? "",
       },
     });
