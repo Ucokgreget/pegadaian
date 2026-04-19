@@ -21,7 +21,6 @@ import {
   reorderFeatures,
   PackageFeature,
 } from "@/actions/packageFeature";
-import s from "./PackageFeatures.module.css";
 import ConfirmModal from "@/components/ui/modal/confirmmodal";
 import { useConfirm } from "@/hooks/useconfirm";
 
@@ -170,8 +169,8 @@ export default function PackageFeaturesPage() {
 
   if (isLoading) {
     return (
-      <div className={s.loadingWrap}>
-        <Loader2 className={s.spinner} />
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-4 text-muted-foreground">
+        <Loader2 className="w-8 h-8 text-primary animate-spin" />
         <p>Memuat fitur...</p>
       </div>
     );
@@ -179,68 +178,68 @@ export default function PackageFeaturesPage() {
 
   return (
     <>
-      <div className={s.page}>
-        <div className={s.container}>
+      <div className="min-h-screen bg-background text-foreground">
+        <div className="max-w-[720px] mx-auto py-10 px-6">
           {/* Header */}
-          <div className={s.header}>
-            <button onClick={() => router.back()} className={s.backBtn}>
-              <ArrowLeft className={s.backIcon} />
+          <div className="flex items-center gap-4 mb-8">
+            <button onClick={() => router.back()} className="flex items-center justify-center w-10 h-10 rounded-md border border-border bg-card text-foreground cursor-pointer transition-colors duration-150 shrink-0 hover:bg-muted hover:border-ring">
+              <ArrowLeft className="w-[1.1rem] h-[1.1rem]" />
             </button>
             <div>
-              <h1 className={s.title}>Package Features</h1>
-              <p className={s.subtitle}>
+              <h1 className="text-2xl font-bold text-foreground m-0 tracking-[-0.02em]">Package Features</h1>
+              <p className="text-sm text-muted-foreground mt-1 mb-0">
                 Atur fitur yang tampil di halaman pricing
               </p>
             </div>
           </div>
 
           {/* Add new feature */}
-          <div className={s.addCard}>
-            <div className={s.addCardInner}>
-              <div className={s.addInputWrap}>
+          <div className="bg-card border border-border rounded-xl p-5 mb-6">
+            <div className="flex gap-3 items-center">
+              <div className="flex-1 flex items-center gap-2 bg-background border border-input rounded-md px-3 transition-all duration-150 focus-within:border-ring focus-within:shadow-[0_0_0_3px_color-mix(in_oklch,var(--ring)_15%,transparent)]">
                 <input
                   type="text"
                   value={newText}
                   onChange={(e) => setNewText(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleAdd()}
                   placeholder="Tulis fitur baru... (Enter untuk tambah)"
-                  className={s.addInput}
+                  className="flex-1 bg-transparent border-none outline-none py-2.5 text-sm text-foreground placeholder:text-muted-foreground placeholder:opacity-60"
                 />
-                <label className={s.highlightToggle} title="Highlighted">
+                <label className="cursor-pointer flex items-center shrink-0" title="Highlighted">
                   <input
                     type="checkbox"
                     checked={newHighlighted}
                     onChange={(e) => setNewHighlighted(e.target.checked)}
-                    className={s.hiddenCheckbox}
+                    className="hidden"
                   />
                   <Star
-                    className={`${s.starIcon} ${newHighlighted ? s.starActive : ""}`}
+                    className={`w-[1.1rem] h-[1.1rem] transition-all duration-150 ${newHighlighted ? "text-chart-4 fill-chart-4" : "text-muted-foreground"}`}
                   />
                 </label>
               </div>
               <button
                 onClick={handleAdd}
                 disabled={isAdding || !newText.trim()}
-                className={s.addBtn}
+                className="inline-flex items-center gap-1.5 bg-primary text-primary-foreground border-none rounded-md px-4 py-2.5 text-sm font-semibold cursor-pointer transition-opacity duration-150 whitespace-nowrap hover:not(:disabled):opacity-90 disabled:opacity-45 disabled:cursor-not-allowed"
               >
                 {isAdding ? (
-                  <Loader2 className={s.spinSm} />
+                  <Loader2 className="w-[0.9rem] h-[0.9rem] animate-spin" />
                 ) : (
-                  <Plus className={s.plusIcon} />
+                  <Plus className="w-4 h-4" />
                 )}
                 Tambah
               </button>
             </div>
-            <p className={s.addHint}>
-              <Star className={s.hintStar} /> = fitur yang di-highlight (tampil
+            <p className="flex items-center gap-1.5 text-xs text-muted-foreground mt-3 mb-0">
+              <Star className="w-3 h-3 text-chart-4" /> = fitur yang di-highlight (tampil
               bold/berbeda)
             </p>
           </div>
 
           {/* Feature list */}
-          <div className={s.list}>
+          <div className="flex flex-col gap-2">
             {features.length === 0 && (
-              <div className={s.empty}>
+              <div className="text-center py-12 text-muted-foreground text-sm border border-dashed border-border rounded-xl">
                 <p>Belum ada fitur. Tambahkan fitur pertama di atas.</p>
               </div>
             )}
@@ -253,20 +252,22 @@ export default function PackageFeaturesPage() {
                 onDragEnter={() => handleDragEnter(index, f.id)}
                 onDragEnd={handleDragEnd}
                 onDragOver={(e) => e.preventDefault()}
-                className={`
-                ${s.item}
-                ${draggingId === f.id ? s.itemDragging : ""}
-                ${dragOverId === f.id && draggingId !== f.id ? s.itemDragOver : ""}
-              `}
+                className={`flex items-center gap-3 bg-card border rounded-lg px-4 py-3.5 transition-all duration-150 cursor-default ${
+                  draggingId === f.id
+                    ? "opacity-40 scale-[0.98] shadow-[0_8px_24px_color-mix(in_oklch,var(--foreground)_10%,transparent)] border-border"
+                    : dragOverId === f.id && draggingId !== f.id
+                    ? "border-primary shadow-[0_0_0_2px_color-mix(in_oklch,var(--primary)_25%,transparent)] bg-primary/[0.04]"
+                    : "border-border hover:border-ring/40"
+                }`}
               >
                 {/* Drag handle */}
-                <div className={s.dragHandle}>
-                  <GripVertical className={s.gripIcon} />
+                <div className="flex items-center cursor-grab text-muted-foreground shrink-0 active:cursor-grabbing">
+                  <GripVertical className="w-4 h-4" />
                 </div>
 
                 {/* Content */}
                 {editingId === f.id ? (
-                  <div className={s.editRow}>
+                  <div className="flex-1 flex items-center gap-2 min-w-0">
                     <input
                       autoFocus
                       value={editText}
@@ -275,56 +276,56 @@ export default function PackageFeaturesPage() {
                         if (e.key === "Enter") saveEdit(f.id);
                         if (e.key === "Escape") cancelEdit();
                       }}
-                      className={s.editInput}
+                      className="flex-1 bg-background border border-ring rounded-sm py-1.5 px-2.5 text-sm text-foreground outline-none shadow-[0_0_0_3px_color-mix(in_oklch,var(--ring)_15%,transparent)]"
                     />
-                    <label className={s.highlightToggle}>
+                    <label className="cursor-pointer flex items-center shrink-0">
                       <input
                         type="checkbox"
                         checked={editHighlighted}
                         onChange={(e) => setEditHighlighted(e.target.checked)}
-                        className={s.hiddenCheckbox}
+                        className="hidden"
                       />
                       <Star
-                        className={`${s.starIcon} ${editHighlighted ? s.starActive : ""}`}
+                        className={`w-[1.1rem] h-[1.1rem] transition-all duration-150 ${editHighlighted ? "text-chart-4 fill-chart-4" : "text-muted-foreground"}`}
                       />
                     </label>
                     <button
                       onClick={() => saveEdit(f.id)}
                       disabled={isSaving}
-                      className={s.saveBtn}
+                      className="flex items-center justify-center w-[1.9rem] h-[1.9rem] rounded-sm border-none bg-primary/12 cursor-pointer transition-colors duration-150 hover:bg-primary/20"
                     >
                       {isSaving ? (
-                        <Loader2 className={s.spinSm} />
+                        <Loader2 className="w-[0.9rem] h-[0.9rem] animate-spin" />
                       ) : (
-                        <Check className={s.checkIcon} />
+                        <Check className="w-[0.9rem] h-[0.9rem] text-primary" />
                       )}
                     </button>
-                    <button onClick={cancelEdit} className={s.cancelBtn}>
-                      <X className={s.xIcon} />
+                    <button onClick={cancelEdit} className="flex items-center justify-center w-[1.9rem] h-[1.9rem] rounded-sm border-none bg-transparent cursor-pointer transition-colors duration-150 hover:bg-muted">
+                      <X className="w-[0.9rem] h-[0.9rem] text-muted-foreground" />
                     </button>
                   </div>
                 ) : (
-                  <div className={s.featureRow}>
-                    <div className={s.featureLeft}>
-                      {f.isHighlighted && <Star className={s.starBadge} />}
+                  <div className="flex-1 flex items-center justify-between gap-3 min-w-0">
+                    <div className="flex items-center gap-2 min-w-0">
+                      {f.isHighlighted && <Star className="w-[0.9rem] h-[0.9rem] text-chart-4 shrink-0" />}
                       <span
-                        className={`${s.featureText} ${f.isHighlighted ? s.featureTextBold : ""}`}
+                        className={`text-sm text-foreground whitespace-nowrap overflow-hidden text-ellipsis ${f.isHighlighted ? "font-semibold text-foreground" : ""}`}
                       >
                         {f.featureText}
                       </span>
                     </div>
-                    <div className={s.featureActions}>
+                    <div className="flex items-center gap-1 shrink-0">
                       <button
                         onClick={() => startEdit(f)}
-                        className={s.editBtn}
+                        className="flex items-center justify-center w-[1.9rem] h-[1.9rem] rounded-sm border-none bg-transparent cursor-pointer transition-colors duration-150 hover:bg-muted"
                       >
-                        <Pencil className={s.editIcon} />
+                        <Pencil className="w-[0.8rem] h-[0.8rem] text-muted-foreground" />
                       </button>
                       <button
                         onClick={() => handleDelete(f.id)}
-                        className={s.deleteBtn}
+                        className="flex items-center justify-center w-[1.9rem] h-[1.9rem] rounded-sm border-none bg-transparent cursor-pointer transition-colors duration-150 hover:bg-destructive/12"
                       >
-                        <Trash2 className={s.deleteIcon} />
+                        <Trash2 className="w-[0.8rem] h-[0.8rem] text-destructive" />
                       </button>
                     </div>
                   </div>
@@ -334,8 +335,8 @@ export default function PackageFeaturesPage() {
           </div>
 
           {features.length > 0 && (
-            <p className={s.dragHint}>
-              <GripVertical className={s.hintGrip} /> Drag untuk mengubah urutan
+            <p className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground mt-4">
+              <GripVertical className="w-3 h-3" /> Drag untuk mengubah urutan
             </p>
           )}
         </div>

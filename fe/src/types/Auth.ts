@@ -21,10 +21,10 @@ export interface RegisterRequest {
 }
 
 export interface LoginResponse {
-  rememberToken?: string | null;
-  refreshToken?: string | null;
   status: boolean;
   message: string;
-  token?: string;
+  accessToken: string | null;
+  refreshToken: string | null;
+  rememberToken: string | null;
   user?: User;
 }

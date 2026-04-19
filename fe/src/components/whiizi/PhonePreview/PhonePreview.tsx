@@ -1,6 +1,5 @@
 import Chat from "@/components/ui/chat";
 import IphoneFrame from "@/components/ui/iphone-frame";
-import styles from "./PhonePreview.module.css";
 
 export function PhonePreview() {
   const messages = [
@@ -46,12 +45,12 @@ export function PhonePreview() {
   ];
 
   return (
-    <div className={styles.wrapper}>
+    <div className="flex items-center justify-center relative lg:justify-end">
       {/* Glow behind */}
-      <div className={styles.glowRing} />
+      <div className="absolute w-[300px] h-[300px] rounded-full top-1/2 left-1/2 pointer-events-none -translate-x-1/2 -translate-y-1/2 animate-[glowPulse_4s_ease-in-out_infinite] bg-[radial-gradient(circle,rgba(34,197,94,0.15)_0%,rgba(16,185,129,0.08)_40%,transparent_70%)]" />
 
       {/* Phone */}
-      <div className={styles.phoneFloat}>
+      <div className="relative z-[2] drop-shadow-[0_32px_48px_rgba(34,197,94,0.2)] animate-[phoneFloat_6s_ease-in-out_infinite]">
         <IphoneFrame>
           <Chat
             messages={messages}
@@ -59,13 +58,11 @@ export function PhonePreview() {
             users={[
               {
                 name: "Customer",
-                avatar:
-                  "https://api.dicebear.com/7.x/avataaars/png?seed=Customer",
+                avatar: "/logo-sijaka-png-transparent.png",
               },
               {
                 name: "Sijaka.id Bot",
-                avatar:
-                  "https://api.dicebear.com/7.x/avataaars/png?seed=SijakaBot",
+                avatar: "/logo-sijaka-png-transparent.png",
               },
             ]}
           />

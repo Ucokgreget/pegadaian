@@ -3,8 +3,13 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
 export const login = async (req, res) => {
-  const { email, password, rememberMe } = req.body;
   try {
+    const { email, password, rememberMe } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ error: "Email dan password wajib diisi" });
+    }
+
     const user = await prisma.user.findUnique({
       where: { email },
       select: { id: true, email: true, password: true, role: true, name: true },
@@ -149,6 +154,11 @@ export const loginWithRememberMe = async (req, res) => {
 
 export const register = async (req, res) => {
   const { email, password, name } = req.body;
+
+  if (!email || !password || !name) {
+    return res.status(400).json({ error: "Semua kolom wajib diisi" });
+  }
+
   try {
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) return res.status(409).json({ error: "Email udah ada" });

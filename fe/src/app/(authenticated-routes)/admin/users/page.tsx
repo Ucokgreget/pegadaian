@@ -24,7 +24,7 @@ import { getUsersWithAnalytics, deleteUser, updateUserRole } from "@/actions/use
 import { updateSubscription } from "@/actions/subscription"; // reuse subscription action
 
 export default function UsersPage() {
-    const token = typeof window !== "undefined" ? localStorage.getItem("token") || "" : "";
+    const token = "";
     const [data, setData] = useState<any>({ users: [], analytics: {} });
     const [isLoading, setIsLoading] = useState(true);
 

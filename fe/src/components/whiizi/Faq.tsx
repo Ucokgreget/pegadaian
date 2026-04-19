@@ -6,7 +6,7 @@ const faqItems = [
   {
     question: "Apakah perlu coding?",
     answer:
-      "Tidak perlu. Semua sudah disiapkan dengan interface yang sederhana.",
+      "Tidak perlu. Semua sudah disiapkan dengan antarmuka yang sederhana.",
   },
   {
     question: "Apakah aman?",

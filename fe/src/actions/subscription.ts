@@ -1,5 +1,7 @@
 "use server";
 
+import { cookies } from "next/headers";
+
 const API_URL = process.env.API_URL;
 
 export interface Subscription {
@@ -26,9 +28,11 @@ export type UpdateSubscriptionInput = {
   adminNotes?: string;
 };
 
-function getAuthHeaders(token: string) {
+async function getAuthHeaders(token?: string) {
+  const cookieToken = (await cookies()).get("token")?.value || "";
+  const finalToken = cookieToken || token?.trim() || "";
   return {
-    Authorization: `Bearer ${token}`,
+    Authorization: `Bearer ${finalToken}`,
     "Content-Type": "application/json",
   };
 }
@@ -38,7 +42,7 @@ export async function getSubscriptions(
   status?: string,
 ): Promise<Subscription[]> {
   try {
-    const headers = getAuthHeaders(token);
+    const headers = await getAuthHeaders(token);
     const query = status ? `?status=${status}` : "";
     const res = await fetch(`${API_URL}/subscription${query}`, {
       method: "GET",
@@ -62,7 +66,7 @@ export async function updateSubscription(
   data: UpdateSubscriptionInput,
 ): Promise<Subscription> {
   try {
-    const headers = getAuthHeaders(token);
+    const headers = await getAuthHeaders(token);
     const res = await fetch(`${API_URL}/subscription/${id}`, {
       method: "PUT",
       headers,
@@ -86,7 +90,7 @@ export async function deleteSubscription(
   id: number,
 ): Promise<{ message: string }> {
   try {
-    const headers = getAuthHeaders(token);
+    const headers = await getAuthHeaders(token);
     const res = await fetch(`${API_URL}/subscription/${id}`, {
       method: "DELETE",
       headers,

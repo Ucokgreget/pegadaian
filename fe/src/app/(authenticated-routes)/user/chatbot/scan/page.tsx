@@ -21,7 +21,7 @@ import {
 } from "@/actions/chatbot";
 
 export default function ScanPage() {
-  const token = typeof window !== "undefined" ? localStorage.getItem("token") || "" : "";
+  const token = "";
   const [qrString, setQrString] = useState("");
 
   const [isProcessing, setIsProcessing] = useState(false);

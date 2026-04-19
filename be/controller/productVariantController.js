@@ -45,7 +45,7 @@ export const getProductVariantById = async (req, res) => {
 export const createProductVariant = async (req, res) => {
     try {
         const userId = parseInt(req.user?.id);
-        const { name, price, stock, description, productId } = req.body;
+        const { name, price, stock, description, productId, sku, isActive } = req.body;
 
         if (!name || price === undefined || !productId) {
             return res.status(400).json("Name, price, and product ID are required");
@@ -74,7 +74,9 @@ export const createProductVariant = async (req, res) => {
                 stock: parseInt(stock) || 0,
                 description,
                 imageUrl,
-                productId: parseInt(productId)
+                productId: parseInt(productId),
+                sku: req.body.sku,
+                isActive: req.body.isActive
             }
         })
         return res.status(201).json(variant);
@@ -88,7 +90,7 @@ export const updateProductVariant = async (req, res) => {
     try {
         const { id } = req.params;
         const userId = parseInt(req.user?.id);
-        const { name, price, stock, description, productId } = req.body;
+        const { name, price, stock, description, productId, sku, isActive } = req.body;
 
         if (!name || price === undefined || !productId) {
             return res.status(400).json("Name, price, and product ID are required");
@@ -118,7 +120,9 @@ export const updateProductVariant = async (req, res) => {
                 stock: parseInt(stock) || 0,
                 description,
                 imageUrl,
-                productId: parseInt(productId)
+                productId: parseInt(productId),
+                sku: req.body.sku,
+                isActive: req.body.isActive
             }
         })
         return res.json(updatedProduct);

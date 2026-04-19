@@ -35,7 +35,7 @@ const ChatMessage: FC<ChatMessageProps> = ({
     >
       {!isCurrentUser && (
         <div className="flex-shrink-0 mr-2">
-          <div className="w-8 h-8 rounded-full overflow-hidden">
+          <div className="w-8 h-8 rounded-full overflow-hidden bg-black">
             <Image
               src={avatar || "/placeholder.svg"}
               alt={`${message.name}'s avatar`}

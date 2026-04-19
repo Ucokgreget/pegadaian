@@ -1,36 +1,34 @@
 "use server";
+import { cookies } from "next/headers";
+import type { Product } from "@/types/Product";
 
 const API_URL = process.env.API_URL;
-
-export interface Product {
-  id: number;
-  name: string;
-  description: string;
-  price: number;
-  stock: number;
-  imageUrl: string;
-  userId: number;
-}
 
 export type CreateProductInput = Omit<Product, "id" | "userId">;
 export type UpdateProductInput = Partial<CreateProductInput>;
 
-function getAuthHeaders(token: string) {
+async function getAuthHeaders(token: string) {
+  const cookieStore = await cookies();
+  const cookieToken = cookieStore.get("token")?.value || "";
+  const finalToken = cookieToken || token;
   return {
-    Authorization: `Bearer ${token}`,
+    Authorization: `Bearer ${finalToken}`,
     "Content-Type": "application/json",
   };
 }
 
-function getAuthHeadersForFormData(token: string) {
+async function getAuthHeadersForFormData(token: string) {
+  const cookieStore = await cookies();
+  const cookieToken = cookieStore.get("token")?.value || "";
+  const finalToken = cookieToken || token;
   return {
-    Authorization: `Bearer ${token}`,
+    Authorization: `Bearer ${finalToken}`,
   };
 }
 
 export async function getProducts(token: string): Promise<Product[]> {
   try {
-    const headers = getAuthHeaders(token);
+    const headers = await getAuthHeaders(token);
     const res = await fetch(`${API_URL}/product`, {
       method: "GET",
       headers,
@@ -56,10 +54,10 @@ export async function createProduct(
     let body;
 
     if (data instanceof FormData) {
-      headers = getAuthHeadersForFormData(token);
+      headers = await getAuthHeadersForFormData(token);
       body = data;
     } else {
-      headers = getAuthHeaders(token);
+      headers = await getAuthHeaders(token);
       body = JSON.stringify(data);
     }
 
@@ -91,10 +89,10 @@ export async function updateProduct(
     let body;
 
     if (data instanceof FormData) {
-      headers = getAuthHeadersForFormData(token);
+      headers = await getAuthHeadersForFormData(token);
       body = data;
     } else {
-      headers = getAuthHeaders(token);
+      headers = await getAuthHeaders(token);
       body = JSON.stringify(data);
     }
 
@@ -116,9 +114,12 @@ export async function updateProduct(
   }
 }
 
-export async function deleteProduct(token: string, id: number): Promise<{ message: string }> {
+export async function deleteProduct(
+  token: string,
+  id: number,
+): Promise<{ message: string }> {
   try {
-    const headers = getAuthHeaders(token);
+    const headers = await getAuthHeaders(token);
     const res = await fetch(`${API_URL}/product/${id}`, {
       method: "DELETE",
       headers,

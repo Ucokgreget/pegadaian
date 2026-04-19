@@ -26,7 +26,7 @@ import {
 } from "@/actions/subscription";
 
 export default function SubscriptionsPage() {
-    const token = typeof window !== "undefined" ? localStorage.getItem("token") || "" : "";
+    const token = "";
     const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 

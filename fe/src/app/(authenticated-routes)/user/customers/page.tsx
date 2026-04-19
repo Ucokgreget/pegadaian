@@ -27,7 +27,7 @@ import {
 } from "@/actions/customer";
 
 export default function CustomersPage() {
-  const token = typeof window !== "undefined" ? localStorage.getItem("token") || "" : "";
+  const token = "";
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);

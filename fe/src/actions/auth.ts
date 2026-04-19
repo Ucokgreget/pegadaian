@@ -6,9 +6,21 @@ import type {
   LoginResponse,
   User,
 } from "@/types/Auth";
+import { on } from "events";
 import { cookies } from "next/headers";
+import { json } from "zod";
 
 const API_URL = process.env.API_URL;
+
+function cookieConfig(maxAge?: number) {
+  return {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax" as const,
+    path: "/",
+    ...(maxAge ? { maxAge } : {}),
+  };
+}
 
 /* ================= LOGIN ================= */
 export async function login(data: LoginRequest): Promise<LoginResponse> {
@@ -21,25 +33,152 @@ export async function login(data: LoginRequest): Promise<LoginResponse> {
     });
 
     const result = await res.json().catch(() => null);
+
     if (!res.ok || !result?.accessToken) {
       return {
         status: false,
-        message: result?.error || "Login gagal",
+        message: result?.message || "Login gagal",
+        accessToken: null,
         refreshToken: null,
+        rememberToken: null,
       };
+    }
+    const cookieStore = await cookies();
+
+    cookieStore.set("token", result.accessToken, cookieConfig(60 * 15));
+
+    if (result.refreshToken) {
+      cookieStore.set(
+        "refreshToken",
+        result.refreshToken,
+        cookieConfig(60 * 60 * 24 * 7),
+      );
+    } else {
+      cookieStore.delete("refreshToken");
+    }
+
+    if (result.rememberToken) {
+      cookieStore.set(
+        "rememberToken",
+        result.rememberToken,
+        cookieConfig(60 * 60 * 24 * 30),
+      );
+    } else {
+      cookieStore.delete("rememberToken");
     }
 
     return {
       status: true,
-      message: "Login berhasil",
-      token: result.accessToken,
-      refreshToken: result.refreshToken,
-      rememberToken: result.rememberToken ?? null,
+      message: result.message || "Login berhasil",
+      accessToken: result.accessToken,
+      refreshToken: result.refreshToken || null,
+      rememberToken: result.rememberToken || null,
       user: result.user,
     };
-  } catch (err) {
-    console.error("LOGIN ERROR:", err);
-    return { status: false, message: "Server tidak merespon", refreshToken: null };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: false,
+      message: "Server error",
+      accessToken: null,
+      refreshToken: null,
+      rememberToken: null,
+    };
+  }
+}
+
+export async function loginAction(
+  prevState: LoginResponse,
+  formData: FormData,
+): Promise<LoginResponse> {
+  const email = String(formData.get("email") || null).trim();
+  const password = String(formData.get("password") || null).trim();
+  const rememberMe = formData.get("rememberMe") === "on";
+
+  if (!email || !password) {
+    return {
+      status: false,
+      message: "Login Gagal",
+      accessToken: null,
+      refreshToken: null,
+      rememberToken: null,
+    };
+  }
+
+  return await login({
+    email,
+    password,
+    rememberMe,
+  });
+}
+
+export async function autoLogin(): Promise<LoginResponse> {
+  try {
+    const cookieStore = await cookies();
+    const rememberToken = cookieStore.get("rememberToken")?.value;
+
+    if (!rememberToken) {
+      return {
+        status: false,
+        message: "Auto login gagal",
+        accessToken: null,
+        refreshToken: null,
+        rememberToken: null,
+      };
+    }
+
+    const res = await fetch(`${API_URL}/remember`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ rememberToken }),
+      cache: "no-store",
+    });
+
+    const result = await res.json().catch(() => null);
+
+    if (!res.ok || !result?.accessToken) {
+      cookieStore.delete("token");
+      cookieStore.delete("refreshToken");
+      cookieStore.delete("rememberToken");
+
+      return {
+        status: false,
+        message: result?.error || "Auto login gagal",
+        accessToken: null,
+        refreshToken: null,
+        rememberToken: null,
+      };
+    }
+
+    cookieStore.set("token", result.accessToken, cookieConfig(60 * 15));
+
+    if (result.refreshToken) {
+      cookieStore.set(
+        "refreshToken",
+        result.refreshToken,
+        cookieConfig(60 * 60 * 24 * 7),
+      );
+    } else {
+      cookieStore.delete("refreshToken");
+    }
+
+    return {
+      status: true,
+      message: result.message || "Berhasil auto login",
+      accessToken: result.accessToken,
+      refreshToken: result.refreshToken,
+      rememberToken: result.rememberToken ?? rememberToken,
+      user: result.user,
+    };
+  } catch (error) {
+    console.log("Auto login gagal", error);
+    return {
+      status: false,
+      message: "server error",
+      accessToken: null,
+      refreshToken: null,
+      rememberToken: null,
+    };
   }
 }
 
@@ -59,19 +198,29 @@ export async function register(data: RegisterRequest): Promise<LoginResponse> {
       return {
         status: false,
         message: result?.error || "Register gagal",
+        accessToken: null,
         refreshToken: null,
+        rememberToken: null,
       };
     }
 
     return {
       status: true,
       message: "Register berhasil",
+      accessToken: null,
       refreshToken: null,
+      rememberToken: null,
       user: result.user,
     };
   } catch (err) {
     console.error("REGISTER ERROR:", err);
-    return { status: false, message: "Server tidak merespon", refreshToken: null };
+    return {
+      status: false,
+      message: "Server tidak merespon",
+      accessToken: null,
+      refreshToken: null,
+      rememberToken: null,
+    };
   }
 }
 
@@ -95,5 +244,34 @@ export async function getCurrentUser(token?: string): Promise<User | null> {
   } catch (err) {
     console.error("GET USER ERROR:", err);
     return null;
+  }
+}
+
+export async function logout(): Promise<{ status: boolean }> {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("token")?.value;
+
+    if (token) {
+      await fetch(`${API_URL}/logout`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        cache: "no-store",
+      }).catch(() => null);
+    }
+
+    cookieStore.delete("token");
+    cookieStore.delete("refreshToken");
+    cookieStore.delete("rememberToken");
+
+    return { status: true };
+  } catch (error) {
+    console.log("Logout error", error);
+    return {
+      status: false,
+    };
   }
 }

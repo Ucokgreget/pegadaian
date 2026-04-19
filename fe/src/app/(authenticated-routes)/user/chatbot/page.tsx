@@ -28,7 +28,7 @@ import {
 } from "@/actions/chatbot";
 
 export default function ChatbotPage() {
-  const token = typeof window !== "undefined" ? localStorage.getItem("token") || "" : "";
+  const token = "";
   const [isTestModalOpen, setIsTestModalOpen] = useState(false);
   const [testMessage, setTestMessage] = useState("");
   const [testResponse, setTestResponse] = useState("");

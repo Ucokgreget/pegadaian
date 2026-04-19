@@ -14,19 +14,19 @@ import {
   Upload,
 } from "lucide-react";
 import {
-  Product,
   getProducts,
   createProduct,
   updateProduct,
 
   deleteProduct,
 } from "@/actions/product";
+import type { Product } from "@/types/Product";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const ProductsPage = () => {
   const queryClient = useQueryClient();
-  const token = typeof window !== "undefined" ? localStorage.getItem("token") || "" : "";
+  const token = "";
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);

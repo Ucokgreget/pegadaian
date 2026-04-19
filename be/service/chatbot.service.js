@@ -1,12 +1,15 @@
 import { prisma } from "../lib/prisma.js";
 
-export async function getRuntimeConfigByDevice(device) {
+export async function getRuntimeConfigByDevice(devicePhone) {
   return prisma.chatbotSettings.findFirst({
     where: {
-      device: device,
+      device: {
+        phone: devicePhone,
+      },
     },
     include: {
       user: true,
+      device: true,
     },
   });
 }
@@ -33,13 +36,36 @@ export async function saveConversation({
   });
 }
 
-export async function updateDeviceForUser(userId, device) {
+export async function updateDeviceForUser(userId, devicePhone) {
+  const foundDevice = await prisma.device.findFirst({
+    where: {
+      userId,
+      device: {
+        phone: devicePhone,
+      },
+    },
+  });
+
+  if (!foundDevice) {
+    throw new Error("Device gak ketemu");
+  }
+
+  const setting = await prisma.chatbotSettings.findFirst({
+    where: {
+      userId,
+    },
+  });
+
+  if (!setting) {
+    throw new Error("Chatbot Setting gak ketemu");
+  }
+
   return prisma.chatbotSettings.update({
     where: {
-      userId: userId,
+      id: setting.id,
     },
     data: {
-      device: device,
+      deviceId: foundDevice.id,
     },
   });
 }

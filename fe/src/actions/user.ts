@@ -1,17 +1,21 @@
 "use server";
 
+import { cookies } from "next/headers";
+
 const API_URL = process.env.API_URL;
 
-function getAuthHeaders(token: string) {
+async function getAuthHeaders(token?: string) {
+  const cookieToken = (await cookies()).get("token")?.value || "";
+  const finalToken = cookieToken || token?.trim() || "";
   return {
-    Authorization: `Bearer ${token}`,
+    Authorization: `Bearer ${finalToken}`,
     "Content-Type": "application/json",
   };
 }
 
 export async function getUsersWithAnalytics(token: string) {
   try {
-    const headers = getAuthHeaders(token);
+    const headers = await getAuthHeaders(token);
     const res = await fetch(`${API_URL}/user-analytics`, {
       method: "GET",
       headers,
@@ -38,7 +42,7 @@ export async function getUsersWithAnalytics(token: string) {
 
 export async function deleteUser(token: string, id: number) {
   try {
-    const headers = getAuthHeaders(token);
+    const headers = await getAuthHeaders(token);
     const res = await fetch(`${API_URL}/user/${id}`, {
       method: "DELETE",
       headers,
@@ -63,7 +67,7 @@ export async function updateUserRole(
   name?: string,
 ) {
   try {
-    const headers = getAuthHeaders(token);
+    const headers = await getAuthHeaders(token);
     const res = await fetch(`${API_URL}/user/${id}`, {
       method: "PUT",
       headers,

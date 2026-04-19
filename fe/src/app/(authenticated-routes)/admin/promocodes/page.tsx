@@ -29,7 +29,6 @@ import ConfirmModal from "@/components/ui/modal/confirmmodal";
 import { useConfirm } from "@/hooks/useconfirm";
 import { toast } from "react-toastify";
 import ToastContainerComponent from "@/components/ui/ToastContainerComponent";
-import s from "./PromoCodes.module.css";
 
 const emptyForm: CreatePromoInput = {
   code: "",
@@ -203,8 +202,8 @@ export default function PromoCodesPage() {
 
   if (isLoading) {
     return (
-      <div className={s.loadingWrap}>
-        <Loader2 className={s.spinner} />
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-4 text-muted-foreground">
+        <Loader2 className="w-8 h-8 text-primary animate-spin" />
         <p>Memuat promo...</p>
       </div>
     );
@@ -213,25 +212,25 @@ export default function PromoCodesPage() {
   return (
     <>
       <ToastContainerComponent />
-      <div className={s.page}>
-        <div className={s.container}>
+      <div className="min-h-screen bg-background text-foreground">
+        <div className="max-w-[1100px] mx-auto py-10 px-6">
           {/* Header */}
-          <div className={s.header}>
+          <div className="flex items-start justify-between gap-4 mb-7 flex-wrap">
             <div>
-              <h1 className={s.title}>
-                <Tag className={s.titleIcon} /> Promo Code
+              <h1 className="flex items-center gap-2.5 text-2xl font-bold text-foreground m-0 tracking-[-0.02em]">
+                <Tag className="w-[1.4rem] h-[1.4rem] text-primary" /> Promo Code
               </h1>
-              <p className={s.subtitle}>
+              <p className="text-sm text-muted-foreground mt-1.5 mb-0">
                 Kelola kode diskon untuk pengguna platform
               </p>
             </div>
-            <button onClick={() => setIsModalOpen(true)} className={s.addBtn}>
-              <Plus className={s.addBtnIcon} /> Buat Promo
+            <button onClick={() => setIsModalOpen(true)} className="inline-flex items-center gap-1.5 bg-primary text-primary-foreground border-none rounded-lg px-5 py-2.5 text-sm font-semibold cursor-pointer transition-opacity duration-150 whitespace-nowrap hover:opacity-90">
+              <Plus className="w-4 h-4" /> Buat Promo
             </button>
           </div>
 
           {/* Stats */}
-          <div className={s.stats}>
+          <div className="grid grid-cols-3 gap-4 mb-7 max-sm:grid-cols-1">
             {[
               { label: "Total Promo", value: promos.length, icon: <Tag /> },
               {
@@ -245,11 +244,11 @@ export default function PromoCodesPage() {
                 icon: <Users />,
               },
             ].map((stat) => (
-              <div key={stat.label} className={s.statCard}>
-                <div className={s.statIcon}>{stat.icon}</div>
+              <div key={stat.label} className="flex items-center gap-4 bg-card border border-border rounded-xl px-5 py-4">
+                <div className="w-10 h-10 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0 [&>svg]:w-[1.1rem] [&>svg]:h-[1.1rem]">{stat.icon}</div>
                 <div>
-                  <p className={s.statValue}>{stat.value}</p>
-                  <p className={s.statLabel}>{stat.label}</p>
+                  <p className="text-[1.4rem] font-bold text-foreground m-0 leading-none">{stat.value}</p>
+                  <p className="text-xs text-muted-foreground mt-1 mb-0">{stat.label}</p>
                 </div>
               </div>
             ))}
@@ -257,109 +256,109 @@ export default function PromoCodesPage() {
 
           {/* Table */}
           {promos.length === 0 ? (
-            <div className={s.empty}>
-              <Tag className={s.emptyIcon} />
+            <div className="flex flex-col items-center justify-center gap-3 py-16 px-4 bg-card border border-dashed border-border rounded-xl text-center text-muted-foreground">
+              <Tag className="w-10 h-10 opacity-40" />
               <h3>Belum ada promo</h3>
               <p>Buat kode promo pertama untuk mulai memberikan diskon</p>
-              <button onClick={() => setIsModalOpen(true)} className={s.addBtn}>
-                <Plus className={s.addBtnIcon} /> Buat Promo
+              <button onClick={() => setIsModalOpen(true)} className="inline-flex items-center gap-1.5 bg-primary text-primary-foreground border-none rounded-lg px-5 py-2.5 text-sm font-semibold cursor-pointer transition-opacity duration-150 whitespace-nowrap hover:opacity-90">
+                <Plus className="w-4 h-4" /> Buat Promo
               </button>
             </div>
           ) : (
-            <div className={s.tableWrap}>
-              <table className={s.table}>
-                <thead>
+            <div className="bg-card border border-border rounded-xl overflow-hidden max-sm:overflow-x-auto">
+              <table className="w-full border-collapse text-sm text-left">
+                <thead className="bg-muted border-b border-border">
                   <tr>
-                    <th>Kode</th>
-                    <th>Tipe</th>
-                    <th>Nilai</th>
-                    <th>Kuota</th>
-                    <th>Periode</th>
-                    <th>Status</th>
-                    <th>Aksi</th>
+                    <th className="py-3.5 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-[0.05em] whitespace-nowrap">Kode</th>
+                    <th className="py-3.5 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-[0.05em] whitespace-nowrap">Tipe</th>
+                    <th className="py-3.5 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-[0.05em] whitespace-nowrap">Nilai</th>
+                    <th className="py-3.5 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-[0.05em] whitespace-nowrap">Kuota</th>
+                    <th className="py-3.5 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-[0.05em] whitespace-nowrap">Periode</th>
+                    <th className="py-3.5 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-[0.05em] whitespace-nowrap">Status</th>
+                    <th className="py-3.5 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-[0.05em] whitespace-nowrap">Aksi</th>
                   </tr>
                 </thead>
                 <tbody>
                   {promos.map((promo) => {
                     const status = getStatus(promo);
                     return (
-                      <tr key={promo.id} className={s.row}>
-                        <td>
-                          <span className={s.codeChip}>{promo.code}</span>
+                      <tr key={promo.id} className="border-b border-border transition-colors duration-100 last:border-none hover:bg-muted/40">
+                        <td className="py-3.5 px-4 align-middle">
+                          <span className="inline-flex items-center bg-primary/10 text-primary border border-primary/25 rounded-md px-2.5 py-1 text-[0.8rem] font-bold font-mono tracking-[0.05em]">{promo.code}</span>
                         </td>
-                        <td>
+                        <td className="py-3.5 px-4 align-middle">
                           <span
-                            className={`${s.typeBadge} ${s[`type_${promo.type}`]}`}
+                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold ${promo.type === "percent" ? "bg-chart-2/12 text-chart-2" : "bg-chart-4/12 text-chart-4"}`}
                           >
                             {promo.type === "percent" ? (
                               <>
-                                <Percent className={s.typeIcon} /> Persen
+                                <Percent className="w-3 h-3" /> Persen
                               </>
                             ) : (
                               <>
-                                <DollarSign className={s.typeIcon} /> Fixed
+                                <DollarSign className="w-3 h-3" /> Fixed
                               </>
                             )}
                           </span>
                         </td>
-                        <td>
-                          <span className={s.valueText}>
+                        <td className="py-3.5 px-4 align-middle">
+                          <span className="text-sm text-foreground font-medium">
                             {promo.type === "percent"
                               ? `${promo.value}%${promo.maxDiscount ? ` (maks Rp ${promo.maxDiscount.toLocaleString("id-ID")})` : ""}`
                               : `Rp ${promo.value.toLocaleString("id-ID")}`}
                           </span>
                         </td>
-                        <td>
-                          <div className={s.quotaWrap}>
-                            <span className={s.quotaUsed}>{promo.used}</span>
-                            <span className={s.quotaSep}>/</span>
-                            <span className={s.quotaTotal}>
+                        <td className="py-3.5 px-4 align-middle">
+                          <div className="flex items-baseline gap-1">
+                            <span className="font-semibold text-foreground">{promo.used}</span>
+                            <span className="text-muted-foreground">/</span>
+                            <span className="text-muted-foreground text-[0.8rem]">
                               {promo.quota ?? "∞"}
                             </span>
                           </div>
                         </td>
-                        <td>
-                          <div className={s.periodWrap}>
-                            <Calendar className={s.periodIcon} />
+                        <td className="py-3.5 px-4 align-middle">
+                          <div className="flex items-center gap-1.5 text-muted-foreground text-[0.8rem]">
+                            <Calendar className="w-3.5 h-3.5 shrink-0" />
                             <span>
                               {formatDate(promo.startAt)} —{" "}
                               {formatDate(promo.endAt)}
                             </span>
                           </div>
                         </td>
-                        <td>
+                        <td className="py-3.5 px-4 align-middle">
                           <span
-                            className={`${s.statusBadge} ${s[`status_${status}`]}`}
+                            className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold ${status === "active" ? "bg-chart-2/12 text-chart-2" : status === "expired" ? "bg-muted-foreground/12 text-muted-foreground" : status === "inactive" ? "bg-destructive/12 text-destructive" : "bg-chart-4/12 text-chart-4"}`}
                           >
                             {STATUS_LABEL[status]}
                           </span>
                         </td>
-                        <td>
-                          <div className={s.actions}>
+                        <td className="py-3.5 px-4 align-middle">
+                          <div className="flex items-center gap-1">
                             <button
                               onClick={() => handleToggle(promo.id)}
-                              className={s.actionBtn}
+                              className="flex items-center justify-center w-8 h-8 rounded-sm border-none bg-transparent cursor-pointer transition-colors duration-150 hover:bg-muted"
                               title="Toggle aktif"
                             >
                               {promo.isActive ? (
-                                <ToggleRight className={s.toggleOn} />
+                                <ToggleRight className="w-5 h-5 text-chart-2" />
                               ) : (
-                                <ToggleLeft className={s.toggleOff} />
+                                <ToggleLeft className="w-5 h-5 text-muted-foreground" />
                               )}
                             </button>
                             <button
                               onClick={() => handleEdit(promo)}
-                              className={s.actionBtn}
+                              className="flex items-center justify-center w-8 h-8 rounded-sm border-none bg-transparent cursor-pointer transition-colors duration-150 hover:bg-muted"
                               title="Edit"
                             >
-                              <Edit2 className={s.editIcon} />
+                              <Edit2 className="w-[0.85rem] h-[0.85rem] text-muted-foreground" />
                             </button>
                             <button
                               onClick={() => handleDelete(promo.id, promo.code)}
-                              className={`${s.actionBtn} ${s.deleteBtnAction}`}
+                              className={`flex items-center justify-center w-8 h-8 rounded-sm border-none bg-transparent cursor-pointer transition-colors duration-150 hover:bg-destructive/12`}
                               title="Hapus"
                             >
-                              <Trash2 className={s.deleteIcon} />
+                              <Trash2 className="w-[0.85rem] h-[0.85rem] text-destructive" />
                             </button>
                           </div>
                         </td>
@@ -375,48 +374,48 @@ export default function PromoCodesPage() {
 
       {/* Modal */}
       {isModalOpen && (
-        <div className={s.overlay}>
-          <div className={s.modal}>
-            <div className={s.modalHeader}>
-              <h2 className={s.modalTitle}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in duration-150">
+          <div className="w-full max-w-[520px] bg-card border border-border rounded-2xl p-7 shadow-[0_20px_60px_color-mix(in_oklch,var(--foreground)_12%,transparent)] animate-in slide-in-from-bottom-4 duration-200 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-[1.1rem] font-bold m-0">
                 {editingPromo ? "Edit Promo" : "Buat Promo Baru"}
               </h2>
-              <button onClick={handleCloseModal} className={s.closeBtn}>
+              <button onClick={handleCloseModal} className="flex items-center justify-center w-8 h-8 rounded-sm border-none bg-transparent cursor-pointer text-muted-foreground transition-colors duration-150 hover:bg-muted">
                 <X />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className={s.form}>
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               {/* Kode */}
-              <div className={s.field}>
-                <label className={s.label}>Kode Promo *</label>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[0.8rem] font-semibold text-foreground">Kode Promo *</label>
                 <input
                   name="code"
                   type="text"
                   value={formData.code}
                   onChange={handleChange}
                   placeholder="e.g. HEMAT50"
-                  className={s.input}
+                  className="bg-background border border-input rounded-md px-3 py-2.5 text-sm text-foreground outline-none w-full transition-colors duration-150 focus:border-ring focus:shadow-[0_0_0_3px_color-mix(in_oklch,var(--ring)_15%,transparent)]"
                   style={{ textTransform: "uppercase" }}
                 />
               </div>
 
               {/* Tipe & Nilai */}
-              <div className={s.formRow}>
-                <div className={s.field}>
-                  <label className={s.label}>Tipe *</label>
+              <div className="grid grid-cols-2 gap-4 max-sm:grid-cols-1">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[0.8rem] font-semibold text-foreground">Tipe *</label>
                   <select
                     name="type"
                     value={formData.type}
                     onChange={handleChange}
-                    className={s.input}
+                    className="bg-background border border-input rounded-md px-3 py-2.5 text-sm text-foreground outline-none w-full transition-colors duration-150 focus:border-ring focus:shadow-[0_0_0_3px_color-mix(in_oklch,var(--ring)_15%,transparent)]"
                   >
                     <option value="percent">Persen (%)</option>
                     <option value="fixed">Fixed (Rp)</option>
                   </select>
                 </div>
-                <div className={s.field}>
-                  <label className={s.label}>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[0.8rem] font-semibold text-foreground">
                     Nilai * {formData.type === "percent" ? "(1-100)" : "(Rp)"}
                   </label>
                   <input
@@ -429,17 +428,17 @@ export default function PromoCodesPage() {
                     placeholder={
                       formData.type === "percent" ? "e.g. 20" : "e.g. 50000"
                     }
-                    className={s.input}
+                    className="bg-background border border-input rounded-md px-3 py-2.5 text-sm text-foreground outline-none w-full transition-colors duration-150 focus:border-ring focus:shadow-[0_0_0_3px_color-mix(in_oklch,var(--ring)_15%,transparent)]"
                   />
                 </div>
               </div>
 
               {/* Max Discount — hanya muncul kalau percent */}
               {formData.type === "percent" && (
-                <div className={s.field}>
-                  <label className={s.label}>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[0.8rem] font-semibold text-foreground">
                     Maks. Diskon (Rp){" "}
-                    <span className={s.optional}>opsional</span>
+                    <span className="font-normal text-muted-foreground">opsional</span>
                   </label>
                   <input
                     name="maxDiscount"
@@ -448,16 +447,16 @@ export default function PromoCodesPage() {
                     onChange={handleChange}
                     min={0}
                     placeholder="e.g. 100000 (kosongkan jika tidak ada batas)"
-                    className={s.input}
+                    className="bg-background border border-input rounded-md px-3 py-2.5 text-sm text-foreground outline-none w-full transition-colors duration-150 focus:border-ring focus:shadow-[0_0_0_3px_color-mix(in_oklch,var(--ring)_15%,transparent)]"
                   />
                 </div>
               )}
 
               {/* Kuota */}
-              <div className={s.field}>
-                <label className={s.label}>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[0.8rem] font-semibold text-foreground">
                   Kuota{" "}
-                  <span className={s.optional}>
+                  <span className="font-normal text-muted-foreground">
                     opsional — kosongkan untuk unlimited
                   </span>
                 </label>
@@ -468,63 +467,63 @@ export default function PromoCodesPage() {
                   onChange={handleChange}
                   min={1}
                   placeholder="e.g. 100"
-                  className={s.input}
+                  className="bg-background border border-input rounded-md px-3 py-2.5 text-sm text-foreground outline-none w-full transition-colors duration-150 focus:border-ring focus:shadow-[0_0_0_3px_color-mix(in_oklch,var(--ring)_15%,transparent)]"
                 />
               </div>
 
               {/* Periode */}
-              <div className={s.formRow}>
-                <div className={s.field}>
-                  <label className={s.label}>Tanggal Mulai *</label>
+              <div className="grid grid-cols-2 gap-4 max-sm:grid-cols-1">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[0.8rem] font-semibold text-foreground">Tanggal Mulai *</label>
                   <input
                     name="startAt"
                     type="date"
                     value={formData.startAt}
                     onChange={handleChange}
-                    className={s.input}
+                    className="bg-background border border-input rounded-md px-3 py-2.5 text-sm text-foreground outline-none w-full transition-colors duration-150 focus:border-ring focus:shadow-[0_0_0_3px_color-mix(in_oklch,var(--ring)_15%,transparent)]"
                   />
                 </div>
-                <div className={s.field}>
-                  <label className={s.label}>Tanggal Selesai *</label>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[0.8rem] font-semibold text-foreground">Tanggal Selesai *</label>
                   <input
                     name="endAt"
                     type="date"
                     value={formData.endAt}
                     onChange={handleChange}
-                    className={s.input}
+                    className="bg-background border border-input rounded-md px-3 py-2.5 text-sm text-foreground outline-none w-full transition-colors duration-150 focus:border-ring focus:shadow-[0_0_0_3px_color-mix(in_oklch,var(--ring)_15%,transparent)]"
                   />
                 </div>
               </div>
 
               {/* isActive */}
-              <label className={s.checkboxLabel}>
+              <label className="flex items-center gap-2.5 text-sm cursor-pointer">
                 <input
                   type="checkbox"
                   name="isActive"
                   checked={formData.isActive}
                   onChange={handleChange}
-                  className={s.checkbox}
+                  className="w-4 h-4 accent-primary cursor-pointer"
                 />
                 <span>Aktifkan promo ini</span>
               </label>
 
               {/* Actions */}
-              <div className={s.formActions}>
+              <div className="flex gap-3 mt-2">
                 <button
                   type="button"
                   onClick={handleCloseModal}
-                  className={s.cancelBtn}
+                  className="flex-1 py-2.5 rounded-lg border border-border bg-transparent text-muted-foreground text-sm font-medium cursor-pointer transition-colors duration-150 hover:bg-muted"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className={s.submitBtn}
+                  className="flex-1 py-2.5 rounded-lg border-none bg-primary text-primary-foreground text-sm font-semibold cursor-pointer flex items-center justify-center gap-1.5 transition-opacity duration-150 hover:not(:disabled):opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSubmitting ? (
                     <>
-                      <Loader2 className={s.spinSm} /> Menyimpan...
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" /> Menyimpan...
                     </>
                   ) : editingPromo ? (
                     "Update Promo"

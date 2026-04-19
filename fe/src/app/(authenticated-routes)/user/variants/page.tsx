@@ -21,13 +21,14 @@ import {
   updateProductVariant,
   deleteProductVariant,
 } from "@/actions/productVariant";
-import { getProducts, Product } from "@/actions/product";
+import { getProducts } from "@/actions/product";
+import type { Product } from "@/types/Product";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const ProductVariantsPage = () => {
   const queryClient = useQueryClient();
-  const token = typeof window !== "undefined" ? localStorage.getItem("token") || "" : "";
+  const token = "";
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingVariant, setEditingVariant] = useState<ProductVariant | null>(null);

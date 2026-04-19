@@ -54,7 +54,7 @@ const Chat: FC<ChatProps> = ({ messages, currentUser, users }) => {
       <div className="bg-[#202C33] text-white px-4 py-3 flex items-center gap-3 shadow-md">
         <div className="w-9 h-9 rounded-full bg-gray-300 overflow-hidden flex-shrink-0">
           <img
-            src="https://api.dicebear.com/7.x/avataaars/png?seed=Bot"
+            src="/logo-sijaka-png-transparent.png"
             alt="Bot"
             className="w-full h-full object-cover"
           />
@@ -76,7 +76,7 @@ const Chat: FC<ChatProps> = ({ messages, currentUser, users }) => {
       {/* Chat Area */}
       <div
         ref={containerRef}
-        className="flex-1 overflow-y-auto p-3 bg-[#0B141A] relative"
+        className="flex-1 overflow-y-auto p-3 bg-[#0B141A] relative bg-repeat"
         style={{
           backgroundImage: `url("https://web.whatsapp.com/img/bg-chat-tile-dark_a4be512e7195b6b733d9110b408f075d.png")`,
         }}

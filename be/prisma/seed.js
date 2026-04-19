@@ -1,15 +1,23 @@
+import "dotenv/config";
 import { PrismaClient, Role } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
 import bcrypt from "bcryptjs";
 
-const prisma = new PrismaClient();
+const adapter = new PrismaPg({
+  connectionString: process.env.DATABASE_URL,
+});
+
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
   const hashedAdminPassword = await bcrypt.hash("adminpassword", 10);
   const hashedUserPassword = await bcrypt.hash("userpassword", 10);
 
   // Menambahkan User dengan role ADMIN
-  await prisma.user.create({
-    data: {
+  await prisma.user.upsert({
+    where: { email: "admin@example.com" },
+    update: {},
+    create: {
       name: "Admin User",
       email: "admin@example.com",
       password: hashedAdminPassword,
@@ -18,8 +26,10 @@ async function main() {
   });
 
   // Menambahkan User dengan role USER
-  await prisma.user.create({
-    data: {
+  await prisma.user.upsert({
+    where: { email: "user@example.com" },
+    update: {},
+    create: {
       name: "Regular User",
       email: "user@example.com",
       password: hashedUserPassword,

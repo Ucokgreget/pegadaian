@@ -1,6 +1,17 @@
 "use server";
 
+import { cookies } from "next/headers";
+
 const API_URL = process.env.API_URL;
+
+async function getAuthHeaders(token?: string): Promise<Record<string, string>> {
+  const cookieToken = (await cookies()).get("token")?.value || "";
+  const finalToken = cookieToken || token?.trim() || "";
+  return {
+    Authorization: `Bearer ${finalToken}`,
+    "Content-Type": "application/json",
+  };
+}
 
 export interface Blast {
   id: number;
@@ -14,10 +25,7 @@ export async function getBlastMessages(token: string): Promise<Blast[]> {
   try {
     const res = await fetch(`${API_URL}/chatbot/blast`, {
       method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
+      headers: await getAuthHeaders(token),
     });
 
     if (!res.ok) {
@@ -36,10 +44,7 @@ export async function createBlast(token: string, message: string, recipients: st
   try {
     const res = await fetch(`${API_URL}/chatbot/blast`, {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
+      headers: await getAuthHeaders(token),
       body: JSON.stringify({ message, recipients }),
     });
 

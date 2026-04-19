@@ -15,14 +15,12 @@ dotenv.config();
 let sock;
 let isRestarting = false;
 
-// ========== GANTI FUNGSI API JADI QUERY DATABASE ==========
 
-// 1. Ganti fetch runtime config
 async function getRuntimeConfig(device) {
   try {
     const settings = await prisma.chatbotSettings.findFirst({
       where: { device: device },
-      include: { user: true }, // Kita butuh userId
+      include: { user: true }, 
     });
     return settings;
   } catch (e) {

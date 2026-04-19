@@ -1,5 +1,7 @@
 "use server";
 
+import { cookies } from "next/headers";
+
 const API_URL = process.env.API_URL;
 
 export interface Customer {
@@ -16,16 +18,18 @@ export interface Customer {
 export type CreateCustomerInput = Omit<Customer, "id" | "createdAt" | "userId">;
 export type UpdateCustomerInput = Partial<CreateCustomerInput>;
 
-function getAuthHeaders(token: string) {
+async function getAuthHeaders(token?: string) {
+  const cookieToken = (await cookies()).get("token")?.value || "";
+  const finalToken = cookieToken || token?.trim() || "";
   return {
-    Authorization: `Bearer ${token}`,
+    Authorization: `Bearer ${finalToken}`,
     "Content-Type": "application/json",
   };
 }
 
 export async function getCustomers(token: string): Promise<Customer[]> {
   try {
-    const headers = getAuthHeaders(token);
+    const headers = await getAuthHeaders(token);
     const res = await fetch(`${API_URL}/customer`, {
       method: "GET",
       headers,
@@ -47,7 +51,7 @@ export async function createCustomer(
   data: CreateCustomerInput,
 ): Promise<Customer> {
   try {
-    const headers = getAuthHeaders(token);
+    const headers = await getAuthHeaders(token);
     const res = await fetch(`${API_URL}/customer`, {
       method: "POST",
       headers,
@@ -72,7 +76,7 @@ export async function updateCustomer(
   data: UpdateCustomerInput,
 ): Promise<Customer> {
   try {
-    const headers = getAuthHeaders(token);
+    const headers = await getAuthHeaders(token);
     const res = await fetch(`${API_URL}/customer/${id}`, {
       method: "PUT",
       headers,
@@ -93,7 +97,7 @@ export async function updateCustomer(
 
 export async function deleteCustomer(token: string, id: number): Promise<{ message: string }> {
   try {
-    const headers = getAuthHeaders(token);
+    const headers = await getAuthHeaders(token);
     const res = await fetch(`${API_URL}/customer/${id}`, {
       method: "DELETE",
       headers,

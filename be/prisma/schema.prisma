@@ -4,7 +4,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -59,12 +58,11 @@ model ChatbotSettings {
   userId         Int      @unique  // FIX: pisahkan foreign key untuk User
   isActive       Boolean  @default(false)
   welcomeMessage String   @default("Halo! Terima kasih telah menghubungi kami. Ada yang bisa saya bantu?")
-  device         String?
   aiPrompt       String?
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
 
-  deviceRelation Device   @relation(fields: [deviceId], references: [id]) // FIX: relasi ke Device (bukan User)
+  device Device   @relation(fields: [deviceId], references: [id]) // FIX: relasi ke Device (bukan User)
   user           User     @relation(fields: [userId], references: [id])   // FIX: relasi ke User dengan FK terpisah
 
   @@map("chatbot_settings")
@@ -117,17 +115,35 @@ model Product {
   id          Int      @id @default(autoincrement())
   name        String
   description String?
-  price       Int
-  stock       Int      @default(0)
   imageUrl    String?
   userId      Int
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   user        User     @relation(fields: [userId], references: [id])
-
+  variants    ProductVariant[]
   @@map("products")
 }
+
+model ProductVariant {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  price       Int
+  stock       Int      @default(0)
+  imageUrl    String?  @map("image_url")
+  productId   Int      @map("product_id")
+  sku         String?  @unique
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, name])
+  @@index([productId])
+  @@map("product_variants")
+}
+
 
 model Order {
   id              Int         @id @default(autoincrement())

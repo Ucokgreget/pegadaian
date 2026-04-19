@@ -1,15 +1,28 @@
 "use server";
 
+import { cookies } from "next/headers";
+
 const API_URL = process.env.API_URL;
+
+async function resolveToken(token?: string): Promise<string> {
+  const cookieStore = await cookies();
+  const cookieToken = cookieStore.get("token")?.value || "";
+  return cookieToken || token?.trim() || "";
+}
+
+async function getAuthHeaders(token?: string): Promise<Record<string, string>> {
+  const finalToken = await resolveToken(token);
+  return {
+    Authorization: `Bearer ${finalToken}`,
+    "Content-Type": "application/json",
+  };
+}
 
 export async function getChatbotRuntime(token: string) {
   try {
     const res = await fetch(`${API_URL}/chatbot/runtime`, {
       method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
+      headers: await getAuthHeaders(token),
       next: { tags: ['chatbot-runtime'] }
     });
 
@@ -39,10 +52,7 @@ export async function getChatbotSettings(token: string) {
   try {
     const res = await fetch(`${API_URL}/chatbot/setting`, {
       method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
+      headers: await getAuthHeaders(token),
       next: { tags: ['chatbot-settings'] }
     });
 
@@ -70,10 +80,7 @@ export async function updateChatbotSettings(token: string, data: any) {
   try {
     const res = await fetch(`${API_URL}/chatbot/setting`, {
       method: "PUT",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
+      headers: await getAuthHeaders(token),
       body: JSON.stringify(data),
     });
 
@@ -93,10 +100,7 @@ export async function testChatbot(token: string, message: string, customPrompt?:
   try {
     const res = await fetch(`${API_URL}/chatbot/test`, {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
+      headers: await getAuthHeaders(token),
       body: JSON.stringify({ message, customPrompt }),
     });
 
@@ -116,10 +120,7 @@ export async function connectChatbot(token: string) {
   try {
     const res = await fetch(`${API_URL}/chatbot/connect`, {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
+      headers: await getAuthHeaders(token),
     });
 
     if (!res.ok) {
@@ -138,10 +139,7 @@ export async function disconnectChatbot(token: string) {
   try {
     const res = await fetch(`${API_URL}/chatbot/disconnect`, {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
+      headers: await getAuthHeaders(token),
     });
 
     if (!res.ok) {

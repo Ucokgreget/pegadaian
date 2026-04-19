@@ -15,7 +15,7 @@ import {
 import { getBlastMessages, createBlast, Blast } from "@/actions/wablast";
 
 export default function WaBlastPage() {
-  const token = typeof window !== "undefined" ? localStorage.getItem("token") || "" : "";
+  const token = "";
   const [blasts, setBlasts] = useState<Blast[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 

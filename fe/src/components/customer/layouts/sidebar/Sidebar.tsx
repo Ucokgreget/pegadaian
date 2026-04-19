@@ -21,7 +21,6 @@ import {
   X,
   ReceiptIcon,
 } from "lucide-react";
-import s from "./Sidebar.module.css";
 import { useSidebar } from "./SidebarContext";
 
 // ─── Menu config ──────────────────────────────────────────────────────────────
@@ -58,7 +57,7 @@ const menuItems = [
 function WhatsAppSVG() {
   return (
     <svg
-      className={s.logoFallbackSvg}
+      className="w-[18px] h-[18px] fill-white"
       viewBox="0 0 24 24"
       xmlns="http://www.w3.org/2000/svg"
     >
@@ -75,9 +74,9 @@ export default function Sidebar() {
 
   // Compose sidebar class names
   const sidebarClass = [
-    s.sidebar,
-    collapsed ? s.collapsed : "",
-    mobileOpen ? s.mobileOpen : "",
+    "fixed top-0 left-0 z-40 h-screen bg-background border-r border-border shadow-[4px_0_16px_rgba(0,0,0,0.06),1px_0_0_rgba(34,197,94,0.06)] flex flex-col overflow-hidden font-jakarta transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] before:absolute before:inset-x-0 before:top-0 before:h-[180px] before:bg-[radial-gradient(ellipse_100%_100%_at_50%_0%,rgba(34,197,94,0.07)_0%,transparent_70%)] before:pointer-events-none before:z-0 md:translate-x-0",
+    collapsed ? "w-[68px]" : "w-[256px]",
+    mobileOpen ? "translate-x-0 !w-[256px]" : "max-md:-translate-x-full max-md:!w-[256px]",
   ]
     .filter(Boolean)
     .join(" ");
@@ -87,7 +86,7 @@ export default function Sidebar() {
       {/* ── Mobile hamburger ── */}
       <button
         onClick={() => setMobileOpen((v) => !v)}
-        className={s.mobileToggle}
+        className="fixed top-4 left-4 z-50 flex md:hidden w-10 h-10 items-center justify-center rounded-xl border border-border bg-background text-muted-foreground cursor-pointer transition-all duration-200 shadow-[0_2px_8px_rgba(0,0,0,0.1)] hover:text-green-500 hover:border-green-500/20 hover:bg-green-500/10"
         aria-label="Toggle Sidebar"
       >
         {mobileOpen ? <X size={18} /> : <Menu size={18} />}
@@ -96,14 +95,14 @@ export default function Sidebar() {
       {/* ── Sidebar ── */}
       <aside className={sidebarClass}>
         {/* Header / Logo */}
-        <div className={s.header}>
-          <div className={s.logoWrap}>
+        <div className="relative z-10 flex items-center justify-between h-16 px-4 border-b border-border shrink-0 gap-2">
+          <div className="flex items-center gap-2 overflow-hidden flex-1 min-w-0">
             <Image
-              src="https://cdn.aceimg.com/92020e260.png"
+              src="/logo-web.png"
               alt="Sijaka.id"
-              width={1080}
-              height={1080}
-              className={s.logoImg}
+              width={1000}
+              height={1000}
+              className={`h-auto w-full rounded-md object-contain shrink-0 transition-all duration-300 ease-in-out ${collapsed ? "max-w-[36px] object-cover object-left opacity-80" : "max-w-[200px] opacity-100"}`}
               onError={(e) => {
                 // Hide broken image, show fallback via CSS sibling
                 (e.target as HTMLImageElement).style.display = "none";
@@ -113,29 +112,29 @@ export default function Sidebar() {
               }}
             />
             {/* Fallback icon — hidden by default, shown if image fails */}
-            <div className={s.logoFallback} style={{ display: "none" }}>
+            <div className={`rounded-[10px] bg-gradient-to-br from-green-500 to-green-600 items-center justify-center shrink-0 shadow-[0_3px_10px_rgba(34,197,94,0.3)] transition-all duration-300 ${collapsed ? "w-9 h-9" : "w-9 h-9"}`} style={{ display: "none" }}>
               <WhatsAppSVG />
             </div>
           </div>
 
           {/* Desktop collapse toggle */}
           <button
-            className={s.collapseBtn}
+            className="shrink-0 w-7 h-7 rounded-lg border border-border bg-background text-muted-foreground hidden md:flex items-center justify-center cursor-pointer transition-all duration-200 hover:text-green-500 hover:border-green-500/20 hover:bg-green-500/10"
             onClick={() => setCollapsed((v) => !v)}
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
-            <ChevronLeft className={s.collapseBtnIcon} />
+            <ChevronLeft className={`w-3.5 h-3.5 transition-transform duration-300 ${collapsed ? "rotate-180" : ""}`} />
           </button>
         </div>
 
         {/* Nav */}
-        <nav className={s.nav}>
-          <ul className={s.navList}>
+        <nav className="relative z-10 flex-1 overflow-y-auto overflow-x-hidden p-3 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-border hover:scrollbar-thumb-border/80">
+          <ul className="flex flex-col gap-0.5 m-0 p-0 list-none">
             {menuItems.map((item, index) => {
               if (item.isHeader) {
                 return (
                   <li key={index}>
-                    <div className={s.sectionHeader}>{item.title}</div>
+                    <div className={`px-2.5 text-[0.65rem] font-bold uppercase tracking-[0.1em] text-muted-foreground whitespace-nowrap overflow-hidden transition-all duration-300 ${collapsed ? "opacity-0 max-h-0 m-0" : "opacity-100 max-h-8 mt-5 mb-1.5"} ${index === 0 ? "!mt-0" : ""}`}>{item.title}</div>
                   </li>
                 );
               }
@@ -147,21 +146,21 @@ export default function Sidebar() {
               const Icon = item.icon!;
 
               return (
-                <li key={index} className={s.navItem}>
+                <li key={index} className="relative group/item">
                   <Link
                     href={item.href ?? "#"}
                     onClick={() => setMobileOpen(false)}
-                    className={[s.navLink, isActive ? s.navLinkActive : ""]
-                      .filter(Boolean)
-                      .join(" ")}
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl no-underline text-muted-foreground transition-all duration-200 whitespace-nowrap overflow-hidden relative group/link hover:bg-green-500/10 hover:text-foreground ${isActive ? "bg-green-500/10 text-foreground before:absolute before:left-0 before:top-[20%] before:bottom-[20%] before:w-[3px] before:rounded-r-[3px] before:bg-green-500" : ""}`}
                   >
-                    <Icon className={s.navIcon} />
-                    <span className={s.navLabel}>{item.title}</span>
-                    {isActive && <span className={s.activeDot} />}
+                    <Icon className={`w-[18px] h-[18px] shrink-0 transition-colors duration-200 group-hover/link:text-green-500 ${isActive ? "text-green-500" : ""}`} />
+                    <span className={`text-[0.8375rem] font-medium flex-1 overflow-hidden transition-all duration-300 ${collapsed ? "max-w-0 opacity-0" : "max-w-[160px] opacity-100"}`}>{item.title}</span>
+                    {isActive && <span className={`w-1.5 h-1.5 rounded-full bg-green-500 shrink-0 transition-opacity duration-300 ${collapsed ? "opacity-0" : "opacity-100"}`} />}
                   </Link>
 
                   {/* Tooltip shown only when collapsed */}
-                  <div className={s.navTooltip}>{item.title}</div>
+                  {collapsed && (
+                    <div className="absolute left-[calc(68px+8px)] top-1/2 -translate-y-1/2 bg-foreground text-background text-xs font-semibold px-3 py-1.5 rounded-lg whitespace-nowrap pointer-events-none opacity-0 transition-opacity duration-150 z-[100] shadow-[0_4px_12px_rgba(0,0,0,0.15)] before:absolute before:right-full before:top-1/2 before:-translate-y-1/2 before:border-[5px] before:border-transparent before:border-r-foreground group-hover/item:opacity-100">{item.title}</div>
+                  )}
                 </li>
               );
             })}
@@ -169,8 +168,8 @@ export default function Sidebar() {
         </nav>
 
         {/* Footer — theme toggle */}
-        <div className={s.footer}>
-          <span className={s.footerLabel}>Tema</span>
+        <div className="relative z-10 border-t border-border py-3 px-4 flex items-center justify-between shrink-0 gap-2 overflow-hidden">
+          <span className={`text-xs font-medium text-muted-foreground whitespace-nowrap overflow-hidden transition-all duration-300 ${collapsed ? "max-w-0 opacity-0" : "max-w-[80px] opacity-100"}`}>Tema</span>
           <ThemeToggle />
         </div>
       </aside>
@@ -178,7 +177,7 @@ export default function Sidebar() {
       {/* Mobile overlay */}
       {mobileOpen && (
         <div
-          className={s.overlay}
+          className="fixed inset-0 z-30 bg-black/45 backdrop-blur-[4px] animate-in fade-in duration-200"
           onClick={() => setMobileOpen(false)}
           aria-hidden="true"
         />
