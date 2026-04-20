@@ -1,6 +1,7 @@
 "use server";
 
 import { cookies } from "next/headers";
+import { refreshTokenAction } from "@/actions/auth";
 
 const API_URL = process.env.API_URL;
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
@@ -42,9 +43,8 @@ async function fetchWithRefresh(url: string, options: RequestInit): Promise<Resp
   let res = await fetch(url, options);
 
   if (res.status === 401) {
-    // Pakai absolute URL karena ini server side — relative URL tidak bisa di server
-    const refreshRes = await fetch(`${BASE_URL}/api/refresh`, { method: "POST" });
-    if (!refreshRes.ok) return res;
+    const refreshed = await refreshTokenAction();
+    if (!refreshed) return res;
 
     // Retry dengan token baru
     res = await fetch(url, {

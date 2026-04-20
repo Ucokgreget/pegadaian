@@ -275,3 +275,31 @@ export async function logout(): Promise<{ status: boolean }> {
     };
   }
 }
+
+/* ================= REFRESH TOKEN ================= */
+export async function refreshTokenAction(): Promise<boolean> {
+  try {
+    const cookieStore = await cookies();
+    const refreshToken = cookieStore.get("refreshToken")?.value;
+    if (!refreshToken) return false;
+
+    const res = await fetch(`${API_URL}/refresh`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refreshToken }),
+      cache: "no-store",
+    });
+
+    if (!res.ok) {
+      cookieStore.delete("token");
+      cookieStore.delete("refreshToken");
+      return false;
+    }
+
+    const data = await res.json();
+    cookieStore.set("token", data.accessToken, cookieConfig(60 * 15));
+    return true;
+  } catch (error) {
+    return false;
+  }
+}

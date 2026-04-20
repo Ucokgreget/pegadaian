@@ -146,6 +146,8 @@ function NotifDropdown({
   );
 }
 
+import { logout } from "@/actions/auth";
+
 function ProfileDropdown({
   user,
   onClose,
@@ -155,11 +157,8 @@ function ProfileDropdown({
 }) {
   const handleLogout = async () => {
     try {
-      const res = await fetch("/api/logout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
-      if (res.ok) window.location.href = "/login";
+      const res = await logout();
+      if (res.status) window.location.href = "/login";
       else alert("Logout gagal! Silakan coba lagi.");
     } catch (err) {
       console.error("Error saat logout:", err);

@@ -5,13 +5,14 @@ import makeWASocket, {
 import qrcode from "qrcode-terminal";
 import fs from "fs";
 import path from "path";
+import { prisma } from "../lib/prisma.js";
 
 import {
   getRuntimeConfigByDevice,
   saveConversation,
   updateDeviceForUser,
   checkIfUserExists,
-  markUserAsInteracted
+  markUserAsInteracted,
 } from "../service/chatbot.service.js";
 
 import { askGemini } from "./gemini.js";
@@ -179,21 +180,107 @@ async function startBot() {
     }
 
     // ===== FIRST MESSAGE GREETING =====
-    const hasChatted = await checkIfUserExists(settings.userId, sender)
+    const hasChatted = await checkIfUserExists(settings.userId, sender);
 
     if (!hasChatted) {
       const greeting =
         settings.greetingMessage ||
-        "Halo 👋 Saya asisten resmi kami. Ada yang bisa saya bantu?"
+        "Halo 👋 Saya asisten resmi kami. Ada yang bisa saya bantu?\nKetik *.main* untuk melihat menu utama.";
 
-      await sock.sendMessage(sender, { text: greeting })
+      await sock.sendMessage(sender, { text: greeting });
 
-      await markUserAsInteracted(settings.userId, sender)
+      await markUserAsInteracted(settings.userId, sender);
 
-      await sock.sendPresenceUpdate("available", sender)
-      return
+      await sock.sendPresenceUpdate("available", sender);
+      return;
     }
 
+    // ===== COMMAND HANDLING =====
+    const command = text.trim().toLowerCase();
+
+    // Check if the command is a pure number for product selection
+    const commandNumber = parseInt(command);
+    if (!isNaN(commandNumber) && commandNumber > 0 && commandNumber.toString() === command) {
+      const products = await prisma.product.findMany({
+        where: { userId },
+        orderBy: { createdAt: "desc" },
+        include: { variants: true },
+      });
+
+      const selectedProduct = products[commandNumber - 1];
+      let staticResponse = "";
+
+      if (selectedProduct) {
+        let variantText = selectedProduct.variants && selectedProduct.variants.length > 0
+          ? selectedProduct.variants.map((v, i) => `  ${String.fromCharCode(97 + i)}. ${v.name} - Rp ${v.price.toLocaleString("id-ID")} (Stok: ${v.stock})`).join("\n")
+          : "  Tidak ada varian.";
+
+        staticResponse = `*DETAIL PRODUK*\n\n*Nama:* ${selectedProduct.name}\n*Deskripsi:* ${selectedProduct.description || "-"}\n\n*Varian:*\n${variantText}`;
+      } else {
+        staticResponse = "Maaf, nomor produk tidak ditemukan. Silakan ketik *.produk* untuk melihat daftar produk yang tersedia.";
+      }
+
+      await sock.sendMessage(sender, { text: staticResponse });
+      await saveConversation({
+        userId: settings.userId,
+        sender,
+        message: text,
+        response: staticResponse,
+      });
+      console.log(staticResponse);
+      await sock.sendPresenceUpdate("available", sender);
+      return; // Stop execution
+    }
+
+    if (command.startsWith(".")) {
+      let staticResponse = "";
+
+      if (command === ".main") {
+        staticResponse =
+          "*MAIN MENU*\n\nSilakan pilih opsi berikut:\n👉 *.produk* - Lihat daftar produk dan varian";
+      } else if (command === ".produk") {
+        const products = await prisma.product.findMany({
+          where: {
+            userId,
+          },
+          orderBy: { createdAt: "desc" },
+          select: {
+            id: true,
+            name: true,
+            description: true,
+          },
+        });
+
+        if (products && products.length > 0) {
+          const productList = products
+            .map(
+              (p, index) =>
+                `${index + 1}. ${p.name}\n   - ${p.description || "Tidak ada deskripsi"}`,
+            )
+            .join("\n");
+          staticResponse = `*DAFTAR PRODUK*\n\n${productList}\n\nBalas dengan nama produk atau tanya AI kami untuk info lebih lanjut.`;
+        } else {
+          staticResponse =
+            "*DAFTAR PRODUK*\n\nMaaf, saat ini belum ada produk yang tersedia.";
+        }
+      } else {
+        staticResponse =
+          "Maaf, perintah tidak dikenali. Ketik *.main* untuk melihat menu utama.";
+      }
+
+      await sock.sendMessage(sender, { text: staticResponse });
+      await saveConversation({
+        userId: settings.userId,
+        sender,
+        message: text,
+        response: staticResponse,
+      });
+      console.log(staticResponse);
+      await sock.sendPresenceUpdate("available", sender);
+      return; // Stop execution, block AI response for ANY command starting with "."
+    }
+
+    // ===== AI RESPONSE =====
     const basePrompt = settings.aiPrompt
       ? settings.aiPrompt
       : `

@@ -15,7 +15,7 @@ export function Navbar() {
         <div className="flex items-center gap-2">
           <Link href="/">
             <Image
-              src="/logo-sijaka-png-transparent.png"
+              src="/logo-web.png"
               alt="Sijaka.id Logo"
               width={1080}
               height={1080}
