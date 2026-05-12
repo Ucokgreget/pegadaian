@@ -1,3 +1,4 @@
+//chatbot.service.js
 import { prisma } from "../lib/prisma.js";
 
 export async function getRuntimeConfigByDevice(devicePhone) {
@@ -52,12 +53,12 @@ export async function updateDeviceForUser(userId, devicePhone) {
         status: "CONNECTED",
         packageName: "FREE",
         isActive: true,
-      }
+      },
     });
   } else {
     foundDevice = await prisma.device.update({
       where: { id: foundDevice.id },
-      data: { status: "CONNECTED" }
+      data: { status: "CONNECTED" },
     });
   }
 
@@ -73,9 +74,10 @@ export async function updateDeviceForUser(userId, devicePhone) {
         userId,
         deviceId: foundDevice.id,
         isActive: true,
-        welcomeMessage: "Halo! Terima kasih telah menghubungi kami. Ada yang bisa saya bantu?",
+        welcomeMessage:
+          "Halo! Terima kasih telah menghubungi kami. Ada yang bisa saya bantu?",
         aiPrompt: "",
-      }
+      },
     });
   }
 
@@ -111,3 +113,18 @@ export async function markUserAsInteracted(userId, sender) {
     },
   });
 }
+
+export async function getRecentConversations(userId, sender, limit = 10) {
+  const conversations = await prisma.conversation.findMany({
+    where: {
+      userId,
+      sender,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    take: limit,
+  });
+  return conversations.reverse();
+}
+

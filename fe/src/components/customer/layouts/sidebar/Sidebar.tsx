@@ -20,8 +20,10 @@ import {
   Menu,
   X,
   ReceiptIcon,
+  Book,
 } from "lucide-react";
 import { useSidebar } from "./SidebarContext";
+import { title } from "process";
 
 // ─── Menu config ──────────────────────────────────────────────────────────────
 
@@ -30,6 +32,7 @@ const menuItems = [
   { title: "Overview", href: "/user", icon: LayoutDashboard },
   { isHeader: true, title: "Toko" },
   { title: "Bot Settings", href: "/user/chatbot", icon: Bot },
+  { title: "Knowledge Setting", href: "/user/knowledge", icon: Book },
   { title: "Products", href: "/user/products", icon: Package },
   { title: "Variants Products", href: "/user/variants", icon: Layers },
   { isHeader: true, title: "Transaksi" },
@@ -76,7 +79,9 @@ export default function Sidebar() {
   const sidebarClass = [
     "fixed top-0 left-0 z-40 h-screen bg-background border-r border-border shadow-[4px_0_16px_rgba(0,0,0,0.06),1px_0_0_rgba(34,197,94,0.06)] flex flex-col overflow-hidden font-jakarta transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] before:absolute before:inset-x-0 before:top-0 before:h-[180px] before:bg-[radial-gradient(ellipse_100%_100%_at_50%_0%,rgba(34,197,94,0.07)_0%,transparent_70%)] before:pointer-events-none before:z-0 md:translate-x-0",
     collapsed ? "w-[68px]" : "w-[256px]",
-    mobileOpen ? "translate-x-0 !w-[256px]" : "max-md:-translate-x-full max-md:!w-[256px]",
+    mobileOpen
+      ? "translate-x-0 !w-[256px]"
+      : "max-md:-translate-x-full max-md:!w-[256px]",
   ]
     .filter(Boolean)
     .join(" ");
@@ -112,7 +117,10 @@ export default function Sidebar() {
               }}
             />
             {/* Fallback icon — hidden by default, shown if image fails */}
-            <div className={`rounded-[10px] bg-gradient-to-br from-green-500 to-green-600 items-center justify-center shrink-0 shadow-[0_3px_10px_rgba(34,197,94,0.3)] transition-all duration-300 ${collapsed ? "w-9 h-9" : "w-9 h-9"}`} style={{ display: "none" }}>
+            <div
+              className={`rounded-[10px] bg-gradient-to-br from-green-500 to-green-600 items-center justify-center shrink-0 shadow-[0_3px_10px_rgba(34,197,94,0.3)] transition-all duration-300 ${collapsed ? "w-9 h-9" : "w-9 h-9"}`}
+              style={{ display: "none" }}
+            >
               <WhatsAppSVG />
             </div>
           </div>
@@ -123,7 +131,9 @@ export default function Sidebar() {
             onClick={() => setCollapsed((v) => !v)}
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
-            <ChevronLeft className={`w-3.5 h-3.5 transition-transform duration-300 ${collapsed ? "rotate-180" : ""}`} />
+            <ChevronLeft
+              className={`w-3.5 h-3.5 transition-transform duration-300 ${collapsed ? "rotate-180" : ""}`}
+            />
           </button>
         </div>
 
@@ -134,7 +144,11 @@ export default function Sidebar() {
               if (item.isHeader) {
                 return (
                   <li key={index}>
-                    <div className={`px-2.5 text-[0.65rem] font-bold uppercase tracking-[0.1em] text-muted-foreground whitespace-nowrap overflow-hidden transition-all duration-300 ${collapsed ? "opacity-0 max-h-0 m-0" : "opacity-100 max-h-8 mt-5 mb-1.5"} ${index === 0 ? "!mt-0" : ""}`}>{item.title}</div>
+                    <div
+                      className={`px-2.5 text-[0.65rem] font-bold uppercase tracking-[0.1em] text-muted-foreground whitespace-nowrap overflow-hidden transition-all duration-300 ${collapsed ? "opacity-0 max-h-0 m-0" : "opacity-100 max-h-8 mt-5 mb-1.5"} ${index === 0 ? "!mt-0" : ""}`}
+                    >
+                      {item.title}
+                    </div>
                   </li>
                 );
               }
@@ -152,14 +166,26 @@ export default function Sidebar() {
                     onClick={() => setMobileOpen(false)}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-xl no-underline text-muted-foreground transition-all duration-200 whitespace-nowrap overflow-hidden relative group/link hover:bg-green-500/10 hover:text-foreground ${isActive ? "bg-green-500/10 text-foreground before:absolute before:left-0 before:top-[20%] before:bottom-[20%] before:w-[3px] before:rounded-r-[3px] before:bg-green-500" : ""}`}
                   >
-                    <Icon className={`w-[18px] h-[18px] shrink-0 transition-colors duration-200 group-hover/link:text-green-500 ${isActive ? "text-green-500" : ""}`} />
-                    <span className={`text-[0.8375rem] font-medium flex-1 overflow-hidden transition-all duration-300 ${collapsed ? "max-w-0 opacity-0" : "max-w-[160px] opacity-100"}`}>{item.title}</span>
-                    {isActive && <span className={`w-1.5 h-1.5 rounded-full bg-green-500 shrink-0 transition-opacity duration-300 ${collapsed ? "opacity-0" : "opacity-100"}`} />}
+                    <Icon
+                      className={`w-[18px] h-[18px] shrink-0 transition-colors duration-200 group-hover/link:text-green-500 ${isActive ? "text-green-500" : ""}`}
+                    />
+                    <span
+                      className={`text-[0.8375rem] font-medium flex-1 overflow-hidden transition-all duration-300 ${collapsed ? "max-w-0 opacity-0" : "max-w-[160px] opacity-100"}`}
+                    >
+                      {item.title}
+                    </span>
+                    {isActive && (
+                      <span
+                        className={`w-1.5 h-1.5 rounded-full bg-green-500 shrink-0 transition-opacity duration-300 ${collapsed ? "opacity-0" : "opacity-100"}`}
+                      />
+                    )}
                   </Link>
 
                   {/* Tooltip shown only when collapsed */}
                   {collapsed && (
-                    <div className="absolute left-[calc(68px+8px)] top-1/2 -translate-y-1/2 bg-foreground text-background text-xs font-semibold px-3 py-1.5 rounded-lg whitespace-nowrap pointer-events-none opacity-0 transition-opacity duration-150 z-[100] shadow-[0_4px_12px_rgba(0,0,0,0.15)] before:absolute before:right-full before:top-1/2 before:-translate-y-1/2 before:border-[5px] before:border-transparent before:border-r-foreground group-hover/item:opacity-100">{item.title}</div>
+                    <div className="absolute left-[calc(68px+8px)] top-1/2 -translate-y-1/2 bg-foreground text-background text-xs font-semibold px-3 py-1.5 rounded-lg whitespace-nowrap pointer-events-none opacity-0 transition-opacity duration-150 z-[100] shadow-[0_4px_12px_rgba(0,0,0,0.15)] before:absolute before:right-full before:top-1/2 before:-translate-y-1/2 before:border-[5px] before:border-transparent before:border-r-foreground group-hover/item:opacity-100">
+                      {item.title}
+                    </div>
                   )}
                 </li>
               );
@@ -169,7 +195,11 @@ export default function Sidebar() {
 
         {/* Footer — theme toggle */}
         <div className="relative z-10 border-t border-border py-3 px-4 flex items-center justify-between shrink-0 gap-2 overflow-hidden">
-          <span className={`text-xs font-medium text-muted-foreground whitespace-nowrap overflow-hidden transition-all duration-300 ${collapsed ? "max-w-0 opacity-0" : "max-w-[80px] opacity-100"}`}>Tema</span>
+          <span
+            className={`text-xs font-medium text-muted-foreground whitespace-nowrap overflow-hidden transition-all duration-300 ${collapsed ? "max-w-0 opacity-0" : "max-w-[80px] opacity-100"}`}
+          >
+            Tema
+          </span>
           <ThemeToggle />
         </div>
       </aside>

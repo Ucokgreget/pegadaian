@@ -1,3 +1,4 @@
+//spawnBot.js
 import { fork } from "child_process";
 import { fileURLToPath } from "url";
 import path from "path";
@@ -61,4 +62,21 @@ export function stopBotForUser(userId) {
   child.kill();
   bots.delete(userId);
   console.log(" Bot stopped for user:", userId);
+}
+
+export function sendWAMessage(userId, to, text) {
+  const child = bots.get(userId);
+  if (!child) {
+    console.error(`❌ Bot untuk user ${userId} tidak ditemukan`);
+    return false;
+  }
+
+  child.send({
+    type: "send_wa_message",
+    userId,
+    to,
+    text,
+  });
+
+  return true;
 }

@@ -1,3 +1,4 @@
+//adminController.js
 import { prisma } from "../lib/prisma.js";
 
 export const getAllUsersWithAnalytics = async (req, res) => {
@@ -54,21 +55,21 @@ export const getAllUsersWithAnalytics = async (req, res) => {
         (count, user) =>
           count +
           user.subscriptions.filter((sub) => sub.status === "ACTIVE").length,
-        0
+        0,
       ),
       pendingSubscriptions: users.reduce(
         (count, user) =>
           count +
           user.subscriptions.filter((sub) => sub.status === "PENDING").length,
-        0
+        0,
       ),
       totalProducts: users.reduce(
         (count, user) => count + user._count.products,
-        0
+        0,
       ),
       totalCustomers: users.reduce(
         (count, user) => count + user._count.customers,
-        0
+        0,
       ),
       totalRevenue: users.reduce(
         (total, user) =>
@@ -76,7 +77,7 @@ export const getAllUsersWithAnalytics = async (req, res) => {
           user.subscriptions
             .filter((sub) => sub.status === "ACTIVE")
             .reduce((sum, sub) => sum + sub.package.price, 0),
-        0
+        0,
       ),
     };
     return res.status(200).json({ users, analytics });

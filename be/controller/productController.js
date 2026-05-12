@@ -1,3 +1,4 @@
+//productController.js
 import { prisma } from "../lib/prisma.js";
 
 const productSelect = {

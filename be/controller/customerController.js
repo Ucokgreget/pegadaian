@@ -1,3 +1,4 @@
+//customerController.js
 import { prisma } from "../lib/prisma.js";
 
 // GET All Customers

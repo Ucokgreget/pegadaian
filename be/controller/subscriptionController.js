@@ -1,3 +1,4 @@
+//subscriptionController.js
 import { prisma } from "../lib/prisma.js";
 
 // GET All Subscriptions (with filtering)
@@ -81,10 +82,13 @@ export const getSubscriptionById = async (req, res) => {
 // POST Create Subscription
 export const createSubscription = async (req, res) => {
   try {
-    const { userId, packageId, paymentProofUrl, paymentProofName, adminNotes } = req.body;
+    const { userId, packageId, paymentProofUrl, paymentProofName, adminNotes } =
+      req.body;
 
     if (!userId || !packageId) {
-      return res.status(400).json({ error: "User ID and Package ID are required" });
+      return res
+        .status(400)
+        .json({ error: "User ID and Package ID are required" });
     }
 
     const subscription = await prisma.userSubscription.create({
@@ -147,7 +151,7 @@ export const updateSubscription = async (req, res) => {
         updateData.startDate = new Date();
         // Hitung endDate: sekarang + durasi hari (dalam milidetik)
         updateData.endDate = new Date(
-          Date.now() + subscription.package.durationDays * 24 * 60 * 60 * 1000
+          Date.now() + subscription.package.durationDays * 24 * 60 * 60 * 1000,
         );
       }
     }

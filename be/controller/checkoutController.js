@@ -1,6 +1,13 @@
 import { prisma } from "../lib/prisma.js";
 import { nanoid } from "nanoid";
 import crypto from "crypto";
+import { sendWAMessage } from "../bot/spawnBot.js";
+import { 
+  handleWAOrderCallback,
+  formatPaidNotification,
+  formatOwnerNotification,
+  clearSession
+} from "../service/waOrder.service.js";
 
 const TRIPAY_API_KEY = process.env.TRIPAY_API_KEY;
 const TRIPAY_PRIVATE_KEY = process.env.TRIPAY_PRIVATE_KEY;
@@ -323,5 +330,67 @@ export const handleCallback = async (req, res) => {
     return res
       .status(500)
       .json({ success: false, message: "Internal server error" });
+  }
+};
+
+// ── POST tripay callback WA Order ─────────────────────────────────────────
+export const handleWACallback = async (req, res) => {
+  try {
+    const callbackSignature = req.headers["x-callback-signature"];
+    const json = JSON.stringify(req.body);
+    const expectedSignature = crypto
+      .createHmac("sha256", TRIPAY_PRIVATE_KEY)
+      .update(json)
+      .digest("hex");
+
+    if (callbackSignature !== expectedSignature) {
+      return res.status(400).json({ success: false, message: "Invalid signature" });
+    }
+
+    const { merchant_ref, status, reference } = req.body;
+
+    if (status !== "PAID") {
+      return res.json({ success: true, message: "Status bukan PAID, diabaikan" });
+    }
+
+    // Hanya proses WA- prefix
+    if (!merchant_ref.startsWith("WA-")) {
+      return res.json({ success: true, message: "Bukan WA order" });
+    }
+
+    const waOrder = await handleWAOrderCallback({ merchant_ref, reference });
+
+    // Notifikasi ke customer
+    const customerPhone = waOrder.senderPhone.replace("@s.whatsapp.net", "");
+    const customerMessage = formatPaidNotification(waOrder);
+    sendWAMessage(waOrder.userId, customerPhone, customerMessage);
+
+    // Notifikasi ke pemilik toko (owner)
+    // Ambil device pemilik toko untuk kirim notifikasi
+    const ownerDevice = await prisma.device.findFirst({
+      where: {
+        userId: waOrder.userId,
+        status: "CONNECTED",
+        isActive: true,
+      },
+    });
+
+    if (ownerDevice) {
+      const ownerMessage = formatOwnerNotification(waOrder);
+      sendWAMessage(waOrder.userId, ownerDevice.phone, ownerMessage);
+      console.log(`📤 Notifikasi owner terkirim ke ${ownerDevice.phone}`);
+    } else {
+      console.log(`⚠️ Owner device tidak ditemukan atau tidak connected`);
+    }
+
+    // Clear checkout session customer setelah PAID
+    clearSession(waOrder.senderPhone);
+
+    console.log(`✅ WA Order ${waOrder.orderCode} selesai diproses`);
+
+    return res.json({ success: true, message: "WA Payment processed" });
+  } catch (error) {
+    console.error("handleWACallback error:", error);
+    return res.status(500).json({ success: false, message: "Internal server error" });
   }
 };

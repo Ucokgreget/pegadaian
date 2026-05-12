@@ -1,3 +1,4 @@
+//userController.js
 import { prisma } from "../lib/prisma.js";
 
 // GET All Users with Analytics

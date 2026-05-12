@@ -1,50 +1,56 @@
+//schema.prisma
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-  provider = "postgresql"
+  provider   = "postgresql"
+  extensions = [vector]
 }
 
 model User {
-  id              Int               @id @default(autoincrement())
-  name            String?
-  email           String            @unique
-  password        String
-  role            Role              @default(USER)
-  createdAt       DateTime          @default(now()) @map("created_at")
-  updatedAt       DateTime          @updatedAt @map("updated_at")
+  id        Int      @id @default(autoincrement())
+  name      String?
+  email     String   @unique
+  password  String
+  role      Role     @default(USER)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  accessToken   String?  @db.Text
-  refreshToken  String?  @db.Text
-  rememberToken String?  @db.Text
+  accessToken   String? @db.Text
+  refreshToken  String? @db.Text
+  rememberToken String? @db.Text
 
   // Relations
-  devices         Device[]
-  chatbotSettings ChatbotSettings?
-  conversations   Conversation[]
-  customers       Customer[]
-  contactLists    ContactList[]
-  products        Product[]
-  subscriptions   Subscription[]
-  orders          Order[]
-  invoices        Invoice[]         // FIX: tambah relasi balik dari Invoice
-  payments        Payment[]         // FIX: tambah relasi balik dari Payment
+  devices            Device[]
+  chatbotSettings    ChatbotSettings?
+  knowledgeDocuments KnowledgeDocument[]
+  knowledgeChunks    KnowledgeChunk[]
+  conversations      Conversation[]
+  customers          Customer[]
+  contactLists       ContactList[]
+  products           Product[]
+  subscriptions      Subscription[]
+  orders             Order[]
+  invoices           Invoice[] // FIX: tambah relasi balik dari Invoice
+  payments           Payment[] // FIX: tambah relasi balik dari Payment
+  waOrders           WAOrder[]
 
   @@map("users")
 }
 
 model Device {
-  id              Int              @id @default(autoincrement())
-  userId          Int
-  deviceName      String?
-  phone           String
-  status          String           @default("DISCONNECTED")
-  packageName     String           @default("FREE")
-  expiredAt       DateTime?
-  isActive        Boolean          @default(true)
-  createdAt       DateTime         @default(now()) @map("created_at")
-  updatedAt       DateTime         @updatedAt @map("updated_at")
+  id          Int       @id @default(autoincrement())
+  userId      Int
+  deviceName  String?
+  phone       String
+  status      String    @default("DISCONNECTED")
+  packageName String    @default("FREE")
+  expiredAt   DateTime?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
 
   user            User             @relation(fields: [userId], references: [id])
   chatbotSettings ChatbotSettings? // FIX: relasi balik sudah ada di ChatbotSettings
@@ -54,16 +60,16 @@ model Device {
 
 model ChatbotSettings {
   id             Int      @id @default(autoincrement())
-  deviceId       Int      @unique  // FIX: tambah @unique untuk one-to-one relation
-  userId         Int      @unique  // FIX: pisahkan foreign key untuk User
+  deviceId       Int      @unique // FIX: tambah @unique untuk one-to-one relation
+  userId         Int      @unique // FIX: pisahkan foreign key untuk User
   isActive       Boolean  @default(false)
   welcomeMessage String   @default("Halo! Terima kasih telah menghubungi kami. Ada yang bisa saya bantu?")
   aiPrompt       String?
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
 
-  device Device   @relation(fields: [deviceId], references: [id]) // FIX: relasi ke Device (bukan User)
-  user           User     @relation(fields: [userId], references: [id])   // FIX: relasi ke User dengan FK terpisah
+  device Device @relation(fields: [deviceId], references: [id]) // FIX: relasi ke Device (bukan User)
+  user   User   @relation(fields: [userId], references: [id]) // FIX: relasi ke User dengan FK terpisah
 
   @@map("chatbot_settings")
 }
@@ -77,9 +83,48 @@ model Conversation {
   isIncoming Boolean  @default(true) @map("is_incoming")
   createdAt  DateTime @default(now()) @map("created_at")
 
-  user       User     @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id])
 
   @@map("conversations")
+}
+
+model KnowledgeDocument {
+  id         BigInt   @id @default(autoincrement())
+  userId     Int      @map("user_id")
+  sourceType String   @map("source_type")
+  sourceId   Int?     @map("source_id")
+  title      String
+  content    String
+  metadata   Json?
+  isActive   Boolean  @default(true) @map("is_active")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  user   User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chunks KnowledgeChunk[]
+
+  @@index([userId])
+  @@index([userId, sourceType, sourceId])
+  @@map("knowledge_documents")
+}
+
+model KnowledgeChunk {
+  id         BigInt                     @id @default(autoincrement())
+  documentId BigInt                     @map("document_id")
+  userId     Int                        @map("user_id")
+  chunkIndex Int                        @map("chunk_index")
+  content    String
+  metadata   Json?
+  embedding  Unsupported("vector(768)")
+  createdAt  DateTime                   @default(now()) @map("created_at")
+
+  document KnowledgeDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  user     User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([documentId, chunkIndex])
+  @@index([userId])
+  @@index([documentId])
+  @@map("knowledge_chunks")
 }
 
 model Customer {
@@ -93,7 +138,7 @@ model Customer {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  user      User     @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id])
 
   @@map("customers")
 }
@@ -106,7 +151,7 @@ model ContactList {
   category  String?
   createdAt DateTime @default(now()) @map("created_at")
 
-  user      User     @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id])
 
   @@map("contact_lists")
 }
@@ -120,8 +165,10 @@ model Product {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
-  user        User     @relation(fields: [userId], references: [id])
-  variants    ProductVariant[]
+  user         User             @relation(fields: [userId], references: [id])
+  variants     ProductVariant[]
+  waOrderItems WAOrderItem[]
+
   @@map("products")
 }
 
@@ -143,7 +190,6 @@ model ProductVariant {
   @@index([productId])
   @@map("product_variants")
 }
-
 
 model Order {
   id              Int         @id @default(autoincrement())
@@ -172,7 +218,7 @@ model OrderItem {
   id           Int     @id @default(autoincrement())
   orderId      Int
   addonId      Int?
-  packageId    Int     // FIX: tambah packageId FK
+  packageId    Int // FIX: tambah packageId FK
   itemType     String
   itemName     String
   reference    String?
@@ -183,7 +229,8 @@ model OrderItem {
 
   order   Order   @relation(fields: [orderId], references: [id])
   package Package @relation(fields: [packageId], references: [id]) // FIX: tambah relasi ke Package
-  addon      Addon? @relation(fields: [addonId], references: [id])
+  addon   Addon?  @relation(fields: [addonId], references: [id])
+
   @@map("order_items")
 }
 
@@ -203,10 +250,10 @@ model Package {
   updatedAt     DateTime @updatedAt @map("updated_at")
 
   subscriptions   Subscription[]
-  orders          Order[]          // FIX: tambah relasi balik dari Order
-  orderItems      OrderItem[]      // FIX: relasi balik dari OrderItem (sudah ada, perlu relasi di OrderItem)
+  orders          Order[] // FIX: tambah relasi balik dari Order
+  orderItems      OrderItem[] // FIX: relasi balik dari OrderItem (sudah ada, perlu relasi di OrderItem)
   packageFeatures PackageFeature[] // FIX: tambah relasi balik dari PackageFeature
-  invoiceItems    InvoiceItem[]    // FIX: tambah relasi balik dari InvoiceItem
+  invoiceItems    InvoiceItem[] // FIX: tambah relasi balik dari InvoiceItem
   // REMOVED: packages Package[] — self-relation tidak valid tanpa konfigurasi yang benar
 
   @@map("packages")
@@ -272,9 +319,9 @@ model Invoice {
   createdAt     DateTime      @default(now()) @map("created_at")
   updatedAt     DateTime      @updatedAt @map("updated_at")
 
-  user         User          @relation(fields: [userId], references: [id])   // FIX: relasi balik ditambah di User
+  user         User          @relation(fields: [userId], references: [id]) // FIX: relasi balik ditambah di User
   order        Order         @relation(fields: [orderId], references: [id])
-  subscription Subscription?  // FIX: relasi balik dari Subscription
+  subscription Subscription? // FIX: relasi balik dari Subscription
   payments     Payment[]
   invoiceItems InvoiceItem[]
 
@@ -313,7 +360,7 @@ model Payment {
   createdAt       DateTime      @default(now()) @map("created_at")
   updatedAt       DateTime      @updatedAt @map("updated_at")
 
-  user    User    @relation(fields: [userId], references: [id])    // FIX: relasi balik ditambah di User
+  user    User    @relation(fields: [userId], references: [id]) // FIX: relasi balik ditambah di User
   invoice Invoice @relation(fields: [invoiceId], references: [id])
 
   @@map("payments")
@@ -347,9 +394,51 @@ model Addon {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
-  orderItems  OrderItem[]
+  orderItems OrderItem[]
 
   @@map("addons")
+}
+
+model WAOrder {
+  id              Int           @id @default(autoincrement())
+  userId          Int
+  senderPhone     String
+  customerName    String
+  customerPhone   String
+  address         String
+  city            String
+  postalCode      String?
+  notes           String?
+  subtotal        String?
+  status          WAOrderStatus @default(COLLECTING_INFO)
+  orderCode       String        @unique
+  tripayReference String?
+  paymentUrl      String?
+  paidAt          DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  user  User          @relation(fields: [userId], references: [id])
+  items WAOrderItem[]
+
+  @@map("wa_orders")
+}
+
+model WAOrderItem {
+  id          Int     @id @default(autoincrement())
+  waOrderId   Int
+  productId   Int
+  variantId   Int?
+  productName String
+  variantName String?
+  price       Int
+  qty         Int
+  total       Int
+
+  waOrder WAOrder @relation(fields: [waOrderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+
+  @@map("wa_order_items")
 }
 
 enum PromoType {
@@ -386,5 +475,15 @@ enum PaymentStatus {
 enum SubscriptionStatus {
   ACTIVE
   EXPIRED
+  CANCELLED
+}
+
+enum WAOrderStatus {
+  COLLECTING_INFO
+  PENDING_PAYMENT
+  PAID
+  PROCESSING
+  SHIPPED
+  DONE
   CANCELLED
 }

@@ -23,7 +23,8 @@ import { getPublicPackages } from "./controller/packageController.js";
 import { getPublicFeatures } from "./controller/packageFeatureController.js";
 import checkoutRoute from "./route/checkoutRoute.js";
 import { validatePromoCode } from "./controller/promoCodeController.js";
-import { handleCallback } from "./controller/checkoutController.js";
+import { handleCallback, handleWACallback } from "./controller/checkoutController.js";
+import knowledgeRoute from "./route/knowledge.route.js";
 
 app.use(express.json());
 app.use("/public", express.static("public"));
@@ -41,6 +42,7 @@ app.get("/package/public", getPublicPackages);
 app.get("/package/public/:id/features", getPublicFeatures);
 app.post("/promo/validate", validatePromoCode);
 app.post("/checkout/callback", handleCallback);
+app.post("/checkout/wa-callback", handleWACallback);
 
 // ─── Protected routes ─────────────────────────────────────────────────────
 app.use("/post", requireAuth, postRoute);
@@ -49,6 +51,7 @@ app.use("/product", requireAuth, productRoute);
 app.use("/subscription", requireAuth, subscriptionRoute);
 app.use("/chatbot", requireAuth, chatbotRoute);
 app.use("/product-variant", requireAuth, productVariantRoute);
+app.use("/api/knowledge", knowledgeRoute);
 
 // ─── Admin only ───────────────────────────────────────────────────────────
 app.use(
