@@ -565,6 +565,7 @@ PENTING:
 - HANYA sebut produk yang ada di Informasi Relevan / Daftar Produk
 - JANGAN mengarang produk, harga, atau stok yang tidak ada di context
 - Jika customer bertanya daftar produk, sebutkan SEMUA produk yang ada di context
+- Jika ada "Data Produk Terkini dari Database", SELALU gunakan data tersebut untuk harga, varian, dan stok (lebih akurat dari knowledge base)
 - Jika tidak ada informasi produk, minta customer untuk ketik *.produk*
 
 ATURAN FORMAT WHATSAPP (WAJIB DIIKUTI):
@@ -661,6 +662,42 @@ Untuk tebal, HANYA gunakan *teks* (single asterisk).
           "⚠️ RAG pipeline failed, continuing without context:",
           ragError.message,
         );
+      }
+
+      // --- PRODUCT DATA INJECTION (selalu up-to-date dari DB) ---
+      // Deteksi apakah user menyebut nama produk tertentu → inject data varian terkini
+      try {
+        const allProducts = await prisma.product.findMany({
+          where: { userId: settings.userId },
+          include: { variants: true },
+        });
+
+        const textLower = text.toLowerCase();
+        const matchedProducts = allProducts.filter((p) => {
+          const productWords = p.name.toLowerCase().split(/\s+/).filter(w => w.length > 2);
+          const matchCount = productWords.filter(word => textLower.includes(word)).length;
+          const threshold = productWords.length <= 2 ? 1 : 2;
+          return matchCount >= threshold;
+        });
+
+        if (matchedProducts.length > 0) {
+          console.log(`📋 Product DB injection: matched [${matchedProducts.map(p => p.name).join(", ")}]`);
+          contextText += "\n\nData Produk Terkini dari Database (GUNAKAN INI untuk harga & varian, BUKAN dari knowledge base):\n";
+          matchedProducts.forEach((p, i) => {
+            contextText += `${i + 1}. Produk: ${p.name}\n   Deskripsi: ${p.description || "-"}\n`;
+            if (p.variants && p.variants.length > 0) {
+              contextText += `   Varian yang tersedia:\n`;
+              p.variants.forEach((v) => {
+                contextText += `   - ${v.name}: Rp ${v.price.toLocaleString("id-ID")} (Stok: ${v.stock})${v.description ? ` — ${v.description}` : ""}\n`;
+              });
+            } else {
+              contextText += `   (Tidak ada varian)\n`;
+            }
+            contextText += "\n";
+          });
+        }
+      } catch (dbErr) {
+        console.error("⚠️ Product DB injection failed:", dbErr.message);
       }
     }
 
