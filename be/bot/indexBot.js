@@ -561,6 +561,11 @@ async function startBot() {
     const defaultPrompt = `
 Anda adalah asisten penjualan yang membantu untuk bisnis e-commerce.
 Balas dalam Bahasa Indonesia yang ramah dan profesional.
+PENTING:
+- HANYA sebut produk yang ada di Informasi Relevan / Daftar Produk
+- JANGAN mengarang produk, harga, atau stok yang tidak ada di context
+- Jika customer bertanya daftar produk, sebutkan SEMUA produk yang ada di context
+- Jika tidak ada informasi produk, minta customer untuk ketik *.produk*
 
 ATURAN FORMAT WHATSAPP (WAJIB DIIKUTI):
 - Gunakan *teks* untuk huruf tebal (bukan ** atau ___)
@@ -592,39 +597,71 @@ Untuk tebal, HANYA gunakan *teks* (single asterisk).
 
     // --- RAG INTEGRATION ---
     let contextText = "";
-    try {
-      const embeddingValues = await embedText(text);
-      const embeddingString = `[${embeddingValues.join(",")}]`;
-      const SIMILARITY_THRESHOLD = 0.65;
 
-      const relevantChunks = await prisma.$queryRaw`
-        SELECT content, 1 - (embedding <=> ${embeddingString}::vector) AS similarity
-        FROM "knowledge_chunks"
-        WHERE user_id = ${settings.userId}
-        AND 1 - (embedding <=> ${embeddingString}::vector) >= ${SIMILARITY_THRESHOLD}
-        ORDER BY embedding <=> ${embeddingString}::vector
-        LIMIT 3
-      `;
+    // Deteksi pertanyaan umum tentang daftar produk (bypass RAG)
+    const isGeneralProductQuery = /(ada produk apa|produk apa (saja|aja)|list produk|daftar produk|produk tersedia|apa (saja|aja) produk|jual apa (saja|aja)|apa yang dijual|katalog|semua produk)/i.test(text);
 
-      console.log(
-        "RAG RESULT:",
-        relevantChunks.map((c) => ({
-          similarity: c.similarity,
-          preview: c.content.substring(0, 50),
-        })),
-      );
-
-      if (relevantChunks && relevantChunks.length > 0) {
-        contextText = "Informasi Relevan dari Knowledge Base:\n";
-        relevantChunks.forEach((chunk, i) => {
-          contextText += `${i + 1}. ${chunk.content}\n`;
+    if (isGeneralProductQuery) {
+      console.log("📦 General product query detected, bypassing RAG → fetching all products");
+      try {
+        const allProducts = await prisma.product.findMany({
+          where: { userId: settings.userId },
+          include: { variants: true },
+          orderBy: { createdAt: "desc" },
         });
+
+        if (allProducts.length > 0) {
+          contextText = "Daftar Semua Produk yang Tersedia:\n";
+          allProducts.forEach((p, i) => {
+            contextText += `${i + 1}. Produk: ${p.name}\n   Deskripsi: ${p.description || "-"}\n`;
+            if (p.variants && p.variants.length > 0) {
+              contextText += `   Varian:\n`;
+              p.variants.forEach((v) => {
+                contextText += `   - ${v.name}: Rp ${v.price.toLocaleString("id-ID")} (Stok: ${v.stock})\n`;
+              });
+            }
+            contextText += "\n";
+          });
+        }
+      } catch (err) {
+        console.error("⚠️ Failed to fetch all products:", err.message);
       }
-    } catch (ragError) {
-      console.error(
-        "⚠️ RAG pipeline failed, continuing without context:",
-        ragError.message,
-      );
+    } else {
+      // RAG biasa untuk pertanyaan spesifik
+      try {
+        const embeddingValues = await embedText(text);
+        const embeddingString = `[${embeddingValues.join(",")}]`;
+        const SIMILARITY_THRESHOLD = 0.55;
+
+        const relevantChunks = await prisma.$queryRaw`
+          SELECT content, 1 - (embedding <=> ${embeddingString}::vector) AS similarity
+          FROM "knowledge_chunks"
+          WHERE user_id = ${settings.userId}
+          AND 1 - (embedding <=> ${embeddingString}::vector) >= ${SIMILARITY_THRESHOLD}
+          ORDER BY embedding <=> ${embeddingString}::vector
+          LIMIT 5
+        `;
+
+        console.log(
+          "RAG RESULT:",
+          relevantChunks.map((c) => ({
+            similarity: c.similarity,
+            preview: c.content.substring(0, 50),
+          })),
+        );
+
+        if (relevantChunks && relevantChunks.length > 0) {
+          contextText = "Informasi Relevan dari Knowledge Base:\n";
+          relevantChunks.forEach((chunk, i) => {
+            contextText += `${i + 1}. ${chunk.content}\n`;
+          });
+        }
+      } catch (ragError) {
+        console.error(
+          "⚠️ RAG pipeline failed, continuing without context:",
+          ragError.message,
+        );
+      }
     }
 
     const systemPromptContent =
