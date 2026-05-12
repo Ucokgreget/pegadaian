@@ -30,6 +30,7 @@ import {
   formatCartMessage, formatOrderConfirmation,
   formatPaymentMessage, formatPaidNotification, formatOwnerNotification,
 } from "../service/waOrder.service.js";
+import { match } from "assert";
 
 process.on("uncaughtException", (err) => console.error("❌ UNCAUGHT:", err));
 process.on("unhandledRejection", (err) => console.error("❌ UNHANDLED:", err));
@@ -437,8 +438,14 @@ async function startBot() {
         where:{userId:settings.userId},
         include:{variants: true}
       })
-      const selectedProduct = allProduct.find(p =>
-        text.toLowerCase().includes(p.name.toLowerCase())
+      const selectedProduct = allProducts.find(p => {
+        const productWord = p.name.toLowerCase().split("")
+        const textLower = text.toLowerCase()
+        const matchCount = productWord.filter(word =>
+          word.length > 2 && textLower.includes(word)
+        ).length;
+        return matchCount >= 2;
+        }
       )
       console.log(`🛒 DEBUG products: allProducts=${allProducts.map(p => p.name)}, selectedProduct=${selectedProduct?.name}`);
       if (selectedProduct) {
