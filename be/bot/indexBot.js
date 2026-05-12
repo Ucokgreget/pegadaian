@@ -1,4 +1,3 @@
-//indexBot.js
 import makeWASocket, {
   useMultiFileAuthState,
   fetchLatestBaileysVersion,
@@ -30,7 +29,6 @@ import {
   formatCartMessage, formatOrderConfirmation,
   formatPaymentMessage, formatPaidNotification, formatOwnerNotification,
 } from "../service/waOrder.service.js";
-import { match } from "assert";
 
 process.on("uncaughtException", (err) => console.error("❌ UNCAUGHT:", err));
 process.on("unhandledRejection", (err) => console.error("❌ UNHANDLED:", err));
@@ -59,7 +57,6 @@ process.on("message", async (msg) => {
 
   try {
     const { to, text } = msg;
-    // Format nomor: pastikan pakai format JID WhatsApp
     const jid = to.includes("@s.whatsapp.net") ? to : `${to}@s.whatsapp.net`;
     await sock.sendMessage(jid, { text });
     console.log(`📤 Notifikasi terkirim ke ${jid}`);
@@ -67,29 +64,6 @@ process.on("message", async (msg) => {
     console.error("❌ Gagal kirim notifikasi WA:", error.message);
   }
 });
-
-// // Rate limiter: sender -> { count, windowStart }
-// const rateLimiter = new Map();
-// const RATE_LIMIT_MAX = 10;       // max pesan per window
-// const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 menit
-
-// function isRateLimited(sender) {
-//   const now = Date.now();
-//   const entry = rateLimiter.get(sender);
-
-//   if (!entry || now - entry.windowStart > RATE_LIMIT_WINDOW_MS) {
-//     // Reset window
-//     rateLimiter.set(sender, { count: 1, windowStart: now });
-//     return false;
-//   }
-
-//   if (entry.count >= RATE_LIMIT_MAX) {
-//     return true;
-//   }
-
-//   entry.count += 1;
-//   return false;
-// }
 
 // Runtime config cache: device -> { data, cachedAt }
 const configCache = new Map();
@@ -129,17 +103,6 @@ async function startBot() {
   });
 
   sock.ev.on("creds.update", saveCreds);
-
-  // // Cleanup rate limiter setiap 5 menit
-  // setInterval(() => {
-  //   const now = Date.now();
-  //   for (const [key, entry] of rateLimiter.entries()) {
-  //     if (now - entry.windowStart > RATE_LIMIT_WINDOW_MS) {
-  //       rateLimiter.delete(key);
-  //     }
-  //   }
-  //   console.log(`🧹 Rate limiter cleanup, remaining entries: ${rateLimiter.size}`);
-  // }, 5 * 60 * 1000);
 
   // Cleanup config cache setiap 5 menit
   setInterval(
@@ -276,11 +239,6 @@ async function startBot() {
 
     console.log(`💬 USER ${userId} ← ${sender}: ${text}`);
 
-    // if (isRateLimited(sender)) {
-    //   console.log(`🚫 Rate limited: ${sender}`);
-    //   return;
-    // }
-
     await sock.sendPresenceUpdate("composing", sender);
 
     const device = sock.user.id.split(":")[0];
@@ -309,7 +267,114 @@ async function startBot() {
       return;
     }
 
-    // ===== COMMAND HANDLING =====
+    // ===== CHECKOUT STATE MACHINE (PRIORITAS TERTINGGI) =====
+    // Dicek SEBELUM command handler lainnya agar input angka/teks saat
+    // sedang dalam flow checkout tidak "ditangkap" oleh handler nomor produk
+    const currentStep = getCurrentStep(sender);
+
+    if (currentStep !== CHECKOUT_STEPS.IDLE) {
+      let staticResponse = "";
+      const session = getSession(sender);
+
+      if (currentStep === CHECKOUT_STEPS.CONFIRM_CART) {
+        if (session.pendingProduct) {
+          const choice = parseInt(text);
+          const variants = session.pendingProduct.variants;
+          if (!isNaN(choice) && choice > 0 && choice <= variants.length) {
+            const selectedVariant = variants[choice - 1];
+            addToCart(sender, {
+              productId: session.pendingProduct.productId,
+              productName: `${session.pendingProduct.productName} - ${selectedVariant.name}`,
+              price: selectedVariant.price,
+              qty: 1,
+            });
+            staticResponse = formatCartMessage(sender);
+            setSession(sender, { pendingProduct: null });
+          } else {
+            staticResponse = "Silakan balas dengan nomor varian yang tersedia";
+          }
+        } else {
+          if (text.toUpperCase() === "LANJUT") {
+            setStep(sender, CHECKOUT_STEPS.ASK_NAME);
+            staticResponse = "Silakan masukkan *nama lengkap* penerima:";
+          } else if (text.toUpperCase() === "BATAL") {
+            clearSession(sender);
+            staticResponse = "Pesanan dibatalkan. Ada yang bisa kami bantu? 😊";
+          } else {
+            staticResponse = formatCartMessage(sender);
+          }
+        }
+      } else if (currentStep === CHECKOUT_STEPS.ASK_NAME) {
+        setSession(sender, { shippingData: { ...session.shippingData, customerName: text } });
+        setStep(sender, CHECKOUT_STEPS.ASK_PHONE);
+        staticResponse = "Masukkan *nomor HP* penerima:";
+      } else if (currentStep === CHECKOUT_STEPS.ASK_PHONE) {
+        if (/^[0-9]{10,13}$/.test(text.replace(/\s/g, ""))) {
+          setSession(sender, { shippingData: { ...session.shippingData, phone: text } });
+          setStep(sender, CHECKOUT_STEPS.ASK_ADDRESS);
+          staticResponse = "Masukkan *alamat lengkap* pengiriman:";
+        } else {
+          staticResponse = "Nomor HP tidak valid. Masukkan nomor HP yang benar (10-13 digit):";
+        }
+      } else if (currentStep === CHECKOUT_STEPS.ASK_ADDRESS) {
+        setSession(sender, { shippingData: { ...session.shippingData, address: text } });
+        setStep(sender, CHECKOUT_STEPS.ASK_CITY);
+        staticResponse = "Masukkan *kota* tujuan pengiriman:";
+      } else if (currentStep === CHECKOUT_STEPS.ASK_CITY) {
+        setSession(sender, { shippingData: { ...session.shippingData, city: text } });
+        setStep(sender, CHECKOUT_STEPS.ASK_POSTAL);
+        staticResponse = "Masukkan *kode pos* (atau ketik *SKIP* jika tidak tahu):";
+      } else if (currentStep === CHECKOUT_STEPS.ASK_POSTAL) {
+        const postalCode = text.toUpperCase() === "SKIP" ? null : text;
+        setSession(sender, { shippingData: { ...session.shippingData, postalCode } });
+        setStep(sender, CHECKOUT_STEPS.ASK_NOTES);
+        staticResponse = "Ada *catatan* untuk pesanan? (atau ketik *SKIP* jika tidak ada):";
+      } else if (currentStep === CHECKOUT_STEPS.ASK_NOTES) {
+        const notes = text.toUpperCase() === "SKIP" ? null : text;
+        setSession(sender, { shippingData: { ...session.shippingData, notes } });
+        setStep(sender, CHECKOUT_STEPS.CONFIRM_ORDER);
+        staticResponse = formatOrderConfirmation(sender);
+      } else if (currentStep === CHECKOUT_STEPS.CONFIRM_ORDER) {
+        if (text.toUpperCase() === "BAYAR") {
+          try {
+            const waOrder = await createWAOrder({ userId: settings.userId, senderPhone: sender, user: settings.user });
+            staticResponse = formatPaymentMessage(waOrder.orderCode, waOrder.paymentUrl);
+            setStep(sender, CHECKOUT_STEPS.WAITING_PAYMENT);
+          } catch (error) {
+            staticResponse = "Terjadi kesalahan saat memproses pesanan. Silakan coba balas *BAYAR* lagi.";
+          }
+        } else if (text.toUpperCase() === "BATAL") {
+          clearSession(sender);
+          staticResponse = "Pesanan dibatalkan. Ada yang bisa kami bantu? 😊";
+        } else {
+          staticResponse = formatOrderConfirmation(sender);
+        }
+      } else if (currentStep === CHECKOUT_STEPS.WAITING_PAYMENT) {
+        if (text.toUpperCase() === "BATAL") {
+          await prisma.wAOrder.updateMany({
+            where: { senderPhone: sender, status: "PENDING_PAYMENT" },
+            data: { status: "CANCELLED" },
+          });
+          clearSession(sender);
+          staticResponse = "Pesanan dibatalkan.";
+        } else {
+          staticResponse =
+            "Pesanan kamu sedang menunggu pembayaran 🕐\nSilakan selesaikan pembayaran melalui link yang sudah dikirim.\nKetik *BATAL* untuk membatalkan pesanan.";
+        }
+      }
+
+      await sock.sendMessage(sender, { text: staticResponse });
+      await saveConversation({
+        userId: settings.userId,
+        sender,
+        message: text,
+        response: staticResponse,
+      });
+      await sock.sendPresenceUpdate("available", sender);
+      return;
+    }
+
+    // ===== COMMAND HANDLING (hanya jika IDLE / tidak sedang checkout) =====
     const command = text.trim().toLowerCase();
 
     // Check if the command is a pure number for product selection
@@ -377,7 +442,7 @@ async function startBot() {
       });
       console.log(staticResponse);
       await sock.sendPresenceUpdate("available", sender);
-      return; // Stop execution
+      return;
     }
 
     if (command.startsWith(".")) {
@@ -425,37 +490,56 @@ async function startBot() {
       });
       console.log(staticResponse);
       await sock.sendPresenceUpdate("available", sender);
-      return; // Stop execution, block AI response for ANY command starting with "."
+      return;
     }
 
-    // ===== CHECKOUT STATE MACHINE =====
+    // ===== BUY INTENT DETECTION (saat IDLE) =====
     const buyIntent = /(beli|order|pesan|mau beli|mau order|checkout|ingin beli|ingin pesan)/i.test(text);
-    const currentStep = getCurrentStep(sender);
     console.log(`🛒 DEBUG checkout: buyIntent=${buyIntent}, currentStep=${currentStep}, sender=${sender}`);
 
-    if (buyIntent === true && currentStep === CHECKOUT_STEPS.IDLE) {
+    if (buyIntent === true) {
       const allProducts = await prisma.product.findMany({
-        where:{userId:settings.userId},
-        include:{variants: true}
-      })
-      const selectedProduct = allProducts.find(p => {
-        const productWord = p.name.toLowerCase().split("")
-        const textLower = text.toLowerCase()
-        const matchCount = productWord.filter(word =>
-          word.length > 2 && textLower.includes(word)
+        where: { userId: settings.userId },
+        include: { variants: true },
+      });
+
+      const textLower = text.toLowerCase();
+      // FIX: split(/\s+/) = per kata, BUKAN split("") yang per karakter
+      const selectedProduct = allProducts.find((p) => {
+        const productWords = p.name.toLowerCase().split(/\s+/);
+        const matchCount = productWords.filter(
+          (word) => word.length > 2 && textLower.includes(word),
         ).length;
         return matchCount >= 2;
-        }
-      )
-      console.log(`🛒 DEBUG products: allProducts=${allProducts.map(p => p.name)}, selectedProduct=${selectedProduct?.name}`);
+      });
+
+      console.log(
+        `🛒 DEBUG products: allProducts=[${allProducts.map((p) => p.name).join(", ")}], selectedProduct=${selectedProduct?.name ?? "null"}`,
+      );
+
       if (selectedProduct) {
         if (selectedProduct.variants && selectedProduct.variants.length > 0) {
-          const variantList = selectedProduct.variants.map((v, i) => `${i + 1}. ${v.name} - Rp ${v.price.toLocaleString("id-ID")}`).join("\n");
-          await sock.sendMessage(sender, { text: `*Pilih varian ${selectedProduct.name}:*\n\n${variantList}\n\nBalas dengan nomor varian` });
+          const variantList = selectedProduct.variants
+            .map((v, i) => `${i + 1}. ${v.name} - Rp ${v.price.toLocaleString("id-ID")}`)
+            .join("\n");
+          await sock.sendMessage(sender, {
+            text: `*Pilih varian ${selectedProduct.name}:*\n\n${variantList}\n\nBalas dengan nomor varian`,
+          });
           setStep(sender, CHECKOUT_STEPS.CONFIRM_CART);
-          setSession(sender, { pendingProduct: { productId: selectedProduct.id, productName: selectedProduct.name, variants: selectedProduct.variants } });
+          setSession(sender, {
+            pendingProduct: {
+              productId: selectedProduct.id,
+              productName: selectedProduct.name,
+              variants: selectedProduct.variants,
+            },
+          });
         } else {
-          addToCart(sender, { productId: selectedProduct.id, productName: selectedProduct.name, price: selectedProduct.price || 0, qty: 1 });
+          addToCart(sender, {
+            productId: selectedProduct.id,
+            productName: selectedProduct.name,
+            price: selectedProduct.price || 0,
+            qty: 1,
+          });
           const cartMsg = formatCartMessage(sender);
           await sock.sendMessage(sender, { text: cartMsg });
           setStep(sender, CHECKOUT_STEPS.CONFIRM_CART);
@@ -464,112 +548,13 @@ async function startBot() {
           userId: settings.userId,
           sender,
           message: text,
-          response: "Checkout initiated"
+          response: "Checkout initiated",
         });
         await sock.sendPresenceUpdate("available", sender);
         return;
       }
-    }
-
-    if (currentStep !== CHECKOUT_STEPS.IDLE) {
-      let staticResponse = "";
-      const session = getSession(sender);
-
-      if (currentStep === CHECKOUT_STEPS.CONFIRM_CART) {
-        if (session.pendingProduct) {
-          const choice = parseInt(text);
-          const variants = session.pendingProduct.variants;
-          if (!isNaN(choice) && choice > 0 && choice <= variants.length) {
-            const selectedVariant = variants[choice - 1];
-            addToCart(sender, { 
-              productId: session.pendingProduct.productId, 
-              productName: `${session.pendingProduct.productName} - ${selectedVariant.name}`, 
-              price: selectedVariant.price, 
-              qty: 1 
-            });
-            staticResponse = formatCartMessage(sender);
-            setSession(sender, { pendingProduct: null });
-          } else {
-            staticResponse = "Silakan balas dengan nomor varian yang tersedia";
-          }
-        } else {
-          if (text.toUpperCase() === "LANJUT") {
-            setStep(sender, CHECKOUT_STEPS.ASK_NAME);
-            staticResponse = "Silakan masukkan *nama lengkap* penerima:";
-          } else if (text.toUpperCase() === "BATAL") {
-            clearSession(sender);
-            staticResponse = "Pesanan dibatalkan. Ada yang bisa kami bantu? 😊";
-          } else {
-            staticResponse = formatCartMessage(sender);
-          }
-        }
-      } else if (currentStep === CHECKOUT_STEPS.ASK_NAME) {
-        setSession(sender, { shippingData: { ...session.shippingData, customerName: text } });
-        setStep(sender, CHECKOUT_STEPS.ASK_PHONE);
-        staticResponse = "Masukkan *nomor HP* penerima:";
-      } else if (currentStep === CHECKOUT_STEPS.ASK_PHONE) {
-        if (/^[0-9]{10,13}$/.test(text.replace(/\s/g, ""))) {
-          setSession(sender, { shippingData: { ...session.shippingData, phone: text } });
-          setStep(sender, CHECKOUT_STEPS.ASK_ADDRESS);
-          staticResponse = "Masukkan *alamat lengkap* pengiriman:";
-        } else {
-          staticResponse = "Nomor HP tidak valid. Masukkan nomor HP yang benar (10-13 digit):";
-        }
-      } else if (currentStep === CHECKOUT_STEPS.ASK_ADDRESS) {
-        setSession(sender, { shippingData: { ...session.shippingData, address: text } });
-        setStep(sender, CHECKOUT_STEPS.ASK_CITY);
-        staticResponse = "Masukkan *kota* tujuan pengiriman:";
-      } else if (currentStep === CHECKOUT_STEPS.ASK_CITY) {
-        setSession(sender, { shippingData: { ...session.shippingData, city: text } });
-        setStep(sender, CHECKOUT_STEPS.ASK_POSTAL);
-        staticResponse = "Masukkan *kode pos* (atau ketik *SKIP* jika tidak tahu):";
-      } else if (currentStep === CHECKOUT_STEPS.ASK_POSTAL) {
-        const postalCode = text.toUpperCase() === "SKIP" ? null : text;
-        setSession(sender, { shippingData: { ...session.shippingData, postalCode } });
-        setStep(sender, CHECKOUT_STEPS.ASK_NOTES);
-        staticResponse = "Ada *catatan* untuk pesanan? (atau ketik *SKIP* jika tidak ada):";
-      } else if (currentStep === CHECKOUT_STEPS.ASK_NOTES) {
-        const notes = text.toUpperCase() === "SKIP" ? null : text;
-        setSession(sender, { shippingData: { ...session.shippingData, notes } });
-        setStep(sender, CHECKOUT_STEPS.CONFIRM_ORDER);
-        staticResponse = formatOrderConfirmation(sender);
-      } else if (currentStep === CHECKOUT_STEPS.CONFIRM_ORDER) {
-        if (text.toUpperCase() === "BAYAR") {
-          try {
-            const waOrder = await createWAOrder({ userId: settings.userId, senderPhone: sender, user: settings.user });
-            staticResponse = formatPaymentMessage(waOrder.orderCode, waOrder.paymentUrl);
-            setStep(sender, CHECKOUT_STEPS.WAITING_PAYMENT);
-          } catch (error) {
-            staticResponse = "Terjadi kesalahan saat memproses pesanan. Silakan coba balas *BAYAR* lagi.";
-          }
-        } else if (text.toUpperCase() === "BATAL") {
-          clearSession(sender);
-          staticResponse = "Pesanan dibatalkan. Ada yang bisa kami bantu? 😊";
-        } else {
-          staticResponse = formatOrderConfirmation(sender);
-        }
-      } else if (currentStep === CHECKOUT_STEPS.WAITING_PAYMENT) {
-        if (text.toUpperCase() === "BATAL") {
-          await prisma.wAOrder.updateMany({ 
-            where: { senderPhone: sender, status: "PENDING_PAYMENT" }, 
-            data: { status: "CANCELLED" } 
-          });
-          clearSession(sender);
-          staticResponse = "Pesanan dibatalkan.";
-        } else {
-          staticResponse = "Pesanan kamu sedang menunggu pembayaran 🕐\nSilakan selesaikan pembayaran melalui link yang sudah dikirim.\nKetik *BATAL* untuk membatalkan pesanan.";
-        }
-      }
-
-      await sock.sendMessage(sender, { text: staticResponse });
-      await saveConversation({
-        userId: settings.userId,
-        sender,
-        message: text,
-        response: staticResponse,
-      });
-      await sock.sendPresenceUpdate("available", sender);
-      return;
+      // Produk tidak ditemukan → lanjut ke AI agar tetap helpful
+      console.log(`🛒 Produk tidak ditemukan untuk teks: "${text}"`);
     }
 
     // ===== AI RESPONSE =====
@@ -640,7 +625,6 @@ Untuk tebal, HANYA gunakan *teks* (single asterisk).
         "⚠️ RAG pipeline failed, continuing without context:",
         ragError.message,
       );
-      // contextText tetap "" → AI tetap jalan tanpa RAG context
     }
 
     const systemPromptContent =
