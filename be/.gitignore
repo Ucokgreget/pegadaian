@@ -5,3 +5,8 @@ node_modules
 /generated/prisma
 
 /generated/prisma
+# .gitignore
+be/sessions/
+be/public/uploads/
+node_modules/
+.env

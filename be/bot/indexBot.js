@@ -58,10 +58,7 @@ process.on("message", async (msg) => {
 
   try {
     const { to, text } = msg;
-<<<<<<< HEAD
     // Format nomor: pastikan pakai format JID WhatsApp
-=======
->>>>>>> 2727cfd660f7b1f7917ec6487bb70387c91e660a
     const jid = to.includes("@s.whatsapp.net") ? to : `${to}@s.whatsapp.net`;
     await sock.sendMessage(jid, { text });
     console.log(`📤 Notifikasi terkirim ke ${jid}`);
@@ -70,7 +67,6 @@ process.on("message", async (msg) => {
   }
 });
 
-<<<<<<< HEAD
 // // Rate limiter: sender -> { count, windowStart }
 // const rateLimiter = new Map();
 // const RATE_LIMIT_MAX = 10;       // max pesan per window
@@ -94,8 +90,6 @@ process.on("message", async (msg) => {
 //   return false;
 // }
 
-=======
->>>>>>> 2727cfd660f7b1f7917ec6487bb70387c91e660a
 // Runtime config cache: device -> { data, cachedAt }
 const configCache = new Map();
 const CONFIG_CACHE_TTL_MS = 60 * 1000; // cache 1 menit
@@ -119,53 +113,6 @@ async function getCachedRuntimeConfig(device) {
   return data;
 }
 
-<<<<<<< HEAD
-=======
-/**
- * Cari produk yang paling cocok dari teks pesan user.
- * Strategi (dari prioritas tertinggi ke terendah):
- * 1. Exact match: nama produk ada persis di dalam teks user
- * 2. Word match: semua kata di nama produk ada di teks user (urutan bebas)
- * 3. Partial word match: lebih dari setengah kata nama produk ada di teks user
- */
-function findProductFromText(text, allProducts) {
-  const normalizedText = text.toLowerCase();
-  const textWords = normalizedText.split(/\s+/);
-
-  // Strategi 1: exact substring match
-  const exactMatch = allProducts.find((p) =>
-    normalizedText.includes(p.name.toLowerCase())
-  );
-  if (exactMatch) return exactMatch;
-
-  // Strategi 2: semua kata nama produk ada di teks
-  const fullWordMatch = allProducts.find((p) => {
-    const productWords = p.name.toLowerCase().split(/\s+/);
-    return productWords.every((pw) => textWords.some((tw) => tw.includes(pw) || pw.includes(tw)));
-  });
-  if (fullWordMatch) return fullWordMatch;
-
-  // Strategi 3: lebih dari setengah kata nama produk ada di teks
-  let bestMatch = null;
-  let bestScore = 0;
-  for (const p of allProducts) {
-    const productWords = p.name.toLowerCase().split(/\s+/);
-    const matchCount = productWords.filter((pw) =>
-      textWords.some((tw) => tw.includes(pw) || pw.includes(tw))
-    ).length;
-    const score = matchCount / productWords.length;
-    if (score > bestScore) {
-      bestScore = score;
-      bestMatch = p;
-    }
-  }
-  // Minimal 50% kata cocok
-  if (bestScore >= 0.5) return bestMatch;
-
-  return null;
-}
-
->>>>>>> 2727cfd660f7b1f7917ec6487bb70387c91e660a
 let sock;
 let isRestarting = false;
 
@@ -182,7 +129,6 @@ async function startBot() {
 
   sock.ev.on("creds.update", saveCreds);
 
-<<<<<<< HEAD
   // // Cleanup rate limiter setiap 5 menit
   // setInterval(() => {
   //   const now = Date.now();
@@ -194,8 +140,6 @@ async function startBot() {
   //   console.log(`🧹 Rate limiter cleanup, remaining entries: ${rateLimiter.size}`);
   // }, 5 * 60 * 1000);
 
-=======
->>>>>>> 2727cfd660f7b1f7917ec6487bb70387c91e660a
   // Cleanup config cache setiap 5 menit
   setInterval(
     () => {
@@ -432,7 +376,7 @@ async function startBot() {
       });
       console.log(staticResponse);
       await sock.sendPresenceUpdate("available", sender);
-      return;
+      return; // Stop execution
     }
 
     if (command.startsWith(".")) {
@@ -480,7 +424,7 @@ async function startBot() {
       });
       console.log(staticResponse);
       await sock.sendPresenceUpdate("available", sender);
-      return;
+      return; // Stop execution, block AI response for ANY command starting with "."
     }
 
     // ===== CHECKOUT STATE MACHINE =====
@@ -490,164 +434,6 @@ async function startBot() {
 
     if (buyIntent === true && currentStep === CHECKOUT_STEPS.IDLE) {
       const allProducts = await prisma.product.findMany({
-        where: { userId: settings.userId },
-        include: { variants: true },
-      });
-
-      // FIX: gunakan fungsi pencarian cerdas, bukan hanya exact substring
-      const selectedProduct = findProductFromText(text, allProducts);
-
-      console.log(`🛒 DEBUG products: allProducts=[${allProducts.map((p) => p.name).join(", ")}], selectedProduct=${selectedProduct?.name ?? "null"}`);
-
-      if (selectedProduct) {
-        if (selectedProduct.variants && selectedProduct.variants.length > 0) {
-          const variantList = selectedProduct.variants
-            .map((v, i) => `${i + 1}. ${v.name} - Rp ${v.price.toLocaleString("id-ID")}`)
-            .join("\n");
-          await sock.sendMessage(sender, {
-            text: `*Pilih varian ${selectedProduct.name}:*\n\n${variantList}\n\nBalas dengan nomor varian`,
-          });
-          setStep(sender, CHECKOUT_STEPS.CONFIRM_CART);
-          setSession(sender, {
-            pendingProduct: {
-              productId: selectedProduct.id,
-              productName: selectedProduct.name,
-              variants: selectedProduct.variants,
-            },
-          });
-        } else {
-          addToCart(sender, {
-            productId: selectedProduct.id,
-            productName: selectedProduct.name,
-            price: selectedProduct.price || 0,
-            qty: 1,
-          });
-          const cartMsg = formatCartMessage(sender);
-          await sock.sendMessage(sender, { text: cartMsg });
-          setStep(sender, CHECKOUT_STEPS.CONFIRM_CART);
-        }
-        await saveConversation({
-          userId: settings.userId,
-          sender,
-          message: text,
-          response: "Checkout initiated",
-        });
-        await sock.sendPresenceUpdate("available", sender);
-        return;
-      }
-      // Produk tidak ditemukan → beri tahu user lalu lanjut ke AI agar tetap helpful
-      console.log(`🛒 Produk tidak ditemukan untuk teks: "${text}"`);
-    }
-
-    if (currentStep !== CHECKOUT_STEPS.IDLE) {
-      let staticResponse = "";
-      const session = getSession(sender);
-
-      if (currentStep === CHECKOUT_STEPS.CONFIRM_CART) {
-        if (session.pendingProduct) {
-          const choice = parseInt(text);
-          const variants = session.pendingProduct.variants;
-          if (!isNaN(choice) && choice > 0 && choice <= variants.length) {
-            const selectedVariant = variants[choice - 1];
-            addToCart(sender, {
-              productId: session.pendingProduct.productId,
-              productName: `${session.pendingProduct.productName} - ${selectedVariant.name}`,
-              price: selectedVariant.price,
-              qty: 1,
-            });
-            staticResponse = formatCartMessage(sender);
-            setSession(sender, { pendingProduct: null });
-          } else {
-            staticResponse = "Silakan balas dengan nomor varian yang tersedia";
-          }
-        } else {
-          if (text.toUpperCase() === "LANJUT") {
-            setStep(sender, CHECKOUT_STEPS.ASK_NAME);
-            staticResponse = "Silakan masukkan *nama lengkap* penerima:";
-          } else if (text.toUpperCase() === "BATAL") {
-            clearSession(sender);
-            staticResponse = "Pesanan dibatalkan. Ada yang bisa kami bantu? 😊";
-          } else {
-            staticResponse = formatCartMessage(sender);
-          }
-        }
-      } else if (currentStep === CHECKOUT_STEPS.ASK_NAME) {
-        setSession(sender, { shippingData: { ...session.shippingData, customerName: text } });
-        setStep(sender, CHECKOUT_STEPS.ASK_PHONE);
-        staticResponse = "Masukkan *nomor HP* penerima:";
-      } else if (currentStep === CHECKOUT_STEPS.ASK_PHONE) {
-        if (/^[0-9]{10,13}$/.test(text.replace(/\s/g, ""))) {
-          setSession(sender, { shippingData: { ...session.shippingData, phone: text } });
-          setStep(sender, CHECKOUT_STEPS.ASK_ADDRESS);
-          staticResponse = "Masukkan *alamat lengkap* pengiriman:";
-        } else {
-          staticResponse = "Nomor HP tidak valid. Masukkan nomor HP yang benar (10-13 digit):";
-        }
-      } else if (currentStep === CHECKOUT_STEPS.ASK_ADDRESS) {
-        setSession(sender, { shippingData: { ...session.shippingData, address: text } });
-        setStep(sender, CHECKOUT_STEPS.ASK_CITY);
-        staticResponse = "Masukkan *kota* tujuan pengiriman:";
-      } else if (currentStep === CHECKOUT_STEPS.ASK_CITY) {
-        setSession(sender, { shippingData: { ...session.shippingData, city: text } });
-        setStep(sender, CHECKOUT_STEPS.ASK_POSTAL);
-        staticResponse = "Masukkan *kode pos* (atau ketik *SKIP* jika tidak tahu):";
-      } else if (currentStep === CHECKOUT_STEPS.ASK_POSTAL) {
-        const postalCode = text.toUpperCase() === "SKIP" ? null : text;
-        setSession(sender, { shippingData: { ...session.shippingData, postalCode } });
-        setStep(sender, CHECKOUT_STEPS.ASK_NOTES);
-        staticResponse = "Ada *catatan* untuk pesanan? (atau ketik *SKIP* jika tidak ada):";
-      } else if (currentStep === CHECKOUT_STEPS.ASK_NOTES) {
-        const notes = text.toUpperCase() === "SKIP" ? null : text;
-        setSession(sender, { shippingData: { ...session.shippingData, notes } });
-        setStep(sender, CHECKOUT_STEPS.CONFIRM_ORDER);
-        staticResponse = formatOrderConfirmation(sender);
-      } else if (currentStep === CHECKOUT_STEPS.CONFIRM_ORDER) {
-        if (text.toUpperCase() === "BAYAR") {
-          try {
-            const waOrder = await createWAOrder({ userId: settings.userId, senderPhone: sender, user: settings.user });
-            staticResponse = formatPaymentMessage(waOrder.orderCode, waOrder.paymentUrl);
-            setStep(sender, CHECKOUT_STEPS.WAITING_PAYMENT);
-          } catch (error) {
-            staticResponse = "Terjadi kesalahan saat memproses pesanan. Silakan coba balas *BAYAR* lagi.";
-          }
-        } else if (text.toUpperCase() === "BATAL") {
-          clearSession(sender);
-          staticResponse = "Pesanan dibatalkan. Ada yang bisa kami bantu? 😊";
-        } else {
-          staticResponse = formatOrderConfirmation(sender);
-        }
-      } else if (currentStep === CHECKOUT_STEPS.WAITING_PAYMENT) {
-        if (text.toUpperCase() === "BATAL") {
-          await prisma.wAOrder.updateMany({
-            where: { senderPhone: sender, status: "PENDING_PAYMENT" },
-            data: { status: "CANCELLED" },
-          });
-          clearSession(sender);
-          staticResponse = "Pesanan dibatalkan.";
-        } else {
-          staticResponse =
-            "Pesanan kamu sedang menunggu pembayaran 🕐\nSilakan selesaikan pembayaran melalui link yang sudah dikirim.\nKetik *BATAL* untuk membatalkan pesanan.";
-        }
-      }
-
-      await sock.sendMessage(sender, { text: staticResponse });
-      await saveConversation({
-        userId: settings.userId,
-        sender,
-        message: text,
-        response: staticResponse,
-      });
-      await sock.sendPresenceUpdate("available", sender);
-      return;
-    }
-
-    // ===== CHECKOUT STATE MACHINE =====
-    const buyIntent = /(beli|order|pesan|mau beli|mau order|checkout|ingin beli|ingin pesan)/i.test(text);
-    const currentStep = getCurrentStep(sender);
-    console.log(`🛒 DEBUG checkout: buyIntent=${buyIntent}, currentStep=${currentStep}, sender=${sender}`);
-
-    if (buyIntent === true && currentStep === CHECKOUT_STEPS.IDLE) {
-      const allProduct = await prisma.product.findMany({
         where:{userId:settings.userId},
         include:{variants: true}
       })
@@ -847,10 +633,7 @@ Untuk tebal, HANYA gunakan *teks* (single asterisk).
         "⚠️ RAG pipeline failed, continuing without context:",
         ragError.message,
       );
-<<<<<<< HEAD
       // contextText tetap "" → AI tetap jalan tanpa RAG context
-=======
->>>>>>> 2727cfd660f7b1f7917ec6487bb70387c91e660a
     }
 
     const systemPromptContent =
