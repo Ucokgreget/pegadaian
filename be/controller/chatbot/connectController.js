@@ -1,9 +1,14 @@
 import { spawnBotForUser, stopBotForUser } from "../../bot/spawnBot.js";
+import { setRuntime } from "../../lib/runtimeStore.js";
 import { prisma } from "../../lib/prisma.js";
 
 export const connectBot = async (req, res) => {
   try {
     const userId = parseInt(req.user.id);
+
+    // Reset runtime state agar handler QR di spawnBot tidak men-skip QR pertama
+    // (handler men-skip QR jika status terakhir "connected" / "disconnected")
+    setRuntime(userId, { status: "loading", qr: null });
 
     // Spawn bot immediately so QR can be generated
     spawnBotForUser(userId);
@@ -38,6 +43,7 @@ export const disconnectBot = async (req, res) => {
     const userId = parseInt(req.user.id);
 
     stopBotForUser(userId);
+    setRuntime(userId, { status: "disconnected", qr: null });
 
     const device = await prisma.device.findFirst({ where: { userId } });
     let settings = null;

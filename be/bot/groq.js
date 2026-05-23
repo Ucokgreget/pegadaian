@@ -48,7 +48,7 @@ export async function askGroq(messages) {
       max_completion_tokens: 4096,
       stream: true,
     });
-
+scm-history-item:/home/luqman/Documents/pegadaian?%7B%22repositoryId%22%3A%22scm1_1%22%2C%22historyItemId%22%3A%22c4bbb5986cba718238190f55d1ca7590aab2a756%22%2C%22historyItemParentId%22%3A%22c2111dc322dffa428a166ca1709b72eaf6eb1831%22%2C%22historyItemDisplayId%22%3A%22c4bbb59%22%7D
     let fullText = "";
 
     for await (const chunk of stream) {

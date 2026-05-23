@@ -1,5 +1,8 @@
 import express from "express";
-import { getRuntimeConfig } from "../controller/chatbot/runtimeController.js";
+import {
+  getRuntimeConfig,
+  deleteUserBot,
+} from "../controller/chatbot/runtimeController.js";
 import {
   getUserSetting,
   updateSetting,
@@ -54,5 +57,6 @@ router.get("/blast/pending", getPendingBlast);
 router.get("/blast/completed", getCompletedBlast);
 router.post("/connect", connectBot);
 router.post("/disconnect", disconnectBot);
+router.delete("/auth/session", deleteUserBot);
 
 export default router;

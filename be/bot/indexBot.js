@@ -180,12 +180,12 @@ async function startBot() {
       const statusCode = lastDisconnect?.error?.output?.statusCode;
       console.log("🔴 Connection closed:", statusCode);
 
-      // HARD LOGOUT
-      if (statusCode === 401) {
-        console.log("❌ Logged out, deleting session");
-        fs.rmSync(SESSION_DIR, { recursive: true, force: true });
-        return;
-      }
+      // // HARD LOGOUT
+      // if (statusCode === 401) {
+      //   console.log("❌ Logged out, deleting session");
+      //   fs.rmSync(SESSION_DIR, { recursive: true, force: true });
+      //   return;
+      // }
 
       // PREVENT DOUBLE RESTART
       if (isRestarting) {
@@ -310,7 +310,7 @@ async function startBot() {
         staticResponse = "Masukkan *nomor HP* penerima:";
       } else if (currentStep === CHECKOUT_STEPS.ASK_PHONE) {
         if (/^[0-9]{10,13}$/.test(text.replace(/\s/g, ""))) {
-          setSession(sender, { shippingData: { ...session.shippingData, phone: text } });
+          setSession(sender, { shippingData: { ...session.shippingData, customerPhone: text } });
           setStep(sender, CHECKOUT_STEPS.ASK_ADDRESS);
           staticResponse = "Masukkan *alamat lengkap* pengiriman:";
         } else {
@@ -370,125 +370,6 @@ async function startBot() {
         message: text,
         response: staticResponse,
       });
-      await sock.sendPresenceUpdate("available", sender);
-      return;
-    }
-
-    // ===== COMMAND HANDLING (hanya jika IDLE / tidak sedang checkout) =====
-    const command = text.trim().toLowerCase();
-
-    // Check if the command is a pure number for product selection
-    const commandNumber = parseInt(command);
-    if (
-      !isNaN(commandNumber) &&
-      commandNumber > 0 &&
-      commandNumber.toString() === command
-    ) {
-      const products = await prisma.product.findMany({
-        where: { userId },
-        orderBy: { createdAt: "desc" },
-        include: { variants: true },
-      });
-
-      const selectedProduct = products[commandNumber - 1];
-      let staticResponse = "";
-
-      if (selectedProduct) {
-        let variantText =
-          selectedProduct.variants && selectedProduct.variants.length > 0
-            ? selectedProduct.variants
-                .map(
-                  (v, i) =>
-                    `  ${String.fromCharCode(97 + i)}. ${v.name} - Rp ${v.price.toLocaleString("id-ID")} (Stok: ${v.stock})`,
-                )
-                .join("\n")
-            : "  Tidak ada varian.";
-
-        staticResponse = `*DETAIL PRODUK*\n\n*Nama:* ${selectedProduct.name}\n*Deskripsi:* ${selectedProduct.description || "-"}\n\n*Varian:*\n${variantText}`;
-
-        let messagePayload = { text: staticResponse };
-
-        if (selectedProduct.imageUrl) {
-          if (selectedProduct.imageUrl.startsWith("http")) {
-            messagePayload = {
-              image: { url: selectedProduct.imageUrl },
-              caption: staticResponse,
-            };
-          } else {
-            const localPath = path.join(
-              process.cwd(),
-              selectedProduct.imageUrl,
-            );
-            if (fs.existsSync(localPath)) {
-              messagePayload = {
-                image: fs.readFileSync(localPath),
-                caption: staticResponse,
-              };
-            }
-          }
-        }
-
-        await sock.sendMessage(sender, messagePayload);
-      } else {
-        staticResponse =
-          "Maaf, nomor produk tidak ditemukan. Silakan ketik *.produk* untuk melihat daftar produk yang tersedia.";
-        await sock.sendMessage(sender, { text: staticResponse });
-      }
-      await saveConversation({
-        userId: settings.userId,
-        sender,
-        message: text,
-        response: staticResponse,
-      });
-      console.log(staticResponse);
-      await sock.sendPresenceUpdate("available", sender);
-      return;
-    }
-
-    if (command.startsWith(".")) {
-      let staticResponse = "";
-
-      if (command === ".main") {
-        staticResponse =
-          "*MAIN MENU*\n\nSilakan pilih opsi berikut:\n👉 *.produk* - Lihat daftar produk dan varian";
-      } else if (command === ".produk") {
-        const products = await prisma.product.findMany({
-          where: {
-            userId,
-          },
-          orderBy: { createdAt: "desc" },
-          select: {
-            id: true,
-            name: true,
-            description: true,
-          },
-        });
-
-        if (products && products.length > 0) {
-          const productList = products
-            .map(
-              (p, index) =>
-                `${index + 1}. ${p.name}\n   - ${p.description || "Tidak ada deskripsi"}`,
-            )
-            .join("\n");
-          staticResponse = `*DAFTAR PRODUK*\n\n${productList}\n\nBalas dengan nama produk atau tanya AI kami untuk info lebih lanjut.`;
-        } else {
-          staticResponse =
-            "*DAFTAR PRODUK*\n\nMaaf, saat ini belum ada produk yang tersedia.";
-        }
-      } else {
-        staticResponse =
-          "Maaf, perintah tidak dikenali. Ketik *.main* untuk melihat menu utama.";
-      }
-
-      await sock.sendMessage(sender, { text: staticResponse });
-      await saveConversation({
-        userId: settings.userId,
-        sender,
-        message: text,
-        response: staticResponse,
-      });
-      console.log(staticResponse);
       await sock.sendPresenceUpdate("available", sender);
       return;
     }
@@ -577,7 +458,8 @@ Untuk tebal, HANYA gunakan *teks* (single asterisk).
 - JANGAN gunakan heading markdown (##, ###)
 - Pisahkan setiap produk/item dengan baris kosong
 - Gunakan tanda strip (-) atau angka (1. 2. 3.) untuk list
-- Maksimal 3-4 produk per pesan, sisanya tawarkan untuk lihat lebih lanjut
+- Untuk pertanyaan daftar produk, tampilkan SEMUA produk tanpa batasan
+- Batasan 3-4 produk hanya untuk rekomendasi, bukan daftar lengkap
 - Tutup pesan dengan 1 kalimat ajakan/pertanyaan
 `;
 
@@ -664,26 +546,18 @@ Untuk tebal, HANYA gunakan *teks* (single asterisk).
         );
       }
 
-      // --- PRODUCT DATA INJECTION (selalu up-to-date dari DB) ---
-      // Deteksi apakah user menyebut nama produk tertentu → inject data varian terkini
+      // --- PRODUCT DATA INJECTION (selalu inject semua produk) ---
       try {
         const allProducts = await prisma.product.findMany({
           where: { userId: settings.userId },
           include: { variants: true },
+          orderBy: { createdAt: "desc" },
         });
 
-        const textLower = text.toLowerCase();
-        const matchedProducts = allProducts.filter((p) => {
-          const productWords = p.name.toLowerCase().split(/\s+/).filter(w => w.length > 2);
-          const matchCount = productWords.filter(word => textLower.includes(word)).length;
-          const threshold = productWords.length <= 2 ? 1 : 2;
-          return matchCount >= threshold;
-        });
-
-        if (matchedProducts.length > 0) {
-          console.log(`📋 Product DB injection: matched [${matchedProducts.map(p => p.name).join(", ")}]`);
-          contextText += "\n\nData Produk Terkini dari Database (GUNAKAN INI untuk harga & varian, BUKAN dari knowledge base):\n";
-          matchedProducts.forEach((p, i) => {
+        if (allProducts.length > 0) {
+          console.log(`📋 Product DB injection: ${allProducts.length} products`);
+          contextText += "\n\nData Semua Produk dari Database (GUNAKAN INI untuk harga, varian, dan stok — lebih akurat dari knowledge base):\n";
+          allProducts.forEach((p, i) => {
             contextText += `${i + 1}. Produk: ${p.name}\n   Deskripsi: ${p.description || "-"}\n`;
             if (p.variants && p.variants.length > 0) {
               contextText += `   Varian yang tersedia:\n`;
@@ -707,7 +581,7 @@ Untuk tebal, HANYA gunakan *teks* (single asterisk).
     const recentConvos = await getRecentConversations(
       settings.userId,
       sender,
-      10,
+      5,
     );
     const messages = [];
 

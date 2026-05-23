@@ -12,12 +12,12 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
 import {
   getChatbotRuntime,
   getChatbotSettings,
   connectChatbot,
   disconnectChatbot,
+  resetChatbotSession,
 } from "@/actions/chatbot";
 
 export default function ScanPage() {
@@ -255,23 +255,25 @@ export default function ScanPage() {
                 size="sm"
                 onClick={async () => {
                   if (
-                    confirm(
+                    !confirm(
                       "Are you sure you want to disconnect & reset session?",
                     )
                   ) {
-                    try {
-                      setStatus("loading");
-                      await fetch(`${API_URL}/chatbot/auth/session`, {
-                        method: "DELETE",
-                      });
-                      // Wait a bit for server restart
-                      setTimeout(() => {
-                        fetchQR();
-                      }, 2000);
-                    } catch (e) {
-                      console.error("Reset failed", e);
-                      alert("Failed to reset session");
-                    }
+                    return;
+                  }
+
+                  try {
+                    setStatus("loading");
+                    setQrString("");
+                    await resetChatbotSession(token);
+                    // Beri jeda agar backend selesai menghapus folder session
+                    setTimeout(() => {
+                      fetchQR();
+                    }, 2000);
+                  } catch (e: any) {
+                    console.error("Reset failed", e);
+                    alert(e?.message ?? "Failed to reset session");
+                    fetchQR();
                   }
                 }}
                 className="border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive"

@@ -153,3 +153,22 @@ export async function disconnectChatbot(token: string) {
     throw error;
   }
 }
+
+export async function resetChatbotSession(token: string) {
+  try {
+    const res = await fetch(`${API_URL}/chatbot/auth/session`, {
+      method: "DELETE",
+      headers: await getAuthHeaders(token),
+    });
+
+    if (!res.ok) {
+      const result = await res.json().catch(() => ({}));
+      throw new Error(result.error || "Failed to reset chatbot session");
+    }
+
+    return await res.json();
+  } catch (error) {
+    console.error("ResetChatbotSession error:", error);
+    throw error;
+  }
+}
