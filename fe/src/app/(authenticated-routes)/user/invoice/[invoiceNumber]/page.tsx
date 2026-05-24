@@ -141,23 +141,23 @@ export default function InvoicePage() {
             )}
           </div>
 
-          <div className={s.layout}>
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
             {/* Invoice detail */}
-            <div className={s.invoiceCard}>
+            <div className="bg-card border border-border rounded-xl p-6">
               {/* Header */}
-              <div className={s.invoiceHeader}>
+              <div className="flex justify-between items-start gap-4 flex-wrap">
                 <div>
-                  <h1 className={s.invoiceTitle}>Invoice</h1>
-                  <div className={s.invoiceNumberRow}>
-                    <span className={s.invoiceNumber}>
+                  <h1 className="text-2xl font-bold text-foreground m-0">Invoice</h1>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-[0.875rem] text-muted-foreground font-mono break-all">
                       {invoice.invoiceNumber}
                     </span>
                     <button
                       onClick={() => copyToClipboard(invoice.invoiceNumber)}
-                      className={s.copyBtn}
+                      className="flex items-center justify-center w-6 h-6 rounded-sm border-none bg-transparent cursor-pointer text-muted-foreground transition-colors duration-150 hover:bg-muted"
                       title="Salin nomor invoice"
                     >
-                      <Copy className={s.copyIcon} />
+                      <Copy className="w-3 h-3" />
                     </button>
                   </div>
                 </div>
