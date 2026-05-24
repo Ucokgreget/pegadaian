@@ -80,8 +80,9 @@ model Conversation {
   sender     String
   message    String
   response   String?
-  isIncoming Boolean  @default(true) @map("is_incoming")
-  createdAt  DateTime @default(now()) @map("created_at")
+  isIncoming Boolean  @default(true)   @map("is_incoming")
+  isCheckout Boolean  @default(false)  @map("is_checkout")
+  createdAt  DateTime @default(now())  @map("created_at")
 
   user User @relation(fields: [userId], references: [id])
 

@@ -18,6 +18,7 @@ import {
 
 import { askGemini } from "./gemini.js";
 import { askGroq } from "./groq.js";
+import { askDeepSeek } from "./deepseek.js";
 import { embedText } from "../lib/embedding.js";
 import { type } from "os";
 
@@ -369,6 +370,7 @@ async function startBot() {
         sender,
         message: text,
         response: staticResponse,
+        isCheckout: true
       });
       await sock.sendPresenceUpdate("available", sender);
       return;
@@ -430,6 +432,7 @@ async function startBot() {
           sender,
           message: text,
           response: "Checkout initiated",
+          isCheckout: true
         });
         await sock.sendPresenceUpdate("available", sender);
         return;
@@ -587,7 +590,7 @@ Untuk tebal, HANYA gunakan *teks* (single asterisk).
 
     messages.push({ role: "system", content: systemPromptContent });
 
-    for (const convo of recentConvos) {
+    for (const convo of recentConvos.filter(c => !c.isCheckout)) {
       if (convo.message && !convo.message.startsWith("SYSTEM_EVENT")) {
         messages.push({
           role: convo.isIncoming ? "user" : "assistant",
@@ -600,8 +603,12 @@ Untuk tebal, HANYA gunakan *teks* (single asterisk).
     }
 
     messages.push({ role: "user", content: text });
+    console.log("📨 Messages to DeepSeek:");
+    messages.forEach((m, i) => {
+      console.log(`[${i}] ${m.role.toUpperCase()}: ${m.content.substring(0, 100)}...`);
+    });
 
-    const response = await askGroq(messages);
+    const response = await askDeepSeek(messages);
 
     await sock.sendMessage(sender, { text: response });
 

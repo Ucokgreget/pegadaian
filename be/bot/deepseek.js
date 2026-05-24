@@ -8,29 +8,19 @@ const openai = new OpenAI({
   apiKey: process.env.DEEPSEEK_API_KEY,
 });
 
-async function main() {
-  if (!process.env.DEEPSEEK_API_KEY) {
-    throw new Error(
-      "DEEPSEEK_API_KEY belum di-set. Pastikan ada di .env dan dotenv ter-load."
-    );
-  }
-
-  const completion = await openai.chat.completions.create({
-    messages: [{ role: "system", content: "You are a helpful assistant." }],
-    model: "deepseek-chat",
-    stream: false,
-  });
-
-  console.log(completion.choices[0].message.content);
-}
 
 export async function askDeepSeek(messages) {
     try {
-        const stream = await openai.chat.completions.create({
-            model:
+        const result = await openai.chat.completions.create({
+            model:"deepseek-v4-flash",
+            messages:messages,
+            stream:false,
+            temperature:0.2,
+            max_tokens:1000,
         })
+        return result.choices[0].message.content;
     } catch (error) {
-        
+        console.log("Error deepseek", error)
+        return "Maaf terjadi kesalahan saat memproses permintaan Anda"
     }
 }
-main();

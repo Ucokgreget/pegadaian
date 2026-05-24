@@ -21,6 +21,7 @@ export async function saveConversation({
   message,
   response,
   isIncoming = true,
+  isCheckout 
 }) {
   return prisma.conversation.create({
     data: {
@@ -33,6 +34,7 @@ export async function saveConversation({
       message: message,
       response: response,
       isIncoming: isIncoming,
+      isCheckout: isCheckout
     },
   });
 }
@@ -124,6 +126,12 @@ export async function getRecentConversations(userId, sender, limit = 10) {
       createdAt: "desc",
     },
     take: limit,
+    select:{
+      message:true,
+      response:true,
+      isIncoming:true,
+      isCheckout:true
+    }
   });
   return conversations.reverse();
 }
