@@ -448,7 +448,7 @@ export default function CheckoutPage() {
                       className="px-5 h-11 bg-primary text-primary-foreground border-none rounded-md text-[0.875rem] font-semibold cursor-pointer transition-opacity duration-150 flex items-center whitespace-nowrap hover:not(:disabled):opacity-90 disabled:opacity-45 disabled:cursor-not-allowed"
                     >
                       {isValidatingPromo ? (
-                        <Loader2 className={s.spinSm} />
+                        <Loader2 className="w-4 h-4 animate-spin" />
                       ) : (
                         "Terapkan"
                       )}
