@@ -37,112 +37,87 @@ export default function PricingSectionClient({
           : "grid-cols-2 lg:grid-cols-4 max-sm:grid-cols-1";
 
   return (
-    <section
-      id="harga"
-      className="relative py-20 pb-24 border-t border-border bg-background"
-    >
-      <div className="max-w-[72rem] mx-auto px-6">
+    <section id="harga" className="relative py-24 sm:py-32 bg-white">
+      {/* Background radial gradient */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-[400px] bg-primary/5 blur-[100px] pointer-events-none rounded-full" />
+
+      <div className="relative max-w-[72rem] mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="max-w-[36rem] mb-16">
-          <span className="inline-block text-[0.7rem] font-bold tracking-[0.18em] uppercase text-primary bg-primary/10 border border-primary/20 py-1 px-3 rounded-full">
+        <div className="max-w-[40rem] mx-auto text-center mb-20">
+          <p className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-sm font-semibold uppercase tracking-widest text-primary">
             Harga
-          </span>
-          <h2 className="mt-4 text-[clamp(1.6rem,3vw,2.2rem)] font-bold leading-[1.2] tracking-[-0.03em] text-foreground">
-            Paket fleksibel sesuai{" "}
-            <span className="text-primary">tahap bisnis Anda.</span>
+          </p>
+          <h2 className="mt-6 text-[clamp(1.75rem,3vw,2.5rem)] font-bold tracking-tight text-foreground leading-[1.15]">
+            Investasi yang sesuai dengan <span className="text-primary">tahap bisnis Anda.</span>
           </h2>
-          <p className="mt-3 text-[0.9rem] text-muted-foreground leading-[1.6]">
-            Mulai dari harga yang sangat terjangkau. Upgrade kapan saja saat
-            transaksi Anda meningkat.
+          <p className="mt-4 text-[1.05rem] text-muted-foreground leading-relaxed">
+            Mulai dari harga yang sangat terjangkau. Tidak ada biaya tersembunyi. Upgrade kapan saja saat transaksi Anda meningkat tajam.
           </p>
         </div>
 
-        {/* Cards wrapper — popular card naik ke atas */}
-        <div className={`grid gap-6 items-end ${gridClass}`}>
+        {/* Cards wrapper */}
+        <div className={`grid gap-8 items-stretch ${gridClass}`}>
           {packages.map((pkg, i) => (
             <div
               key={pkg.id}
-              className={`flex flex-col animate-in fade-in slide-in-from-bottom-6 duration-500 ${pkg.isPopular ? "-mt-10 max-sm:mt-0" : ""}`}
-              style={{ animationDelay: `${i * 0.1}s` }}
+              className={`flex flex-col relative animate-in fade-in slide-in-from-bottom-6 duration-700 ${pkg.isPopular ? "lg:-mt-4 max-lg:order-first z-10" : "z-0"}`}
+              style={{ animationDelay: `${i * 0.15}s` }}
             >
-              {/* Popular badge — di ATAS card */}
-              {pkg.isPopular && (
-                <div className="self-center inline-flex items-center gap-[0.35rem] py-[0.45rem] px-[1.1rem] rounded-full bg-foreground text-background text-[0.78rem] font-bold tracking-[0.03em] -mb-[1px] relative z-10 shadow-md">
-                  🔥 Paling Populer
-                </div>
-              )}
-
               <div
-                className={`flex flex-col p-[2rem_1.75rem_1.75rem] rounded-[1.5rem] bg-card border border-border text-center transition-all duration-250 min-h-[520px] hover:-translate-y-1 hover:border-primary/40 hover:shadow-xl ${pkg.isPopular ? "border-primary/35 shadow-lg hover:-translate-y-1.5 hover:shadow-2xl" : ""}`}
+                className={`flex h-full flex-col p-8 sm:p-10 rounded-[1.75rem] bg-white text-center transition-all duration-300 min-h-[520px] 
+                ${pkg.isPopular 
+                  ? "border-2 border-primary shadow-[0_20px_40px_-15px_rgba(16,185,129,0.3)] ring-1 ring-primary/20 scale-100 lg:scale-105" 
+                  : "border border-border shadow-sm hover:shadow-lg hover:border-border/80"}`}
               >
+                {/* Popular badge */}
+                {pkg.isPopular && (
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 inline-flex items-center gap-1.5 py-1.5 px-4 rounded-full bg-gradient-to-r from-emerald-600 to-teal-500 text-white text-[0.8rem] font-bold tracking-wider shadow-lg">
+                    <span>🔥</span> Paling Populer
+                  </div>
+                )}
+
                 {/* Icon */}
                 <div
-                  className={`w-[3.25rem] h-[3.25rem] rounded-[0.9rem] bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center mx-auto mb-5 shadow-md ${pkg.isPopular ? "shadow-lg" : ""}`}
+                  className={`w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-6 
+                    ${pkg.isPopular 
+                      ? "bg-primary text-white shadow-lg shadow-primary/30" 
+                      : "bg-primary/10 text-primary ring-1 ring-primary/20"}`}
                 >
-                  <svg
-                    className="w-[1.4rem] h-[1.4rem] text-white"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                  >
-                    <path
-                      d="M7 17L17 7M17 7H7M17 7V17"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
+                  <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none">
+                    <path d="M7 17L17 7M17 7H7M17 7V17" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </div>
 
                 {/* Plan name */}
-                <h3 className="text-[1.3rem] font-bold text-foreground tracking-[-0.02em] m-0">
+                <h3 className="text-xl font-bold text-foreground m-0">
                   {pkg.name}
                 </h3>
 
-                {/* Sub price (small) */}
-                <p className="text-[0.8rem] text-muted-foreground mt-[0.3rem] mb-0">
+                {/* Main price */}
+                <div className="mt-4 flex items-baseline justify-center gap-1">
+                  <span className={`text-[2.75rem] font-black tracking-tight leading-none ${pkg.isPopular ? "text-foreground" : "text-foreground/90"}`}>
+                    {formatMainPrice(pkg)}
+                  </span>
+                </div>
+                
+                {/* Billing label */}
+                <p className="text-sm font-medium text-muted-foreground mt-2 mb-8">
                   {formatSubPrice(pkg)}
                 </p>
 
-                {/* Main price (huge) */}
-                <p
-                  className={`text-[clamp(2.8rem,6vw,3.8rem)] font-black tracking-[-0.05em] leading-none mt-3 mb-0 ${pkg.isPopular ? "text-primary" : pkg.isCustomPrice ? "text-primary opacity-70" : "text-primary"}`}
-                >
-                  {formatMainPrice(pkg)}
-                </p>
-
-                {/* Billing label */}
-                <p className="text-[0.82rem] text-muted-foreground mt-[0.35rem] mb-6">
-                  /{pkg.billingPeriod}
-                </p>
-
                 {/* Features */}
-                <ul className="list-none p-0 m-0 flex flex-col gap-[0.65rem] text-left">
+                <ul className="list-none p-0 m-0 flex flex-col gap-4 text-left border-t border-border/50 pt-8">
                   {pkg.features.map((f) => (
-                    <li
-                      key={f.id}
-                      className={`flex items-start gap-[0.65rem] ${f.isHighlighted ? "font-semibold text-foreground" : ""}`}
-                    >
-                      <span
-                        className={`w-5 h-5 rounded-full bg-primary/12 border-[1.5px] border-primary/30 flex items-center justify-center shrink-0 mt-[0.1rem] text-primary ${f.isHighlighted ? "bg-primary border-primary text-primary-foreground" : ""}`}
-                      >
-                        <svg
-                          viewBox="0 0 12 10"
-                          fill="none"
-                          className="w-[0.55rem] h-[0.55rem]"
-                        >
-                          <path
-                            d="M1 5l3.5 3.5L11 1"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
+                    <li key={f.id} className="flex items-start gap-3">
+                      <span className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-[0.15rem] 
+                        ${pkg.isPopular || f.isHighlighted 
+                          ? "bg-primary text-white" 
+                          : "bg-primary/10 text-primary"}`}>
+                        <svg viewBox="0 0 12 10" fill="none" className="w-[0.55rem] h-[0.55rem]">
+                          <path d="M1 5l3.5 3.5L11 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                       </span>
-                      <span
-                        className={`text-[0.875rem] leading-[1.45] ${f.isHighlighted ? "font-semibold text-foreground" : "text-muted-foreground"}`}
-                      >
+                      <span className={`text-[0.9rem] leading-[1.45] ${f.isHighlighted ? "font-bold text-foreground" : "text-muted-foreground font-medium"}`}>
                         {f.featureText}
                       </span>
                     </li>
@@ -150,20 +125,23 @@ export default function PricingSectionClient({
                 </ul>
 
                 {/* Spacer */}
-                <div className="flex-1 min-h-[1.5rem]" />
+                <div className="flex-1 min-h-[2rem]" />
 
                 {/* CTA */}
                 {pkg.isCustomPrice ? (
                   <Link
                     href="/contact"
-                    className="w-full py-[0.85rem] px-6 rounded-xl text-[0.9rem] font-semibold cursor-pointer tracking-[0.01em] transition-all duration-200 bg-muted text-foreground border border-border hover:bg-muted/80"
+                    className="w-full py-3.5 px-6 rounded-xl text-[0.95rem] font-bold cursor-pointer transition-all duration-300 bg-slate-100 text-slate-700 hover:bg-slate-200"
                   >
                     Hubungi Kami
                   </Link>
                 ) : (
                   <Link
                     href={`/user/checkout?package=${pkg.id}`}
-                    className={`w-full py-[0.85rem] px-6 rounded-xl text-[0.9rem] font-semibold cursor-pointer tracking-[0.01em] transition-all duration-200 border-none ${pkg.isPopular ? "bg-foreground text-background hover:opacity-90 hover:-translate-y-px hover:shadow-lg" : "bg-muted text-foreground border border-border hover:bg-muted/80"}`}
+                    className={`w-full py-3.5 px-6 rounded-xl text-[0.95rem] font-bold cursor-pointer transition-all duration-300 border-none 
+                      ${pkg.isPopular 
+                        ? "bg-foreground text-white hover:bg-foreground/90 shadow-[0_8px_16px_-4px_rgba(10,22,40,0.2)] hover:-translate-y-0.5" 
+                        : "bg-primary/10 text-primary hover:bg-primary hover:text-white"}`}
                   >
                     Pilih {pkg.name}
                   </Link>
