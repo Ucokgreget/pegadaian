@@ -1,5 +1,4 @@
 // Please install OpenAI SDK first: `npm install openai`
-
 import "dotenv/config";
 import OpenAI from "openai";
 

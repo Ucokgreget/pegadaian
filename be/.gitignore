@@ -6,7 +6,7 @@ node_modules
 
 /generated/prisma
 # .gitignore
-be/sessions/
-be/public/uploads/
+sessions/
+public/uploads/
 node_modules/
 .env

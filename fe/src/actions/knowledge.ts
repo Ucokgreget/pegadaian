@@ -66,3 +66,28 @@ export async function uploadKnowledgeDocument(
     throw error;
   }
 }
+
+export async function uploadKnowledgeFromUrl(
+  token: string,
+  url: string,
+): Promise<any> {
+  try {
+    const headers = await getAuthHeaders(token);
+
+    const res = await fetch(`${API_URL}/api/knowledge/upload-url`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ url }),
+    });
+
+    if (!res.ok) {
+      const result = await res.json();
+      throw new Error(result.error || "Failed to process knowledge from URL");
+    }
+
+    return await res.json();
+  } catch (error) {
+    console.error("UploadKnowledgeFromUrl error:", error);
+    throw error;
+  }
+}

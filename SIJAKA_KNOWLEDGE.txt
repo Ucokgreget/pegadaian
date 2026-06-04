@@ -1,0 +1,318 @@
+# Sijaka.id — Dokumentasi Lengkap Aplikasi
+
+## Apa itu Sijaka.id?
+
+Sijaka.id adalah platform SaaS (Software as a Service) yang membantu para penjual produk digital dan e-commerce mengotomasi seluruh alur bisnis mereka melalui WhatsApp. Dengan Sijaka.id, penjual tidak perlu lagi membalas chat customer satu per satu secara manual. Bot WhatsApp pintar berbasis AI akan menangani percakapan, menampilkan katalog produk, memproses pesanan, menerima pembayaran, dan mengirimkan notifikasi — semuanya otomatis selama 24 jam penuh.
+
+Sijaka.id cocok untuk:
+- Penjual akun premium (streaming, software, game)
+- Toko produk digital (e-book, template, kursus online)
+- UMKM yang berjualan via WhatsApp
+- Siapapun yang ingin mengotomasi proses jual-beli di WhatsApp
+
+---
+
+## Fitur Utama Sijaka.id
+
+### 1. Smart AI Bot
+Bot WhatsApp berbasis kecerdasan buatan yang mampu memahami konteks percakapan. Bot dapat menjawab pertanyaan tentang produk, memberikan rekomendasi, dan memandu customer hingga proses checkout selesai. AI menggunakan beberapa provider: DeepSeek, Gemini, dan Groq.
+
+### 2. Automasi 24/7
+Transaksi tetap berjalan meskipun penjual sedang tidur atau tidak aktif. Bot aktif 24 jam sehari, 7 hari seminggu tanpa jeda.
+
+### 3. Katalog Produk di WhatsApp
+Penjual dapat menambahkan produk beserta varian dan harganya. Customer dapat melihat pilihan produk langsung dari chat WhatsApp dan memilih yang diinginkan.
+
+### 4. Payment Gateway Terintegrasi
+Mendukung berbagai metode pembayaran melalui integrasi Tripay, termasuk QRIS, transfer bank, dan e-wallet. Link pembayaran dikirimkan otomatis ke customer setelah konfirmasi pesanan.
+
+### 5. Knowledge Base (RAG)
+Penjual dapat mengunggah dokumen pengetahuan (PDF, DOCX, TXT) atau konten dari URL website. AI bot akan menggunakan informasi ini untuk menjawab pertanyaan customer dengan lebih akurat dan relevan berdasarkan bisnis spesifik penjual.
+
+### 6. Form Checkout Kustom
+Penjual dapat mengatur sendiri pertanyaan apa saja yang ditanyakan bot kepada customer saat proses checkout. Field bisa ditambah, dihapus, diurutkan ulang, atau dinonaktifkan sesuai kebutuhan bisnis.
+
+### 7. WhatsApp Blast (Broadcast)
+Kirim pesan promosi atau pengumuman ke banyak kontak sekaligus langsung dari dashboard Sijaka.id tanpa perlu aplikasi tambahan.
+
+### 8. Manajemen Pelanggan
+Simpan dan kelola data pelanggan yang pernah bertransaksi atau berinteraksi dengan bot.
+
+### 9. Analitik
+Pantau performa bot, jumlah pesan, revenue, dan metrik bisnis penting lainnya dari dashboard.
+
+### 10. Manajemen Produk dan Varian
+Tambah, edit, dan hapus produk beserta variannya (misalnya: ukuran, warna, tipe) langsung dari dashboard.
+
+---
+
+## Cara Memulai Menggunakan Sijaka.id
+
+### Langkah 1 — Daftar Akun
+Kunjungi website Sijaka.id dan klik tombol "Mulai Gratis Sekarang". Isi formulir pendaftaran dengan nama lengkap, email, dan password. Setelah mendaftar, masuk ke halaman login menggunakan email dan password yang telah dibuat.
+
+### Langkah 2 — Hubungkan WhatsApp
+Masuk ke menu **Bot Settings** di dashboard. Aktifkan bot dengan mengklik toggle "Aktifkan Bot". Sebuah QR code akan muncul — scan QR code tersebut menggunakan aplikasi WhatsApp di ponsel Anda (seperti menghubungkan WhatsApp Web). Setelah berhasil, status bot akan berubah menjadi "Connected".
+
+### Langkah 3 — Setup Produk
+Buka menu **Products** untuk menambahkan produk yang dijual. Isi nama produk, deskripsi, dan gambar. Kemudian buka menu **Variants Products** untuk menambahkan varian produk beserta harga dan stoknya (misalnya: varian Warna Merah seharga Rp 150.000).
+
+### Langkah 4 — Atur Form Checkout
+Buka menu **Form Checkout** untuk mengatur pertanyaan yang akan ditanyakan bot kepada customer saat checkout. Secara default sudah tersedia 6 field standar: Nama Lengkap, Nomor HP, Alamat, Kota, Kode Pos, dan Catatan. Penjual dapat menambah, menghapus, atau mengubah urutan field sesuai kebutuhan.
+
+### Langkah 5 — Upload Knowledge Base (Opsional)
+Buka menu **Knowledge Setting** untuk mengunggah dokumen panduan produk, FAQ, atau informasi bisnis lainnya. AI bot akan menggunakan dokumen ini untuk menjawab pertanyaan customer dengan lebih relevan.
+
+### Langkah 6 — Bot Siap Digunakan
+Setelah semua pengaturan selesai, bot sudah siap menerima dan membalas pesan dari customer secara otomatis.
+
+---
+
+## Panduan Fitur Dashboard
+
+### Overview
+Halaman ringkasan yang menampilkan statistik utama bisnis: total revenue, total pesanan, jumlah pelanggan aktif, dan persentase respon bot. Terdapat juga grafik revenue mingguan, status bot, batas penggunaan, dan daftar transaksi terbaru.
+
+### Bot Settings
+Halaman untuk mengatur konfigurasi bot WhatsApp:
+- **Aktifkan/Nonaktifkan Bot**: Toggle untuk menghidupkan atau mematikan bot.
+- **Pesan Sambutan**: Teks yang dikirim bot saat pertama kali customer mengirim pesan.
+- **AI Prompt Kustom**: Instruksi tambahan untuk mengatur kepribadian dan cara respons AI.
+- **Hubungkan/Putuskan WhatsApp**: Tombol untuk connect atau disconnect nomor WhatsApp melalui scan QR code.
+- **Test Bot**: Fitur untuk mencoba respons AI sebelum digunakan ke customer.
+
+### Knowledge Setting
+Halaman untuk mengelola basis pengetahuan AI:
+- **Upload File**: Unggah dokumen dalam format PDF, DOCX, atau TXT. AI akan mempelajari isi dokumen tersebut.
+- **Upload dari URL**: Masukkan link website, AI akan secara otomatis mengambil dan mempelajari konten halaman tersebut.
+- Dokumen yang sudah diunggah dapat dicari dan dihapus.
+
+### Products
+Halaman untuk mengelola katalog produk:
+- Tambah produk baru dengan nama, deskripsi, dan gambar.
+- Edit atau hapus produk yang sudah ada.
+- Fitur pencarian produk berdasarkan nama atau deskripsi.
+
+### Variants Products
+Halaman untuk mengelola varian dari setiap produk:
+- Setiap produk bisa memiliki banyak varian (contoh: ukuran S/M/L, warna merah/biru).
+- Setiap varian memiliki nama, harga, dan stok tersendiri.
+- Varian dapat diaktifkan atau dinonaktifkan.
+
+### Form Checkout
+Halaman untuk mengatur pertanyaan form checkout:
+- **Tambah Field**: Buat pertanyaan baru yang akan ditanyakan bot saat checkout.
+- **Edit Field**: Ubah label, pertanyaan, atau tipe input dari field yang sudah ada.
+- **Urutkan Field**: Gunakan tombol panah atas/bawah untuk mengubah urutan pertanyaan. Klik "Simpan Urutan" setelah selesai.
+- **Aktifkan/Nonaktifkan**: Klik ikon centang hijau/silang untuk mengaktifkan atau menonaktifkan field tanpa menghapusnya.
+- **Hapus Field**: Hapus permanen field yang tidak diperlukan.
+- **Preview**: Tampilkan simulasi urutan pertanyaan yang akan muncul di WhatsApp.
+
+Konfigurasi field checkout:
+- **Label**: Nama kolom yang muncul di konfirmasi pesanan (contoh: "Nama Lengkap").
+- **Field Key**: Identifier unik untuk field tersebut, gunakan camelCase (contoh: `customerName`). Field key standar yang terintegrasi dengan sistem: `customerName`, `customerPhone`, `address`, `city`, `postalCode`, `notes`.
+- **Pertanyaan**: Teks yang dikirim bot kepada customer (contoh: "Silakan masukkan nama lengkap penerima:"). Gunakan *teks* untuk huruf tebal di WhatsApp.
+- **Tipe Input**: Teks biasa, Nomor HP (dengan validasi 10-13 digit otomatis), atau Teks Panjang.
+- **Wajib Diisi**: Jika diaktifkan, customer harus mengisi field ini (tidak bisa di-skip).
+- **Aktif**: Jika dinonaktifkan, field ini tidak akan ditanyakan saat checkout.
+
+### Orders
+Halaman untuk memantau semua transaksi yang masuk melalui WhatsApp. Menampilkan detail pesanan, status pembayaran, dan informasi customer.
+
+### Customers
+Halaman untuk mengelola data pelanggan yang pernah berinteraksi dengan bot.
+
+### Broadcast (WA Blast)
+Halaman untuk mengirim pesan massal:
+- Tulis pesan yang ingin dikirim.
+- Masukkan nomor tujuan (satu per baris atau dipisahkan koma).
+- Klik kirim untuk menjalankan broadcast.
+- Riwayat broadcast ditampilkan dengan status PENDING, COMPLETED, atau FAILED.
+
+### Analytics
+Halaman untuk melihat data performa bot dan bisnis secara keseluruhan.
+
+### Subscription
+Halaman untuk melihat riwayat langganan paket Sijaka.id dan status berlangganan aktif.
+
+### Invoice
+Halaman untuk melihat semua tagihan pembayaran paket berlangganan.
+
+---
+
+## Alur Pembelian via WhatsApp (Customer)
+
+Berikut adalah alur lengkap yang dialami customer saat berbelanja melalui WhatsApp yang terhubung dengan Sijaka.id:
+
+### 1. Mengirim Pesan Pertama
+Saat customer pertama kali mengirim pesan ke nomor WhatsApp toko, bot akan membalas dengan pesan sambutan yang telah diatur penjual.
+
+### 2. Tanya Jawab Produk
+Customer dapat bertanya tentang produk, harga, ketersediaan stok, atau informasi lainnya. AI bot akan menjawab berdasarkan data produk dan knowledge base yang telah diunggah.
+
+### 3. Memulai Pembelian
+Untuk memesan, customer mengirim pesan yang mengandung niat beli dan nama produk. Contoh pesan yang valid:
+- "mau beli [nama produk]"
+- "order [nama produk]"
+- "pesan [nama produk]"
+- "ingin beli [nama produk]"
+- "checkout [nama produk]"
+
+Contoh: "mau beli baju batik" atau "order soundcore r60i"
+
+Catatan penting: nama produk dalam pesan harus mengandung setidaknya satu kata yang ada dalam nama produk di sistem. Semakin banyak kata yang cocok, semakin akurat pemilihan produk.
+
+### 4. Pilih Varian (jika ada)
+Jika produk memiliki varian, bot akan menampilkan daftar pilihan varian beserta harga. Customer cukup membalas dengan nomor varian yang dipilih (contoh: "1" untuk varian pertama).
+
+### 5. Konfirmasi Keranjang
+Bot menampilkan ringkasan keranjang belanja dengan total harga. Customer memilih:
+- Ketik **LANJUT** untuk melanjutkan ke pengisian data pengiriman.
+- Ketik **BATAL** untuk membatalkan pesanan.
+
+### 6. Pengisian Data Pengiriman
+Bot akan menanyakan data yang diperlukan satu per satu sesuai konfigurasi form checkout penjual. Secara default:
+1. **Nama Lengkap** — wajib diisi
+2. **Nomor HP** — wajib diisi, harus 10-13 digit angka
+3. **Alamat Lengkap** — wajib diisi
+4. **Kota** — wajib diisi
+5. **Kode Pos** — opsional, ketik **SKIP** jika tidak tahu
+6. **Catatan** — opsional, ketik **SKIP** jika tidak ada
+
+Untuk field yang tidak wajib (opsional), customer dapat mengetik **SKIP** untuk melewatinya.
+
+### 7. Konfirmasi Pesanan
+Setelah semua data terisi, bot menampilkan ringkasan lengkap pesanan termasuk detail produk dan data pengiriman. Customer memilih:
+- Ketik **BAYAR** untuk melanjutkan ke pembayaran.
+- Ketik **BATAL** untuk membatalkan pesanan.
+
+### 8. Pembayaran
+Bot mengirimkan link pembayaran (QRIS atau metode lain sesuai konfigurasi). Customer membuka link tersebut dan menyelesaikan pembayaran. Link pembayaran berlaku selama 24 jam.
+
+Saat menunggu pembayaran:
+- Ketik **BATAL** untuk membatalkan pesanan.
+
+### 9. Konfirmasi Pembayaran Otomatis
+Setelah pembayaran berhasil terverifikasi oleh sistem, bot secara otomatis:
+- Mengirim notifikasi "Pembayaran Berhasil" ke customer beserta detail pesanan.
+- Mengirim notifikasi pesanan baru ke pemilik toko.
+
+---
+
+## Kata Kunci Bot WhatsApp
+
+| Kata Kunci | Kapan Digunakan | Efek |
+|---|---|---|
+| mau beli / order / pesan / ingin beli / checkout | Saat IDLE (tidak dalam proses apapun) | Memulai proses pembelian |
+| LANJUT | Setelah melihat keranjang | Lanjut ke pengisian data pengiriman |
+| BATAL | Kapan saja selama proses berlangsung | Membatalkan pesanan dan kembali ke normal |
+| SKIP | Saat mengisi field opsional | Melewati pertanyaan tersebut |
+| BAYAR | Saat konfirmasi pesanan | Membuat order dan mendapat link pembayaran |
+
+---
+
+## Paket Harga Sijaka.id
+
+Sijaka.id tersedia dalam beberapa paket berlangganan bulanan:
+
+### Free (Gratis)
+- Cocok untuk mencoba fitur dasar Sijaka.id
+- Akses ke fitur bot dasar
+- Tersedia tanpa biaya
+
+### Basic — Rp 99.000/bulan
+- Akses ke lebih banyak fitur
+- Cocok untuk penjual yang baru mulai mengotomasi bisnis
+
+### Reguler — Rp 199.000/bulan ⭐ Paling Populer
+- Fitur lengkap untuk bisnis yang sedang berkembang
+- Rekomendasi untuk sebagian besar penjual
+
+### Premium — Rp 349.000/bulan
+- Fitur paling lengkap tanpa batasan
+- Cocok untuk bisnis berskala besar
+
+Setiap paket memiliki fitur detail yang ditampilkan di halaman harga website Sijaka.id. Upgrade atau perubahan paket dapat dilakukan kapan saja dari menu Subscription di dashboard.
+
+---
+
+## Cara Berlangganan Paket
+
+1. Login ke dashboard Sijaka.id.
+2. Buka menu **Subscription** di sidebar.
+3. Pilih paket yang diinginkan.
+4. Pilih metode pembayaran yang tersedia.
+5. Selesaikan pembayaran sesuai instruksi.
+6. Paket aktif secara otomatis setelah pembayaran terverifikasi.
+7. Invoice tagihan dapat dilihat di menu **Invoice**.
+
+---
+
+## Panel Admin Sijaka.id
+
+Admin Sijaka.id (pengelola platform) memiliki akses ke panel khusus untuk mengelola seluruh platform:
+
+### Packages
+Kelola paket layanan yang ditawarkan kepada pengguna: tambah paket baru, ubah harga, atur fitur, aktifkan/nonaktifkan paket.
+
+### Subscriptions
+Pantau semua data berlangganan pengguna, status aktif/kadaluarsa, dan riwayat pembayaran.
+
+### Users
+Kelola seluruh data pengguna terdaftar: lihat detail akun, edit informasi, atau hapus akun pengguna.
+
+### Promo Codes
+Buat dan kelola kode promo untuk diskon paket berlangganan. Atur tipe diskon (nominal atau persen), nilai diskon, kuota pemakaian, dan masa berlaku.
+
+---
+
+## Pertanyaan yang Sering Ditanyakan (FAQ)
+
+**Apakah perlu keahlian coding untuk menggunakan Sijaka.id?**
+Tidak perlu. Semua fitur dirancang dengan antarmuka yang sederhana dan mudah digunakan oleh siapapun tanpa latar belakang teknis.
+
+**Apakah Sijaka.id aman?**
+Ya. Integrasi WhatsApp menggunakan standar keamanan yang terpercaya. Data pengguna dan transaksi dilindungi dengan enkripsi.
+
+**Bisakah dipakai untuk banyak produk?**
+Bisa. Tidak ada batasan jumlah produk yang dapat dikelola dalam satu akun Sijaka.id (tergantung paket yang dipilih).
+
+**Apa yang terjadi jika customer mengirim pesan saat bot sedang mati (disconnected)?**
+Bot tidak akan merespons pesan yang masuk selama dalam kondisi disconnected. Setelah bot dihidupkan kembali, pesan lama tidak akan diproses ulang.
+
+**Apakah bisa menggunakan nomor WhatsApp biasa (non-Business)?**
+Sijaka.id menggunakan Baileys yang mendukung WhatsApp reguler. Nomor WhatsApp biasa bisa digunakan.
+
+**Bagaimana jika customer mengetik nama produk tidak persis sama?**
+Bot menggunakan algoritma pencocokan cerdas berdasarkan kata kunci. Selama pesan customer mengandung setidaknya satu kata kunci dari nama produk, bot akan mencoba mencocokkannya. Semakin banyak kata yang cocok, semakin akurat hasilnya.
+
+**Apakah bisa mengubah pertanyaan checkout?**
+Bisa. Buka menu Form Checkout di dashboard untuk menambah, mengedit, menghapus, atau mengubah urutan pertanyaan yang ditanyakan bot kepada customer saat checkout.
+
+**Bagaimana cara menambah pengetahuan untuk AI bot?**
+Buka menu Knowledge Setting, lalu unggah file dokumen (PDF/DOCX/TXT) atau masukkan URL website yang ingin dijadikan referensi. AI akan secara otomatis mempelajari konten tersebut.
+
+**Apakah link pembayaran bisa kadaluarsa?**
+Ya. Link pembayaran yang dikirimkan kepada customer berlaku selama 24 jam sejak diterbitkan.
+
+**Bagaimana cara broadcast pesan ke banyak customer?**
+Buka menu Broadcast di dashboard, tulis pesan, masukkan nomor tujuan (satu per baris atau dipisahkan koma), lalu klik kirim.
+
+**Apakah bot bisa menjawab pertanyaan di luar topik produk?**
+Bot AI dapat menjawab pertanyaan umum, namun tetap dipandu untuk fokus pada topik produk dan bisnis. Bot tidak akan mensimulasikan proses checkout di luar sistem — jika customer ingin membeli, bot akan mengarahkan untuk mengetik perintah yang tepat.
+
+---
+
+## Informasi Teknis
+
+- **Website**: sijaka.id
+- **Platform**: Aplikasi web (dapat diakses dari browser di komputer maupun ponsel)
+- **Integrasi Pembayaran**: Tripay (QRIS, transfer bank, e-wallet)
+- **Teknologi AI**: DeepSeek, Google Gemini, Groq
+- **Kompatibilitas WhatsApp**: WhatsApp reguler dan WhatsApp Business
+
+---
+
+## Kontak dan Dukungan
+
+Untuk pertanyaan lebih lanjut, bantuan teknis, atau informasi tentang paket enterprise, silakan hubungi tim Sijaka.id melalui website resmi di sijaka.id.

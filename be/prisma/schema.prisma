@@ -21,6 +21,7 @@ model User {
   accessToken   String? @db.Text
   refreshToken  String? @db.Text
   rememberToken String? @db.Text
+  googleId      String? @unique // Google OAuth subject ID
 
   // Relations
   devices            Device[]
@@ -36,6 +37,7 @@ model User {
   invoices           Invoice[] // FIX: tambah relasi balik dari Invoice
   payments           Payment[] // FIX: tambah relasi balik dari Payment
   waOrders           WAOrder[]
+  checkoutFields     CheckoutField[]
 
   @@map("users")
 }
@@ -411,6 +413,7 @@ model WAOrder {
   postalCode      String?
   notes           String?
   subtotal        String?
+  shippingData    Json?         // stores all dynamic checkout field values
   status          WAOrderStatus @default(COLLECTING_INFO)
   orderCode       String        @unique
   tripayReference String?
@@ -477,6 +480,24 @@ enum SubscriptionStatus {
   ACTIVE
   EXPIRED
   CANCELLED
+}
+
+model CheckoutField {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  label     String   // e.g. "Nama Lengkap"
+  fieldKey  String   // e.g. "customerName"
+  question  String   // e.g. "Silakan masukkan nama lengkap penerima:"
+  inputType String   @default("text") // "text" | "phone" | "textarea"
+  isRequired Boolean @default(true)
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("checkout_fields")
 }
 
 enum WAOrderStatus {

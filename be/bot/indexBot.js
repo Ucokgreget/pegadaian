@@ -23,12 +23,22 @@ import { embedText } from "../lib/embedding.js";
 import { type } from "os";
 
 import {
-  getSession, setSession, clearSession,
-  addToCart, getCartSummary,
-  getCurrentStep, setStep, CHECKOUT_STEPS,
-  createWAOrder, handleWAOrderCallback,
-  formatCartMessage, formatOrderConfirmation,
-  formatPaymentMessage, formatPaidNotification, formatOwnerNotification,
+  getSession,
+  setSession,
+  clearSession,
+  addToCart,
+  getCartSummary,
+  getCurrentStep,
+  setStep,
+  CHECKOUT_STEPS,
+  startCheckout,
+  createWAOrder,
+  handleWAOrderCallback,
+  formatCartMessage,
+  formatOrderConfirmation,
+  formatPaymentMessage,
+  formatPaidNotification,
+  formatOwnerNotification,
 } from "../service/waOrder.service.js";
 
 process.on("uncaughtException", (err) => console.error("❌ UNCAUGHT:", err));
@@ -106,20 +116,17 @@ async function startBot() {
   sock.ev.on("creds.update", saveCreds);
 
   // Cleanup config cache setiap 5 menit
-  setInterval(
-    () => {
-      const now = Date.now();
-      for (const [key, entry] of configCache.entries()) {
-        if (now - entry.cachedAt > CONFIG_CACHE_TTL_MS) {
-          configCache.delete(key);
-        }
+  setInterval(() => {
+    const now = Date.now();
+    for (const [key, entry] of configCache.entries()) {
+      if (now - entry.cachedAt > CONFIG_CACHE_TTL_MS) {
+        configCache.delete(key);
       }
-      console.log(
-        `🧹 Config cache cleanup, remaining entries: ${configCache.size}`,
-      );
-    },
-    5 * 60 * 1000,
-  );
+    }
+    console.log(
+      `🧹 Config cache cleanup, remaining entries: ${configCache.size}`
+    );
+  }, 5 * 60 * 1000);
 
   // ================= CONNECTION =================
 
@@ -174,19 +181,35 @@ async function startBot() {
 
     // ===== CONNECTION CLOSED =====
     if (connection === "close") {
-      process.send({
-        type: "disconnected",
-        userId,
-      });
       const statusCode = lastDisconnect?.error?.output?.statusCode;
       console.log("🔴 Connection closed:", statusCode);
 
-      // // HARD LOGOUT
-      // if (statusCode === 401) {
-      //   console.log("❌ Logged out, deleting session");
-      //   fs.rmSync(SESSION_DIR, { recursive: true, force: true });
-      //   return;
-      // }
+      // HARD LOGOUT — user unlink dari HP atau session expired
+      if (statusCode === 401) {
+        console.log("❌ Session revoked (401), cleaning up & stopping bot");
+
+        // Hapus session files agar tidak retry dengan credentials invalid
+        fs.rmSync(SESSION_DIR, { recursive: true, force: true });
+
+        // Set isActive = false di DB agar auto-reconnect tidak spawn ulang
+        try {
+          await prisma.chatbotSettings.updateMany({
+            where: { userId },
+            data: { isActive: false },
+          });
+          console.log(`🔒 User ${userId} isActive set to false`);
+        } catch (dbErr) {
+          console.error("⚠️ Failed to update isActive:", dbErr.message);
+        }
+
+        // Notify parent process
+        process.send({ type: "disconnected", userId });
+        process.exit(0);
+        return;
+      }
+
+      // Notify parent untuk status codes selain 401
+      process.send({ type: "disconnected", userId });
 
       // PREVENT DOUBLE RESTART
       if (isRestarting) {
@@ -206,7 +229,7 @@ async function startBot() {
             isRestarting = false;
             startBot();
           },
-          elapsed < 5000 ? 3000 : 1000,
+          elapsed < 5000 ? 3000 : 1000
         );
 
         return;
@@ -229,6 +252,9 @@ async function startBot() {
     const sender = msg.key?.remoteJid;
     if (!sender || sender.includes("@status") || sender === "status@broadcast")
       return;
+
+    // Skip pesan dari grup dan newsletter/channel — bot hanya merespons DM
+    if (sender.endsWith("@g.us") || sender.includes("@newsletter")) return;
 
     const text =
       msg.message?.conversation ?? msg.message?.extendedTextMessage?.text ?? "";
@@ -296,8 +322,21 @@ async function startBot() {
           }
         } else {
           if (text.toUpperCase() === "LANJUT") {
-            setStep(sender, CHECKOUT_STEPS.ASK_NAME);
-            staticResponse = "Silakan masukkan *nama lengkap* penerima:";
+            // Fetch dynamic fields from DB and begin COLLECTING_FIELDS phase.
+            const fields = await startCheckout(sender, settings.userId);
+            if (fields.length === 0) {
+              // Merchant has no active fields — skip straight to confirmation.
+              setStep(sender, CHECKOUT_STEPS.CONFIRM_ORDER);
+              staticResponse =
+                formatOrderConfirmation(sender) ??
+                "Tidak ada data pengiriman yang perlu diisi. Ketik *BAYAR* untuk lanjut.";
+            } else {
+              const firstField = fields[0];
+              const hint = !firstField.isRequired
+                ? `\n_(opsional, ketik *SKIP* untuk melewati)_`
+                : "";
+              staticResponse = firstField.question + hint;
+            }
           } else if (text.toUpperCase() === "BATAL") {
             clearSession(sender);
             staticResponse = "Pesanan dibatalkan. Ada yang bisa kami bantu? 😊";
@@ -305,44 +344,77 @@ async function startBot() {
             staticResponse = formatCartMessage(sender);
           }
         }
-      } else if (currentStep === CHECKOUT_STEPS.ASK_NAME) {
-        setSession(sender, { shippingData: { ...session.shippingData, customerName: text } });
-        setStep(sender, CHECKOUT_STEPS.ASK_PHONE);
-        staticResponse = "Masukkan *nomor HP* penerima:";
-      } else if (currentStep === CHECKOUT_STEPS.ASK_PHONE) {
-        if (/^[0-9]{10,13}$/.test(text.replace(/\s/g, ""))) {
-          setSession(sender, { shippingData: { ...session.shippingData, customerPhone: text } });
-          setStep(sender, CHECKOUT_STEPS.ASK_ADDRESS);
-          staticResponse = "Masukkan *alamat lengkap* pengiriman:";
+
+        // ── Dynamic field collection ─────────────────────────────────────────
+      } else if (currentStep === CHECKOUT_STEPS.COLLECTING_FIELDS) {
+        const { fields, fieldIndex } = session;
+
+        if (!fields || fields.length === 0) {
+          // Guard: no fields configured — go straight to confirm.
+          setStep(sender, CHECKOUT_STEPS.CONFIRM_ORDER);
+          staticResponse =
+            formatOrderConfirmation(sender) ??
+            "Ketik *BAYAR* untuk lanjut ke pembayaran.";
         } else {
-          staticResponse = "Nomor HP tidak valid. Masukkan nomor HP yang benar (10-13 digit):";
+          const currentField = fields[fieldIndex];
+          const isSkip = text.toUpperCase() === "SKIP";
+
+          if (isSkip && currentField.isRequired) {
+            // Required field — cannot be skipped.
+            staticResponse = `Kolom ini wajib diisi.\n${currentField.question}`;
+          } else if (
+            currentField.inputType === "phone" &&
+            !isSkip &&
+            !/^[0-9]{10,13}$/.test(text.replace(/\s/g, ""))
+          ) {
+            // Phone validation failed.
+            staticResponse =
+              "Nomor HP tidak valid. Masukkan nomor HP yang benar (10-13 digit):";
+          } else {
+            // Accept answer: null when the field was skipped (optional).
+            const answer = isSkip ? null : text;
+            const nextIndex = fieldIndex + 1;
+
+            setSession(sender, {
+              shippingData: {
+                ...session.shippingData,
+                [currentField.fieldKey]: answer,
+              },
+              fieldIndex: nextIndex,
+            });
+
+            if (nextIndex >= fields.length) {
+              // All fields collected — move to order confirmation.
+              setStep(sender, CHECKOUT_STEPS.CONFIRM_ORDER);
+              staticResponse =
+                formatOrderConfirmation(sender) ??
+                "Terjadi kesalahan saat memformat konfirmasi pesanan.";
+            } else {
+              // Ask next field.
+              const nextField = fields[nextIndex];
+              const hint = !nextField.isRequired
+                ? `\n_(opsional, ketik *SKIP* untuk melewati)_`
+                : "";
+              staticResponse = nextField.question + hint;
+            }
+          }
         }
-      } else if (currentStep === CHECKOUT_STEPS.ASK_ADDRESS) {
-        setSession(sender, { shippingData: { ...session.shippingData, address: text } });
-        setStep(sender, CHECKOUT_STEPS.ASK_CITY);
-        staticResponse = "Masukkan *kota* tujuan pengiriman:";
-      } else if (currentStep === CHECKOUT_STEPS.ASK_CITY) {
-        setSession(sender, { shippingData: { ...session.shippingData, city: text } });
-        setStep(sender, CHECKOUT_STEPS.ASK_POSTAL);
-        staticResponse = "Masukkan *kode pos* (atau ketik *SKIP* jika tidak tahu):";
-      } else if (currentStep === CHECKOUT_STEPS.ASK_POSTAL) {
-        const postalCode = text.toUpperCase() === "SKIP" ? null : text;
-        setSession(sender, { shippingData: { ...session.shippingData, postalCode } });
-        setStep(sender, CHECKOUT_STEPS.ASK_NOTES);
-        staticResponse = "Ada *catatan* untuk pesanan? (atau ketik *SKIP* jika tidak ada):";
-      } else if (currentStep === CHECKOUT_STEPS.ASK_NOTES) {
-        const notes = text.toUpperCase() === "SKIP" ? null : text;
-        setSession(sender, { shippingData: { ...session.shippingData, notes } });
-        setStep(sender, CHECKOUT_STEPS.CONFIRM_ORDER);
-        staticResponse = formatOrderConfirmation(sender);
       } else if (currentStep === CHECKOUT_STEPS.CONFIRM_ORDER) {
         if (text.toUpperCase() === "BAYAR") {
           try {
-            const waOrder = await createWAOrder({ userId: settings.userId, senderPhone: sender, user: settings.user });
-            staticResponse = formatPaymentMessage(waOrder.orderCode, waOrder.paymentUrl);
+            const waOrder = await createWAOrder({
+              userId: settings.userId,
+              senderPhone: sender,
+              user: settings.user,
+            });
+            staticResponse = formatPaymentMessage(
+              waOrder.orderCode,
+              waOrder.paymentUrl
+            );
             setStep(sender, CHECKOUT_STEPS.WAITING_PAYMENT);
           } catch (error) {
-            staticResponse = "Terjadi kesalahan saat memproses pesanan. Silakan coba balas *BAYAR* lagi.";
+            staticResponse =
+              "Terjadi kesalahan saat memproses pesanan. Silakan coba balas *BAYAR* lagi.";
           }
         } else if (text.toUpperCase() === "BATAL") {
           clearSession(sender);
@@ -370,15 +442,20 @@ async function startBot() {
         sender,
         message: text,
         response: staticResponse,
-        isCheckout: true
+        isCheckout: true,
       });
       await sock.sendPresenceUpdate("available", sender);
       return;
     }
 
     // ===== BUY INTENT DETECTION (saat IDLE) =====
-    const buyIntent = /(beli|order|pesan|mau beli|mau order|checkout|ingin beli|ingin pesan)/i.test(text);
-    console.log(`🛒 DEBUG checkout: buyIntent=${buyIntent}, currentStep=${currentStep}, sender=${sender}`);
+    const buyIntent =
+      /(beli|order|pesan|mau beli|mau order|checkout|ingin beli|ingin pesan)/i.test(
+        text
+      );
+    console.log(
+      `🛒 DEBUG checkout: buyIntent=${buyIntent}, currentStep=${currentStep}, sender=${sender}`
+    );
 
     if (buyIntent === true) {
       const allProducts = await prisma.product.findMany({
@@ -387,23 +464,44 @@ async function startBot() {
       });
 
       const textLower = text.toLowerCase();
-      // FIX: split(/\s+/) = per kata, BUKAN split("") yang per karakter
-      const selectedProduct = allProducts.find((p) => {
-        const productWords = p.name.toLowerCase().split(/\s+/);
-        const matchCount = productWords.filter(
-          (word) => word.length > 2 && textLower.includes(word),
-        ).length;
-        return matchCount >= 2;
-      });
+
+      // Score every product by how many of its name-words appear in the message.
+      // The best-scoring product wins, as long as at least 1 word matched.
+      // This fixes the previous >= 2 hard threshold that broke single-keyword
+      // product names like "Soundcore R60i NC" when the user only typed "soundcore".
+      const scoredProducts = allProducts
+        .map((p) => {
+          const productWords = p.name
+            .toLowerCase()
+            .split(/\s+/)
+            .filter((w) => w.length > 2); // skip very short tokens
+          if (productWords.length === 0) return { product: p, score: 0 };
+          const matchCount = productWords.filter((w) =>
+            textLower.includes(w)
+          ).length;
+          return { product: p, score: matchCount };
+        })
+        .filter(({ score }) => score >= 1) // at least 1 word must match
+        .sort((a, b) => b.score - a.score); // highest score first
+
+      const selectedProduct = scoredProducts[0]?.product ?? null;
 
       console.log(
-        `🛒 DEBUG products: allProducts=[${allProducts.map((p) => p.name).join(", ")}], selectedProduct=${selectedProduct?.name ?? "null"}`,
+        `🛒 DEBUG products: allProducts=[${allProducts
+          .map((p) => p.name)
+          .join(", ")}], selectedProduct=${selectedProduct?.name ?? "null"} ` +
+          `(scores: ${scoredProducts
+            .map((s) => `${s.product.name}:${s.score}`)
+            .join(", ")})`
       );
 
       if (selectedProduct) {
         if (selectedProduct.variants && selectedProduct.variants.length > 0) {
           const variantList = selectedProduct.variants
-            .map((v, i) => `${i + 1}. ${v.name} - Rp ${v.price.toLocaleString("id-ID")}`)
+            .map(
+              (v, i) =>
+                `${i + 1}. ${v.name} - Rp ${v.price.toLocaleString("id-ID")}`
+            )
             .join("\n");
           await sock.sendMessage(sender, {
             text: `*Pilih varian ${selectedProduct.name}:*\n\n${variantList}\n\nBalas dengan nomor varian`,
@@ -432,7 +530,7 @@ async function startBot() {
           sender,
           message: text,
           response: "Checkout initiated",
-          isCheckout: true
+          isCheckout: true,
         });
         await sock.sendPresenceUpdate("available", sender);
         return;
@@ -450,7 +548,16 @@ PENTING:
 - JANGAN mengarang produk, harga, atau stok yang tidak ada di context
 - Jika customer bertanya daftar produk, sebutkan SEMUA produk yang ada di context
 - Jika ada "Data Produk Terkini dari Database", SELALU gunakan data tersebut untuk harga, varian, dan stok (lebih akurat dari knowledge base)
-- Jika tidak ada informasi produk, minta customer untuk ketik *.produk*
+
+ATURAN CHECKOUT (SANGAT PENTING — JANGAN DILANGGAR):
+- JANGAN PERNAH mensimulasikan proses pemesanan / checkout dalam percakapan ini
+- JANGAN meminta customer memilih varian dengan mengirim angka ("balas dengan nomor varian")
+- JANGAN meminta customer mengkonfirmasi pesanan, mengisi nama, alamat, atau nomor HP lewat chat AI ini
+- Jika customer ingin membeli suatu produk, cukup arahkan mereka dengan kalimat seperti:
+  "Untuk memesan, ketik: *mau beli [nama produk]* dan saya akan langsung proses pesanannya untuk Anda! 😊"
+- Proses checkout, pemilihan varian, dan pengisian data pengiriman DITANGANI OTOMATIS oleh sistem,
+  bukan oleh Anda. Tugas Anda hanya menjawab pertanyaan tentang produk.
+-
 
 ATURAN FORMAT WHATSAPP (WAJIB DIIKUTI):
 - Gunakan *teks* untuk huruf tebal (bukan ** atau ___)
@@ -485,10 +592,15 @@ Untuk tebal, HANYA gunakan *teks* (single asterisk).
     let contextText = "";
 
     // Deteksi pertanyaan umum tentang daftar produk (bypass RAG)
-    const isGeneralProductQuery = /(ada produk apa|produk apa (saja|aja)|list produk|daftar produk|produk tersedia|apa (saja|aja) produk|jual apa (saja|aja)|apa yang dijual|katalog|semua produk)/i.test(text);
+    const isGeneralProductQuery =
+      /(ada produk apa|produk apa (saja|aja)|list produk|daftar produk|produk tersedia|apa (saja|aja) produk|jual apa (saja|aja)|apa yang dijual|katalog|semua produk)/i.test(
+        text
+      );
 
     if (isGeneralProductQuery) {
-      console.log("📦 General product query detected, bypassing RAG → fetching all products");
+      console.log(
+        "📦 General product query detected, bypassing RAG → fetching all products"
+      );
       try {
         const allProducts = await prisma.product.findMany({
           where: { userId: settings.userId },
@@ -499,11 +611,15 @@ Untuk tebal, HANYA gunakan *teks* (single asterisk).
         if (allProducts.length > 0) {
           contextText = "Daftar Semua Produk yang Tersedia:\n";
           allProducts.forEach((p, i) => {
-            contextText += `${i + 1}. Produk: ${p.name}\n   Deskripsi: ${p.description || "-"}\n`;
+            contextText += `${i + 1}. Produk: ${p.name}\n   Deskripsi: ${
+              p.description || "-"
+            }\n`;
             if (p.variants && p.variants.length > 0) {
               contextText += `   Varian:\n`;
               p.variants.forEach((v) => {
-                contextText += `   - ${v.name}: Rp ${v.price.toLocaleString("id-ID")} (Stok: ${v.stock})\n`;
+                contextText += `   - ${v.name}: Rp ${v.price.toLocaleString(
+                  "id-ID"
+                )} (Stok: ${v.stock})\n`;
               });
             }
             contextText += "\n";
@@ -533,7 +649,7 @@ Untuk tebal, HANYA gunakan *teks* (single asterisk).
           relevantChunks.map((c) => ({
             similarity: c.similarity,
             preview: c.content.substring(0, 50),
-          })),
+          }))
         );
 
         if (relevantChunks && relevantChunks.length > 0) {
@@ -545,7 +661,7 @@ Untuk tebal, HANYA gunakan *teks* (single asterisk).
       } catch (ragError) {
         console.error(
           "⚠️ RAG pipeline failed, continuing without context:",
-          ragError.message,
+          ragError.message
         );
       }
 
@@ -558,14 +674,23 @@ Untuk tebal, HANYA gunakan *teks* (single asterisk).
         });
 
         if (allProducts.length > 0) {
-          console.log(`📋 Product DB injection: ${allProducts.length} products`);
-          contextText += "\n\nData Semua Produk dari Database (GUNAKAN INI untuk harga, varian, dan stok — lebih akurat dari knowledge base):\n";
+          console.log(
+            `📋 Product DB injection: ${allProducts.length} products`
+          );
+          contextText +=
+            "\n\nData Semua Produk dari Database (GUNAKAN INI untuk harga, varian, dan stok — lebih akurat dari knowledge base):\n";
           allProducts.forEach((p, i) => {
-            contextText += `${i + 1}. Produk: ${p.name}\n   Deskripsi: ${p.description || "-"}\n`;
+            contextText += `${i + 1}. Produk: ${p.name}\n   Deskripsi: ${
+              p.description || "-"
+            }\n`;
             if (p.variants && p.variants.length > 0) {
               contextText += `   Varian yang tersedia:\n`;
               p.variants.forEach((v) => {
-                contextText += `   - ${v.name}: Rp ${v.price.toLocaleString("id-ID")} (Stok: ${v.stock})${v.description ? ` — ${v.description}` : ""}\n`;
+                contextText += `   - ${v.name}: Rp ${v.price.toLocaleString(
+                  "id-ID"
+                )} (Stok: ${v.stock})${
+                  v.description ? ` — ${v.description}` : ""
+                }\n`;
               });
             } else {
               contextText += `   (Tidak ada varian)\n`;
@@ -578,19 +703,20 @@ Untuk tebal, HANYA gunakan *teks* (single asterisk).
       }
     }
 
-    const systemPromptContent =
-      `${basePrompt}\n${contextText ? `\n${contextText}\n` : ""}`.trim();
+    const systemPromptContent = `${basePrompt}\n${
+      contextText ? `\n${contextText}\n` : ""
+    }`.trim();
 
     const recentConvos = await getRecentConversations(
       settings.userId,
       sender,
-      5,
+      5
     );
     const messages = [];
 
     messages.push({ role: "system", content: systemPromptContent });
 
-    for (const convo of recentConvos.filter(c => !c.isCheckout)) {
+    for (const convo of recentConvos.filter((c) => !c.isCheckout)) {
       if (convo.message && !convo.message.startsWith("SYSTEM_EVENT")) {
         messages.push({
           role: convo.isIncoming ? "user" : "assistant",
@@ -605,7 +731,9 @@ Untuk tebal, HANYA gunakan *teks* (single asterisk).
     messages.push({ role: "user", content: text });
     console.log("📨 Messages to DeepSeek:");
     messages.forEach((m, i) => {
-      console.log(`[${i}] ${m.role.toUpperCase()}: ${m.content.substring(0, 100)}...`);
+      console.log(
+        `[${i}] ${m.role.toUpperCase()}: ${m.content.substring(0, 100)}...`
+      );
     });
 
     const response = await askDeepSeek(messages);

@@ -3,6 +3,7 @@
 import express from "express";
 import {
   uploadKnowledgeDocument,
+  uploadKnowledgeFromUrl,
   listKnowledgeDocuments,
 } from "../controller/knowledge.controller.js";
 import { uploadKnowledge } from "../middleware/upload.js";
@@ -16,6 +17,9 @@ router.post(
   uploadKnowledge.single("file"),
   uploadKnowledgeDocument
 );
+
+// Upload dari URL website — tidak perlu multer karena body JSON
+router.post("/upload-url", requireAuth, uploadKnowledgeFromUrl);
 
 router.get("/", requireAuth, listKnowledgeDocuments);
 

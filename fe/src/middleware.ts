@@ -9,10 +9,15 @@ export async function middleware(request: NextRequest) {
 
   const isAuthPath = pathname === "/login" || pathname === "/register";
 
+  // /auth/callback: token belum ada (sedang di-set di halaman ini)
+  // harus diizinkan tanpa redirect ke /login
+  const isOAuthCallback = pathname === "/auth/callback";
+
   const isPublicPath = pathname === "/";
 
   if (!token) {
-    if (isPublicPath || isAuthPath) return NextResponse.next();
+    if (isPublicPath || isAuthPath || isOAuthCallback)
+      return NextResponse.next();
     return NextResponse.redirect(new URL("/login", request.url));
   }
 

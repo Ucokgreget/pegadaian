@@ -109,7 +109,13 @@ function ShieldIcon() {
 
 function EyeOpenIcon() {
   return (
-    <svg className="h-4 w-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5">
+    <svg
+      className="h-4 w-4"
+      viewBox="0 0 20 20"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+    >
       <path
         d="M10 4C6 4 2.73 6.89 2 10c.73 3.11 4 6 8 6s7.27-2.89 8-6c-.73-3.11-4-6-8-6z"
         strokeLinecap="round"
@@ -121,7 +127,13 @@ function EyeOpenIcon() {
 
 function EyeClosedIcon() {
   return (
-    <svg className="h-4 w-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5">
+    <svg
+      className="h-4 w-4"
+      viewBox="0 0 20 20"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+    >
       <path
         d="M3 3l14 14M8.46 8.54A3 3 0 0013 13M4.5 5.5C3.1 6.6 2.2 8.2 2 10c.73 3.11 4 6 8 6a9.1 9.1 0 003.5-.7M7 4.5A9.2 9.2 0 0110 4c4 0 7.27 2.89 8 6-.3 1.3-1 2.5-2 3.5"
         strokeLinecap="round"
@@ -232,16 +244,10 @@ export default function RegisterPage() {
       });
 
       if (res.status) {
-        setSuccessMessage("Registrasi berhasil! Mengarahkan ke halaman login...");
-
-        if (res.accessToken) {
-          localStorage.setItem("token", res.accessToken);
-          router.push("/user");
-        } else {
-          router.push("/login");
-        }
-
-        router.refresh();
+        setSuccessMessage(
+          "Registrasi berhasil! Mengarahkan ke halaman login...",
+        );
+        setTimeout(() => router.push("/login"), 1500);
         return;
       }
 
@@ -300,7 +306,7 @@ export default function RegisterPage() {
 
           <div className="flex items-center justify-center">
             <Image
-              src="https://cdn.aceimg.com/92020e260.png"
+              src="/logo-web.png"
               alt="Sijaka.id"
               width={1080}
               height={1080}
@@ -348,9 +354,16 @@ export default function RegisterPage() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="mt-5 flex flex-col gap-4" noValidate>
+          <form
+            onSubmit={handleSubmit}
+            className="mt-5 flex flex-col gap-4"
+            noValidate
+          >
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="fullName" className="text-[13px] font-semibold tracking-wide text-foreground">
+              <label
+                htmlFor="fullName"
+                className="text-[13px] font-semibold tracking-wide text-foreground"
+              >
                 Nama Lengkap
               </label>
               <div className="group relative">
@@ -372,13 +385,17 @@ export default function RegisterPage() {
                 </p>
               ) : (
                 <p className="text-[11px] leading-relaxed text-muted-foreground/80">
-                  Gunakan nama sesuai rekening bank untuk kemudahan penarikan dana.
+                  Gunakan nama sesuai rekening bank untuk kemudahan penarikan
+                  dana.
                 </p>
               )}
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="email" className="text-[13px] font-semibold tracking-wide text-foreground">
+              <label
+                htmlFor="email"
+                className="text-[13px] font-semibold tracking-wide text-foreground"
+              >
                 Email
               </label>
               <div className="group relative">
@@ -406,7 +423,10 @@ export default function RegisterPage() {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="password" className="text-[13px] font-semibold tracking-wide text-foreground">
+              <label
+                htmlFor="password"
+                className="text-[13px] font-semibold tracking-wide text-foreground"
+              >
                 Password
               </label>
               <div className="group relative">
@@ -461,7 +481,10 @@ export default function RegisterPage() {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="confirmPassword" className="text-[13px] font-semibold tracking-wide text-foreground">
+              <label
+                htmlFor="confirmPassword"
+                className="text-[13px] font-semibold tracking-wide text-foreground"
+              >
                 Konfirmasi Password
               </label>
               <div className="group relative">
@@ -491,7 +514,9 @@ export default function RegisterPage() {
                   <span>⚠</span> {errors.confirmPassword}
                 </p>
               ) : passwordMatch ? (
-                <p className="text-[11px] font-semibold text-emerald-600">Password cocok</p>
+                <p className="text-[11px] font-semibold text-emerald-600">
+                  Password cocok
+                </p>
               ) : (
                 <p className="text-[11px] leading-relaxed text-muted-foreground/80">
                   Ketik ulang password untuk memastikan kecocokan.
@@ -531,11 +556,17 @@ export default function RegisterPage() {
 
                 <span className="text-[13px] leading-relaxed text-muted-foreground">
                   Saya setuju dengan{" "}
-                  <a href="#syarat" className="font-semibold text-emerald-500 hover:text-emerald-600">
+                  <a
+                    href="#syarat"
+                    className="font-semibold text-emerald-500 hover:text-emerald-600"
+                  >
                     Syarat dan Ketentuan
                   </a>{" "}
                   dan{" "}
-                  <a href="#privasi" className="font-semibold text-emerald-500 hover:text-emerald-600">
+                  <a
+                    href="#privasi"
+                    className="font-semibold text-emerald-500 hover:text-emerald-600"
+                  >
                     Kebijakan Privasi
                   </a>{" "}
                   Sijaka.id.
@@ -584,7 +615,10 @@ export default function RegisterPage() {
 
           <p className="mt-5 text-center text-[13px] text-muted-foreground">
             Sudah punya akun?{" "}
-            <Link href="/login" className="font-bold text-emerald-500 transition hover:text-emerald-600">
+            <Link
+              href="/login"
+              className="font-bold text-emerald-500 transition hover:text-emerald-600"
+            >
               Login di sini →
             </Link>
           </p>

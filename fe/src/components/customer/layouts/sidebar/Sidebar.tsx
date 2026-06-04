@@ -21,6 +21,7 @@ import {
   X,
   ReceiptIcon,
   Book,
+  ClipboardList,
 } from "lucide-react";
 import { useSidebar } from "./SidebarContext";
 import { title } from "process";
@@ -35,6 +36,11 @@ const menuItems = [
   { title: "Knowledge Setting", href: "/user/knowledge", icon: Book },
   { title: "Products", href: "/user/products", icon: Package },
   { title: "Variants Products", href: "/user/variants", icon: Layers },
+  {
+    title: "Form Checkout",
+    href: "/user/checkout-fields",
+    icon: ClipboardList,
+  },
   { isHeader: true, title: "Transaksi" },
   { title: "Orders", href: "/user/orders", icon: ShoppingCart },
   { title: "Withdrawals", href: "/user/withdrawals", icon: Wallet },

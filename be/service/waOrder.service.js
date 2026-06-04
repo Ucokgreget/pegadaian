@@ -10,8 +10,7 @@ const TRIPAY_BASE_URL =
     ? "https://tripay.co.id/api"
     : "https://tripay.co.id/api-sandbox";
 
-const generateOrderCode = () =>
-  `WA-${Date.now()}-${nanoid(6).toUpperCase()}`;
+const generateOrderCode = () => `WA-${Date.now()}-${nanoid(6).toUpperCase()}`;
 
 const generateSignature = (merchantRef, amount) => {
   return crypto
@@ -56,12 +55,13 @@ export function addToCart(senderPhone, item) {
 
   // Cek apakah item yang sama sudah ada di cart
   const existingIndex = cart.findIndex(
-    (c) => c.productId === item.productId && c.variantId === item.variantId,
+    (c) => c.productId === item.productId && c.variantId === item.variantId
   );
 
   if (existingIndex >= 0) {
     cart[existingIndex].qty += item.qty ?? 1;
-    cart[existingIndex].total = cart[existingIndex].price * cart[existingIndex].qty;
+    cart[existingIndex].total =
+      cart[existingIndex].price * cart[existingIndex].qty;
   } else {
     cart.push({
       productId: item.productId,
@@ -86,18 +86,45 @@ export function getCartSummary(senderPhone) {
 }
 
 // ===== CHECKOUT STEPS =====
+// ASK_* steps removed — field collection is now driven dynamically
+// by CheckoutField records fetched from the DB at checkout start.
 export const CHECKOUT_STEPS = {
   IDLE: "IDLE",
   CONFIRM_CART: "CONFIRM_CART",
-  ASK_NAME: "ASK_NAME",
-  ASK_PHONE: "ASK_PHONE",
-  ASK_ADDRESS: "ASK_ADDRESS",
-  ASK_CITY: "ASK_CITY",
-  ASK_POSTAL: "ASK_POSTAL",
-  ASK_NOTES: "ASK_NOTES",
+  COLLECTING_FIELDS: "COLLECTING_FIELDS", // replaces all ASK_* steps
   CONFIRM_ORDER: "CONFIRM_ORDER",
   WAITING_PAYMENT: "WAITING_PAYMENT",
 };
+
+// ===== DYNAMIC CHECKOUT FIELDS =====
+
+/**
+ * Fetch active CheckoutFields for a user from the DB, ordered by `order`.
+ */
+export async function getCheckoutFields(userId) {
+  return prisma.checkoutField.findMany({
+    where: { userId, isActive: true },
+    orderBy: { order: "asc" },
+  });
+}
+
+/**
+ * Start the checkout field-collection phase:
+ *  1. Fetches active fields from DB for the given user.
+ *  2. Stores fields + initial fieldIndex=0 in the session.
+ *  3. Sets step to COLLECTING_FIELDS.
+ * Returns the fields array so the caller can immediately send the first question.
+ */
+export async function startCheckout(senderPhone, userId) {
+  const fields = await getCheckoutFields(userId);
+  setSession(senderPhone, {
+    step: CHECKOUT_STEPS.COLLECTING_FIELDS,
+    fields,
+    fieldIndex: 0,
+    shippingData: {},
+  });
+  return fields;
+}
 
 export function getCurrentStep(senderPhone) {
   const session = getSession(senderPhone);
@@ -123,7 +150,9 @@ export async function createWAOrder({ userId, senderPhone, user }) {
 
   // Build order items untuk Tripay
   const tripayItems = cart.map((item) => ({
-    sku: `PROD-${item.productId}${item.variantId ? `-VAR-${item.variantId}` : ""}`,
+    sku: `PROD-${item.productId}${
+      item.variantId ? `-VAR-${item.variantId}` : ""
+    }`,
     name: item.variantName
       ? `${item.productName} - ${item.variantName}`
       : item.productName,
@@ -168,12 +197,17 @@ export async function createWAOrder({ userId, senderPhone, user }) {
     data: {
       userId,
       senderPhone,
-      customerName: shippingData.customerName,
-      customerPhone: shippingData.customerPhone,
-      address: shippingData.address,
-      city: shippingData.city,
+      // Standard columns — populated from well-known fieldKeys when present.
+      // Fallback to "" keeps the required DB constraint satisfied even when
+      // a merchant uses fully custom fieldKeys.
+      customerName: shippingData.customerName ?? "",
+      customerPhone: shippingData.customerPhone ?? "",
+      address: shippingData.address ?? "",
+      city: shippingData.city ?? "",
       postalCode: shippingData.postalCode ?? null,
       notes: shippingData.notes ?? null,
+      // Full dynamic data — preserves every custom field the merchant configured.
+      shippingData: shippingData,
       subtotal,
       status: "PENDING_PAYMENT",
       orderCode,
@@ -235,7 +269,9 @@ export function formatCartMessage(senderPhone) {
       ? `${item.productName} - ${item.variantName}`
       : item.productName;
     msg += `${i + 1}. ${name}\n`;
-    msg += `   Rp ${item.price.toLocaleString("id-ID")} x${item.qty} = *Rp ${item.total.toLocaleString("id-ID")}*\n\n`;
+    msg += `   Rp ${item.price.toLocaleString("id-ID")} x${
+      item.qty
+    } = *Rp ${item.total.toLocaleString("id-ID")}*\n\n`;
   });
 
   msg += `*Total: Rp ${cart.subtotal.toLocaleString("id-ID")}*\n\n`;
@@ -256,17 +292,33 @@ export function formatOrderConfirmation(senderPhone) {
     const name = item.variantName
       ? `${item.productName} - ${item.variantName}`
       : item.productName;
-    msg += `${i + 1}. ${name} x${item.qty} - *Rp ${item.total.toLocaleString("id-ID")}*\n`;
+    msg += `${i + 1}. ${name} x${item.qty} - *Rp ${item.total.toLocaleString(
+      "id-ID"
+    )}*\n`;
   });
 
   msg += `\n*Total: Rp ${cart.subtotal.toLocaleString("id-ID")}*\n\n`;
   msg += `*Data Pengiriman:*\n`;
-  msg += `- Nama: ${s.customerName}\n`;
-  msg += `- HP: ${s.customerPhone}\n`;
-  msg += `- Alamat: ${s.address}\n`;
-  msg += `- Kota: ${s.city}\n`;
-  if (s.postalCode) msg += `- Kode Pos: ${s.postalCode}\n`;
-  if (s.notes) msg += `- Catatan: ${s.notes}\n`;
+
+  // Dynamic: iterate over the fields stored in session (set by startCheckout).
+  // Falls back to the legacy hardcoded list when session.fields is absent
+  // (e.g. sessions that started before this refactor).
+  if (session.fields && session.fields.length > 0) {
+    session.fields.forEach((field) => {
+      const value = s[field.fieldKey];
+      if (value !== null && value !== undefined && value !== "") {
+        msg += `- ${field.label}: ${value}\n`;
+      }
+    });
+  } else {
+    // Legacy fallback — keeps old sessions working after a hot-reload
+    if (s.customerName) msg += `- Nama: ${s.customerName}\n`;
+    if (s.customerPhone) msg += `- HP: ${s.customerPhone}\n`;
+    if (s.address) msg += `- Alamat: ${s.address}\n`;
+    if (s.city) msg += `- Kota: ${s.city}\n`;
+    if (s.postalCode) msg += `- Kode Pos: ${s.postalCode}\n`;
+    if (s.notes) msg += `- Catatan: ${s.notes}\n`;
+  }
 
   msg += `\nKetik *BAYAR* untuk lanjut ke pembayaran\nKetik *BATAL* untuk cancel`;
   return msg;
@@ -308,7 +360,9 @@ export function formatOwnerNotification(waOrder) {
     const name = item.variantName
       ? `${item.productName} - ${item.variantName}`
       : item.productName;
-    msg += `- ${name} x${item.qty} - Rp ${item.total.toLocaleString("id-ID")}\n`;
+    msg += `- ${name} x${item.qty} - Rp ${item.total.toLocaleString(
+      "id-ID"
+    )}\n`;
   });
   msg += `\n*Total: Rp ${waOrder.subtotal.toLocaleString("id-ID")}*`;
   if (waOrder.notes) msg += `\n*Catatan:* ${waOrder.notes}`;
