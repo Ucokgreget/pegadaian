@@ -62,7 +62,7 @@ const SESSION_DIR = path.join(process.cwd(), "sessions", `user-${userId}`);
 process.on("message", async (msg) => {
   if (!msg || msg.type !== "send_wa_message") return;
   if (!sock) {
-    console.error("❌ sock belum siap, tidak bisa kirim notifikasi");
+    console.error("❌ sock  belumsiap, tidak bisa kirim notifikasi");
     return;
   }
 

@@ -11,30 +11,30 @@ const adapter = new PrismaPg({
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  // const hashedAdminPassword = await bcrypt.hash("adminpassword", 10);
-  // const hashedUserPassword = await bcrypt.hash("userpassword", 10);
+  const hashedAdminPassword = await bcrypt.hash("adminpassword", 10);
+  const hashedUserPassword = await bcrypt.hash("userpassword", 10);
 
-  // await prisma.user.upsert({
-  //   where: { email: "admin@example.com" },
-  //   update: {},
-  //   create: {
-  //     name: "Admin User",
-  //     email: "admin@example.com",
-  //     password: hashedAdminPassword,
-  //     role: "ADMIN",
-  //   },
-  // });
+  await prisma.user.upsert({
+    where: { email: "admin@example.com" },
+    update: {},
+    create: {
+      name: "Admin User",
+      email: "admin@example.com",
+      password: hashedAdminPassword,
+      role: "ADMIN",
+    },
+  });
 
-  // await prisma.user.upsert({
-  //   where: { email: "user@example.com" },
-  //   update: {},
-  //   create: {
-  //     name: "Regular User",
-  //     email: "user@example.com",
-  //     password: hashedUserPassword,
-  //     role: "USER",
-  //   },
-  // });
+  await prisma.user.upsert({
+    where: { email: "user@example.com" },
+    update: {},
+    create: {
+      name: "Regular User",
+      email: "user@example.com",
+      password: hashedUserPassword,
+      role: "USER",
+    },
+  });
 
   // ─── Packages ───────────────────────────────────────────────
   const free = await prisma.package.upsert({
