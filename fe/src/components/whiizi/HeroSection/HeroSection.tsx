@@ -1,120 +1,106 @@
 import { PhonePreview } from "../PhonePreview/PhonePreview";
 import Link from "next/link";
+import Image from "next/image";
 
 export function HeroSection() {
   return (
-    <section className="relative grid gap-12 items-center mb-20 overflow-hidden lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:gap-16 lg:mb-28 font-sans before:absolute before:inset-0 before:bg-[radial-gradient(ellipse_60%_50%_at_20%_50%,rgba(34,197,94,0.08)_0%,transparent_70%),radial-gradient(ellipse_40%_60%_at_80%_20%,rgba(16,185,129,0.06)_0%,transparent_60%)] before:pointer-events-none before:z-0">
+    <section className="relative grid gap-12 items-center mb-20 overflow-hidden lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:gap-16 lg:mb-28 pt-8 md:pt-16">
       {/* Left: Copy */}
       <div className="relative z-10">
         {/* Badge */}
-        <div className="inline-flex items-center gap-2 rounded-full border border-primary/35 bg-primary/10 py-[0.35rem] px-[0.85rem] text-[0.75rem] font-semibold text-primary tracking-[0.02em] animate-in fade-in slide-in-from-top-4 duration-600 backdrop-blur-[6px]">
-          <span className="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_0_3px_rgba(34,197,94,0.25)] animate-pulse shrink-0" />
-          Automasi WhatsApp untuk e-commerce digital
+        <div className="inline-flex items-center gap-2.5 rounded-full border border-primary/20 bg-primary/5 py-2 pr-4 pl-3 text-[11px] font-semibold text-primary uppercase tracking-[0.18em] animate-in fade-in slide-in-from-top-4 duration-700 backdrop-blur-sm">
+          <Image
+            src="/logo-sijaka-png-transparent.png"
+            alt="Sijaka"
+            width={24}
+            height={24}
+            className="w-4 h-4 object-contain"
+            unoptimized
+          />
+          <span className="w-px h-3 bg-primary/20" aria-hidden="true" />
+          <span className="relative flex h-1.5 w-1.5">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75"></span>
+            <span className="relative inline-flex h-1.5 w-1.5 animate-pulse-dot rounded-full bg-primary shadow-[0_0_8px_rgba(16,185,129,0.8)]"></span>
+          </span>
+          Partner Bisnis 24/7
         </div>
 
         {/* Heading */}
-        <h1 className="mt-5 text-[clamp(2rem,4vw,3.25rem)] font-extrabold leading-[1.1] tracking-[-0.03em] text-balance animate-in fade-in slide-in-from-top-4 duration-600 delay-100 fill-mode-both">
-          <span className="block bg-gradient-to-br from-[#22c55e] via-[#10b981] to-[#06b6d4] bg-clip-text text-transparent">
-            Pusing Ngurus Orderan Manual?
+        <h1 className="mt-8 text-[clamp(2.5rem,5vw,4.5rem)] font-extrabold leading-[1.05] tracking-[-0.035em] text-balance animate-in fade-in slide-in-from-bottom-6 duration-700 delay-150 fill-mode-both text-foreground">
+          <span className="block text-foreground">
+            Pusing Ngurus
           </span>
-          <span className="block text-foreground mt-[0.15em]">
-            Ubah Bisnis dengan
-            <br />
-            Automasi WhatsApp.
+          <span className="block mt-[0.1em] overflow-hidden">
+            <span className="block bg-gradient-to-r from-emerald-600 via-primary to-teal-500 bg-clip-text text-transparent italic pe-2 pb-2">
+              Orderan Manual?
+            </span>
           </span>
         </h1>
 
         {/* Description */}
-        <p className="mt-[1.1rem] max-w-[30rem] text-[clamp(0.875rem,1.5vw,1rem)] leading-[1.7] text-muted-foreground font-normal animate-in fade-in slide-in-from-top-4 duration-600 delay-200 fill-mode-both">
+        <p className="mt-6 max-w-[50ch] text-[clamp(0.95rem,1.5vw,1.1rem)] leading-[1.65] text-muted-foreground font-medium animate-in fade-in slide-in-from-bottom-6 duration-700 delay-300 fill-mode-both">
           Automasi seluruh alur bisnis e-commerce dengan bot WhatsApp pintar.
           Tingkatkan penjualan hingga{" "}
-          <strong style={{ color: "#22c55e", fontWeight: 700 }}>300%</strong>{" "}
+          <strong className="text-primary font-bold">300%</strong>{" "}
           dengan strategi automasi yang terbukti berhasil.
         </p>
 
         {/* CTA */}
-        <div className="mt-7 flex flex-wrap items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-600 delay-300 fill-mode-both">
-          <Link href="/register">
-            <button className="relative inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-br from-primary to-emerald-600 py-[0.7rem] px-[1.4rem] text-[0.875rem] font-bold text-white border-none cursor-pointer shadow-[0_4px_16px_rgba(34,197,94,0.35),0_1px_3px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.2)] transition-all duration-250 overflow-hidden hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(34,197,94,0.45),0_2px_6px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.2)] active:translate-y-0 group">
-              <span className="absolute inset-0 bg-gradient-to-br from-white/15 to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
-              <span className="relative flex items-center justify-center gap-2">
-                Mulai Gratis Sekarang
-                <svg
-                  className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-[3px]"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                xmlns="http://www.w3.org/2000/svg"
+        <div className="mt-9 flex flex-col sm:flex-row items-stretch sm:items-center gap-4 animate-in fade-in slide-in-from-bottom-6 duration-700 delay-500 fill-mode-both">
+          <Link href="/register" className="group">
+            <button className="relative flex w-full sm:w-auto items-center justify-center gap-2 rounded-full bg-primary px-8 py-4 text-[14px] font-bold text-white shadow-[0_12px_24px_-8px_rgba(16,185,129,0.45)] transition-all duration-300 hover:bg-emerald-600 hover:-translate-y-1 hover:shadow-[0_20px_32px_-12px_rgba(16,185,129,0.6)] active:translate-y-0">
+              Mulai Gratis Sekarang
+              <svg
+                className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
               >
-                <path
-                  d="M3 8h10M9 4l4 4-4 4"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
+                <path d="M5 12h14M13 5l7 7-7 7" />
               </svg>
-              </span>
             </button>
           </Link>
 
-          <button type="button" className="inline-flex items-center justify-center gap-2 rounded-full border-[1.5px] border-primary/30 bg-primary/5 py-[0.7rem] px-[1.4rem] text-[0.875rem] font-semibold text-foreground cursor-pointer backdrop-blur-[6px] transition-all duration-250 hover:border-primary hover:text-primary hover:bg-primary/10 hover:-translate-y-px">
-            <svg
-              className="w-[15px] h-[15px] opacity-70"
-              viewBox="0 0 16 16"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <circle
-                cx="8"
-                cy="8"
-                r="7"
-                stroke="currentColor"
-                strokeWidth="1.5"
-              />
-              <path
-                d="M6.5 5.5l4 2.5-4 2.5V5.5z"
-                fill="currentColor"
-                stroke="currentColor"
-                strokeWidth="0.5"
-                strokeLinejoin="round"
-              />
-            </svg>
+          <button
+            type="button"
+            className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-full border border-border bg-white px-8 py-4 text-[14px] font-semibold text-foreground transition-all duration-300 hover:border-primary/30 hover:bg-accent hover:text-primary hover:-translate-y-0.5"
+          >
             Lihat Demo Chat
           </button>
         </div>
 
         {/* Stats */}
-        <div className="mt-7 flex flex-wrap items-center gap-y-1 gap-x-5 animate-in fade-in slide-in-from-top-4 duration-600 delay-400 fill-mode-both">
-          <div className="flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
-            <span className="text-[0.8125rem] font-medium text-muted-foreground">
-              <span className="font-bold text-foreground">10.000+</span> Toko Digital
-              Aktif
-            </span>
+        <div className="mt-12 pt-8 border-t border-border/60 flex flex-wrap items-center gap-y-4 gap-x-8 animate-in fade-in duration-1000 delay-700 fill-mode-both">
+          <div className="flex flex-col gap-1">
+            <span className="text-[22px] font-extrabold text-foreground tracking-tight">10.000+</span>
+            <span className="text-[12px] font-semibold text-muted-foreground uppercase tracking-widest">Toko Aktif</span>
+          </div>
+          
+          <div className="w-px h-10 bg-border/80 hidden sm:block" />
+          
+          <div className="flex flex-col gap-1">
+            <span className="text-[22px] font-extrabold text-foreground tracking-tight">99.9%</span>
+            <span className="text-[12px] font-semibold text-muted-foreground uppercase tracking-widest">Uptime</span>
           </div>
 
-          <span className="w-px h-[1.2rem] bg-primary/20 hidden sm:block" />
+          <div className="w-px h-10 bg-border/80 hidden sm:block" />
 
-          <div className="flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
-            <span className="text-[0.8125rem] font-medium text-muted-foreground">
-              <span className="font-bold text-foreground">99,9%</span> Uptime
-            </span>
-          </div>
-
-          <span className="w-px h-[1.2rem] bg-primary/20 hidden sm:block" />
-
-          <div className="flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
-            <span className="text-[0.8125rem] font-medium text-muted-foreground">
-              Support <span className="font-bold text-foreground">24/7</span>
-            </span>
+          <div className="flex flex-col gap-1">
+            <span className="text-[22px] font-extrabold text-foreground tracking-tight">24/7</span>
+            <span className="text-[12px] font-semibold text-muted-foreground uppercase tracking-widest">Support</span>
           </div>
         </div>
       </div>
 
       {/* Right: Phone */}
-      <PhonePreview />
+      <div className="relative mx-auto w-full max-w-[320px] lg:max-w-none animate-in fade-in zoom-in-95 duration-1000 delay-300 fill-mode-both">
+        {/* Decorative background glow for phone */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] rounded-full bg-primary/5 blur-[80px] pointer-events-none" />
+        <PhonePreview />
+      </div>
     </section>
   );
 }
