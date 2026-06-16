@@ -2,34 +2,46 @@
 import { prisma } from "../lib/prisma.js";
 
 export async function getRuntimeConfigByDevice(devicePhone) {
-  return prisma.chatbotSettings.findFirst({
+  const settings = await prisma.chatbotSettings.findFirst({
     where: {
       device: {
         phone: devicePhone,
       },
     },
     include: {
-      user: true,
-      device: true,
+      device: {
+        include: { user: true },
+      },
     },
   });
+
+  if (settings) {
+    settings.user = settings.device?.user;
+    settings.userId = settings.device?.userId;
+  }
+
+  return settings;
 }
 
 export async function saveConversation({
   userId,
+  deviceId,
   sender,
   message,
   response,
   isIncoming = true,
   isCheckout 
 }) {
+  let finalDeviceId = deviceId;
+  if (!finalDeviceId) {
+    const device = await prisma.device.findFirst({ where: { userId } });
+    if (device) finalDeviceId = device.id;
+  }
+
   return prisma.conversation.create({
     data: {
-      user: {
-        connect: {
-          id: userId,
-        },
-      },
+      userId: userId,
+      deviceId: finalDeviceId,
       sender: sender,
       message: message,
       response: response,
@@ -64,16 +76,15 @@ export async function updateDeviceForUser(userId, devicePhone) {
     });
   }
 
-  let setting = await prisma.chatbotSettings.findFirst({
+  let setting = await prisma.chatbotSettings.findUnique({
     where: {
-      userId,
+      deviceId: foundDevice.id,
     },
   });
 
   if (!setting) {
     return prisma.chatbotSettings.create({
       data: {
-        userId,
         deviceId: foundDevice.id,
         isActive: true,
         welcomeMessage:
@@ -88,7 +99,6 @@ export async function updateDeviceForUser(userId, devicePhone) {
       id: setting.id,
     },
     data: {
-      deviceId: foundDevice.id,
       isActive: true,
     },
   });
@@ -105,9 +115,11 @@ export async function checkIfUserExists(userId, sender) {
 }
 
 export async function markUserAsInteracted(userId, sender) {
+  const device = await prisma.device.findFirst({ where: { userId } });
   return prisma.conversation.create({
     data: {
       userId,
+      deviceId: device?.id || 1, // fallback
       sender,
       message: "SYSTEM_EVENT: FIRST_INTERACTION",
       response: "GREETING_SENT",

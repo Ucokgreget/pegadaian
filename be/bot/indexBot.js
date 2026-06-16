@@ -1,10 +1,13 @@
 import makeWASocket, {
   useMultiFileAuthState,
   fetchLatestBaileysVersion,
+  downloadMediaMessage,
 } from "baileys";
 import qrcode from "qrcode-terminal";
+import QRCodeGen from "qrcode";
 import fs from "fs";
 import path from "path";
+import { convertQRIS } from "../lib/qris/index.js";
 import { prisma } from "../lib/prisma.js";
 
 import {
@@ -67,9 +70,14 @@ process.on("message", async (msg) => {
   }
 
   try {
-    const { to, text } = msg;
+    const { to, text, imageBase64 } = msg;
     const jid = to.includes("@s.whatsapp.net") ? to : `${to}@s.whatsapp.net`;
-    await sock.sendMessage(jid, { text });
+    if (imageBase64) {
+      const buffer = Buffer.from(imageBase64, "base64");
+      await sock.sendMessage(jid, { image: buffer, caption: text });
+    } else {
+      await sock.sendMessage(jid, { text });
+    }
     console.log(`📤 Notifikasi terkirim ke ${jid}`);
   } catch (error) {
     console.error("❌ Gagal kirim notifikasi WA:", error.message);
@@ -193,8 +201,10 @@ async function startBot() {
 
         // Set isActive = false di DB agar auto-reconnect tidak spawn ulang
         try {
+          const devices = await prisma.device.findMany({ where: { userId } });
+          const deviceIds = devices.map((d) => d.id);
           await prisma.chatbotSettings.updateMany({
-            where: { userId },
+            where: { deviceId: { in: deviceIds } },
             data: { isActive: false },
           });
           console.log(`🔒 User ${userId} isActive set to false`);
@@ -259,12 +269,21 @@ async function startBot() {
     const text =
       msg.message?.conversation ?? msg.message?.extendedTextMessage?.text ?? "";
 
-    if (!text || text.trim() === "") {
-      console.log(`💬 USER ${userId} ← ${sender}: No text`);
+    // Deteksi pesan gambar (untuk bukti pembayaran QRIS)
+    const hasImage = !!(
+      msg.message?.imageMessage ||
+      msg.message?.extendedTextMessage?.contextInfo?.quotedMessage?.imageMessage
+    );
+
+    // Lewatkan filter jika ada gambar ATAU ada teks — abaikan kalau keduanya kosong
+    if (!text.trim() && !hasImage) {
+      console.log(`💬 USER ${userId} ← ${sender}: No text or image, skipping`);
       return;
     }
 
-    console.log(`💬 USER ${userId} ← ${sender}: ${text}`);
+    console.log(
+      `💬 USER ${userId} ← ${sender}: ${hasImage ? "[image]" : ""} ${text}`
+    );
 
     await sock.sendPresenceUpdate("composing", sender);
 
@@ -292,6 +311,105 @@ async function startBot() {
 
       await sock.sendPresenceUpdate("available", sender);
       return;
+    }
+
+    // ===== HANDLE IMAGE (bukti pembayaran QRIS) =====
+    // Harus sebelum state machine supaya image tidak tersaring oleh text-guard
+    if (hasImage) {
+      const stepForImage = getCurrentStep(sender);
+      if (stepForImage === CHECKOUT_STEPS.WAITING_PAYMENT) {
+        try {
+          // Download gambar dari WA
+          const imgBuffer = await downloadMediaMessage(
+            msg,
+            "buffer",
+            {},
+            { reuploadRequest: sock.updateMediaMessage }
+          );
+
+          // Simpan ke disk
+          const proofDir = path.join(
+            process.cwd(),
+            "public",
+            "uploads",
+            "payment-proofs"
+          );
+          fs.mkdirSync(proofDir, { recursive: true });
+          const filename = `proof-${Date.now()}-${Math.random()
+            .toString(36)
+            .slice(2)}.jpg`;
+          const proofPath = path.join(proofDir, filename);
+          fs.writeFileSync(proofPath, imgBuffer);
+          const proofUrl = `public/uploads/payment-proofs/${filename}`;
+
+          // Cari WAOrder PENDING_PAYMENT untuk sender ini
+          const pendingOrder = await prisma.wAOrder.findFirst({
+            where: { senderPhone: sender, status: "PENDING_PAYMENT" },
+            orderBy: { createdAt: "desc" },
+          });
+
+          if (pendingOrder) {
+            // Buat / update Payment record
+            const existingPayment = await prisma.payment.findFirst({
+              where: { waOrderId: pendingOrder.id },
+            });
+            if (existingPayment) {
+              await prisma.payment.update({
+                where: { id: existingPayment.id },
+                data: { proofUrl, status: "PENDING" },
+              });
+            } else {
+              await prisma.payment.create({
+                data: {
+                  userId: pendingOrder.userId,
+                  waOrderId: pendingOrder.id,
+                  amount: pendingOrder.subtotal ?? 0,
+                  proofUrl,
+                  status: "PENDING",
+                  paymentMethod: "QRIS",
+                },
+              });
+            }
+
+            const replyMsg = [
+              `✅ *Bukti pembayaran diterima!*`,
+              ``,
+              `📦 Order: *${pendingOrder.orderCode}*`,
+              `💰 Total: *Rp ${(pendingOrder.subtotal ?? 0).toLocaleString(
+                "id-ID"
+              )}*`,
+              ``,
+              `Merchant akan memverifikasi pembayaran Anda. Anda akan diberitahu setelah dikonfirmasi. 🙏`,
+            ].join("\n");
+
+            await sock.sendMessage(sender, { text: replyMsg });
+            await saveConversation({
+              userId: settings.userId,
+              sender,
+              message: "[Gambar: Bukti Pembayaran]",
+              response: replyMsg,
+              isCheckout: true,
+            });
+          } else {
+            await sock.sendMessage(sender, {
+              text: "Terima kasih, tapi kami tidak menemukan pesanan aktif Anda. Silakan hubungi merchant.",
+            });
+          }
+        } catch (imgErr) {
+          console.error("❌ Gagal proses bukti bayar:", imgErr.message);
+          await sock.sendMessage(sender, {
+            text: "Maaf, terjadi kesalahan saat memproses gambar. Silakan coba kirim ulang.",
+          });
+        }
+        await sock.sendPresenceUpdate("available", sender);
+        return;
+      }
+
+      // Gambar di konteks lain (bukan WAITING_PAYMENT) — abaikan jika tanpa teks
+      if (!text.trim()) {
+        await sock.sendPresenceUpdate("available", sender);
+        return;
+      }
     }
 
     // ===== CHECKOUT STATE MACHINE (PRIORITAS TERTINGGI) =====
@@ -402,17 +520,99 @@ async function startBot() {
       } else if (currentStep === CHECKOUT_STEPS.CONFIRM_ORDER) {
         if (text.toUpperCase() === "BAYAR") {
           try {
-            const waOrder = await createWAOrder({
+            const result = await createWAOrder({
               userId: settings.userId,
               senderPhone: sender,
               user: settings.user,
             });
-            staticResponse = formatPaymentMessage(
-              waOrder.orderCode,
-              waOrder.paymentUrl
-            );
+            const { waOrder, paymentUrl, orderCode } = result;
+            const subtotal = waOrder.subtotal ?? 0;
+
+            // ─ 1. Pesan teks konfirmasi order ────────────────────────────────
+            const confirmText = paymentUrl
+              ? formatPaymentMessage(orderCode, paymentUrl)
+              : [
+                  `✅ Pesanan *${orderCode}* berhasil dibuat!`,
+                  ``,
+                  `💰 Total: *Rp ${subtotal.toLocaleString("id-ID")}*`,
+                  ``,
+                  `Silakan scan QR QRIS berikut untuk melakukan pembayaran.👇`,
+                ].join("\n");
+
             setStep(sender, CHECKOUT_STEPS.WAITING_PAYMENT);
+            await sock.sendMessage(sender, { text: confirmText });
+
+            // ─ 2. QRIS QR Image (jika merchant punya qrisStatic) ─────────
+            try {
+              const merchant = await prisma.user.findUnique({
+                where: { id: settings.userId },
+                select: { qrisStatic: true },
+              });
+
+              if (merchant?.qrisStatic && subtotal > 0) {
+                // Convert QRIS statis → dinamis dengan nominal order
+                const qrString = convertQRIS(merchant.qrisStatic, {
+                  amount: subtotal,
+                });
+
+                // Generate PNG buffer
+                const qrBuffer = await QRCodeGen.toBuffer(qrString, {
+                  errorCorrectionLevel: "M",
+                  width: 512,
+                  margin: 2,
+                });
+
+                // Buat caption dengan daftar item
+                const itemLines = waOrder.items
+                  .map((item) => {
+                    const name = item.variantName
+                      ? `${item.productName} - ${item.variantName}`
+                      : item.productName;
+                    return `• ${name} x${
+                      item.qty
+                    } — Rp ${item.total.toLocaleString("id-ID")}`;
+                  })
+                  .join("\n");
+
+                const caption = [
+                  `💳 *Pembayaran QRIS*`,
+                  ``,
+                  `*Produk:*`,
+                  itemLines,
+                  ``,
+                  `💰 Total: *Rp ${subtotal.toLocaleString("id-ID")}*`,
+                  `📦 Order: \`${orderCode}\``,
+                  ``,
+                  `_Scan QR di atas dengan aplikasi bank / e-wallet._`,
+                  `_Setelah bayar, *kirim screenshot* bukti pembayaran ke sini ✅_`,
+                ].join("\n");
+
+                await sock.sendMessage(sender, {
+                  image: qrBuffer,
+                  caption,
+                  mimetype: "image/png",
+                });
+
+                console.log(
+                  `💳 QRIS dinamis terkirim ke ${sender} | order ${orderCode} | total Rp ${subtotal}`
+                );
+              }
+            } catch (qrErr) {
+              console.error("❌ Gagal generate/kirim QRIS QR:", qrErr.message);
+              // Non-fatal — order tetap terbuat, user sudah dapat notif teks
+            }
+
+            await saveConversation({
+              userId: settings.userId,
+              sender,
+              message: text,
+              response: confirmText,
+              isCheckout: true,
+            });
+            await sock.sendPresenceUpdate("available", sender);
+            return; // ← early return, skip outer sock.sendMessage
           } catch (error) {
+            console.error("❌ createWAOrder error:", error.message);
             staticResponse =
               "Terjadi kesalahan saat memproses pesanan. Silakan coba balas *BAYAR* lagi.";
           }

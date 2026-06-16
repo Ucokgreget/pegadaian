@@ -135,7 +135,7 @@ export function setStep(senderPhone, step) {
   setSession(senderPhone, { step });
 }
 
-// ===== CREATE ORDER + TRIPAY =====
+// ===== CREATE ORDER (Tripay opsional — skip jika env tidak dikonfigurasi) =====
 export async function createWAOrder({ userId, senderPhone, user }) {
   const session = getSession(senderPhone);
   if (!session?.cart || !session?.shippingData) {
@@ -145,74 +145,28 @@ export async function createWAOrder({ userId, senderPhone, user }) {
   const { cart, shippingData } = session;
   const subtotal = cart.reduce((sum, item) => sum + item.total, 0);
   const orderCode = generateOrderCode();
-  const dueDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
-  const signature = generateSignature(orderCode, subtotal);
 
-  // Build order items untuk Tripay
-  const tripayItems = cart.map((item) => ({
-    sku: `PROD-${item.productId}${
-      item.variantId ? `-VAR-${item.variantId}` : ""
-    }`,
-    name: item.variantName
-      ? `${item.productName} - ${item.variantName}`
-      : item.productName,
-    price: item.price,
-    quantity: item.qty,
-    product_url: process.env.FRONTEND_URL || "https://example.com",
-    image_url: "",
-  }));
+  // ── Tripay (Bypassed for WA Checkout - Use direct QRIS) ─────────────────
+  let tripayReference = null;
+  let paymentUrl = null;
 
-  const tripayPayload = {
-    method: "QRIS",
-    merchant_ref: orderCode,
-    amount: subtotal,
-    customer_name: shippingData.customerName,
-    customer_email: user.email ?? "customer@example.com",
-    customer_phone: shippingData.customerPhone,
-    order_items: tripayItems,
-    callback_url: `${process.env.BACKEND_URL}/checkout/wa-callback`,
-    return_url: `${process.env.FRONTEND_URL}/order/success`,
-    expired_time: Math.floor(dueDate.getTime() / 1000),
-    signature,
-  };
-
-  const tripayRes = await fetch(`${TRIPAY_BASE_URL}/transaction/create`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${TRIPAY_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(tripayPayload),
-  });
-
-  const tripayData = await tripayRes.json();
-  if (!tripayData.success) {
-    throw new Error(tripayData.message || "Gagal membuat transaksi Tripay");
-  }
-
-  const tripayTransaction = tripayData.data;
-
-  // Simpan ke DB
+  // ── Simpan ke DB ─────────────────────────────────────────────────────────
   const waOrder = await prisma.wAOrder.create({
     data: {
       userId,
       senderPhone,
-      // Standard columns — populated from well-known fieldKeys when present.
-      // Fallback to "" keeps the required DB constraint satisfied even when
-      // a merchant uses fully custom fieldKeys.
       customerName: shippingData.customerName ?? "",
       customerPhone: shippingData.customerPhone ?? "",
       address: shippingData.address ?? "",
       city: shippingData.city ?? "",
       postalCode: shippingData.postalCode ?? null,
       notes: shippingData.notes ?? null,
-      // Full dynamic data — preserves every custom field the merchant configured.
-      shippingData: shippingData,
+      shippingData,
       subtotal,
       status: "PENDING_PAYMENT",
       orderCode,
-      tripayReference: tripayTransaction.reference,
-      paymentUrl: tripayTransaction.checkout_url,
+      tripayReference,
+      paymentUrl,
       items: {
         create: cart.map((item) => ({
           productId: item.productId,
@@ -228,11 +182,7 @@ export async function createWAOrder({ userId, senderPhone, user }) {
     include: { items: true },
   });
 
-  return {
-    waOrder,
-    paymentUrl: tripayTransaction.checkout_url,
-    orderCode,
-  };
+  return { waOrder, paymentUrl, orderCode };
 }
 
 // ===== HANDLE TRIPAY CALLBACK =====

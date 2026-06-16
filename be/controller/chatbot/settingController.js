@@ -4,23 +4,22 @@ export const getUserSetting = async (req, res) => {
   try {
     const userId = parseInt(req.user.id);
 
+    const device = await prisma.device.findFirst({ where: { userId } });
+    if (!device) {
+      return res
+        .status(404)
+        .json({ error: "Device not found. Please add a device first." });
+    }
+
     let setting = await prisma.chatbotSettings.findUnique({
       where: {
-        userId: userId,
+        deviceId: device.id,
       },
     });
 
     if (!setting) {
-      const device = await prisma.device.findFirst({ where: { userId } });
-      if (!device) {
-        return res
-          .status(404)
-          .json({ error: "Device not found. Please add a device first." });
-      }
-
       setting = await prisma.chatbotSettings.create({
         data: {
-          userId: userId,
           deviceId: device.id,
           isActive: false,
           welcomeMessage:
@@ -50,7 +49,7 @@ export const updateSetting = async (req, res) => {
 
     const setting = await prisma.chatbotSettings.upsert({
       where: {
-        userId: userId,
+        deviceId: device.id,
       },
       update: {
         isActive: isActive,
@@ -58,7 +57,6 @@ export const updateSetting = async (req, res) => {
         aiPrompt: aiPrompt,
       },
       create: {
-        userId: userId,
         deviceId: device.id,
         isActive: isActive ?? false,
         welcomeMessage:

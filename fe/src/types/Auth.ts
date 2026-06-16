@@ -3,6 +3,7 @@ export interface User {
   email: string;
   name: string;
   role: "ADMIN" | "USER";
+  activePackageName?: string | null;
   createdAt?: string;
   updatedAt?: string;
   subscriptions?: any[];

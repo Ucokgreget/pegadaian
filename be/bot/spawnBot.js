@@ -64,7 +64,7 @@ export function stopBotForUser(userId) {
   console.log(" Bot stopped for user:", userId);
 }
 
-export function sendWAMessage(userId, to, text) {
+export function sendWAMessage(userId, to, text, imageBase64 = null) {
   const child = bots.get(userId);
   if (!child) {
     console.error(`❌ Bot untuk user ${userId} tidak ditemukan`);
@@ -76,6 +76,7 @@ export function sendWAMessage(userId, to, text) {
     userId,
     to,
     text,
+    imageBase64,
   });
 
   return true;

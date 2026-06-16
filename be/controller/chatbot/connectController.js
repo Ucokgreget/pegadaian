@@ -19,13 +19,12 @@ export const connectBot = async (req, res) => {
     if (device) {
       settings = await prisma.chatbotSettings.upsert({
         where: {
-          userId: userId,
+          deviceId: device.id,
         },
         update: {
           isActive: true,
         },
         create: {
-          userId: userId,
           deviceId: device.id,
           isActive: true,
         },
@@ -51,13 +50,12 @@ export const disconnectBot = async (req, res) => {
     if (device) {
       settings = await prisma.chatbotSettings.upsert({
         where: {
-          userId: userId,
+          deviceId: device.id,
         },
         update: {
           isActive: false,
         },
         create: {
-          userId: userId,
           deviceId: device.id,
           isActive: false,
         },

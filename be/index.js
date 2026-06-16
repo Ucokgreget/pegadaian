@@ -34,6 +34,8 @@ import {
 } from "./controller/checkoutController.js";
 import knowledgeRoute from "./route/knowledge.route.js";
 import checkoutFieldRoute from "./route/checkoutFieldRoute.js";
+import settingsRoute from "./route/settingsRoute.js";
+import paymentRoute from "./route/paymentRoute.js";
 
 app.use(express.json());
 app.use("/public", express.static("public"));
@@ -85,6 +87,8 @@ app.use("/chatbot", requireAuth, chatbotRoute);
 app.use("/product-variant", requireAuth, productVariantRoute);
 app.use("/api/knowledge", knowledgeRoute);
 app.use("/checkout-fields", requireAuth, checkoutFieldRoute);
+app.use("/api/settings", settingsRoute);
+app.use("/api", paymentRoute);
 
 // ─── Admin only ───────────────────────────────────────────────────────────
 app.use(
@@ -108,10 +112,12 @@ app.listen(port, async () => {
   try {
     const activeSettings = await prisma.chatbotSettings.findMany({
       where: { isActive: true },
-      select: { userId: true },
+      select: { device: { select: { userId: true } } },
     });
 
-    for (const { userId } of activeSettings) {
+    const userIdsToSpawn = [...new Set(activeSettings.map(s => s.device?.userId).filter(Boolean))];
+
+    for (const userId of userIdsToSpawn) {
       console.log(`🔄 Auto-reconnect bot for user: ${userId}`);
       setRuntime(userId, { status: "loading", qr: null });
       spawnBotForUser(userId);

@@ -9,6 +9,8 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
 
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
@@ -33,6 +35,8 @@
   --radius: 0.75rem;
   --background: #FAFBFC; /* Off-white yang bersih */
   --foreground: #0A1628; /* Deep slate / navy untuk teks utama */
+  --card: #FFFFFF;
+  --card-foreground: #0A1628;
   
   /* Green branding */
   --primary: #10B981; /* Emerald 500 */

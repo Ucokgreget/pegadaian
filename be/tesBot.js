@@ -19,9 +19,13 @@ let isRestarting = false;
 async function getRuntimeConfig(device) {
   try {
     const settings = await prisma.chatbotSettings.findFirst({
-      where: { device: device },
-      include: { user: true }, 
+      where: { device: { phone: device } },
+      include: { device: { include: { user: true } } }, 
     });
+    if (settings) {
+      settings.user = settings.device?.user;
+      settings.userId = settings.device?.userId;
+    }
     return settings;
   } catch (e) {
     console.error("❌ Error DB runtime config:", e.message);
@@ -32,9 +36,11 @@ async function getRuntimeConfig(device) {
 // 2. Ganti fetch save log
 async function saveConversation(userId, sender, message, response) {
   try {
+    const device = await prisma.device.findFirst({ where: { userId } });
     await prisma.conversation.create({
       data: {
         userId,
+        deviceId: device?.id || 1, // fallback
         sender,
         message,
         response,

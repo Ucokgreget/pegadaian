@@ -54,6 +54,35 @@ export const upload = multer({
 });
 
 // =========================
+// Payment Proof Upload
+// =========================
+const paymentProofUploadDir = "public/uploads/payment-proofs";
+
+const paymentProofFileFilter = (req, file, cb) => {
+  const allowedExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp"];
+  const ext = path.extname(file.originalname).toLowerCase();
+
+  if (!allowedExtensions.includes(ext)) {
+    return cb(
+      new Error(
+        "Hanya file gambar yang diizinkan (jpg, jpeg, png, gif, webp)!"
+      ),
+      false
+    );
+  }
+
+  cb(null, true);
+};
+
+export const uploadProof = multer({
+  storage: createStorage(paymentProofUploadDir),
+  fileFilter: paymentProofFileFilter,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB
+  },
+});
+
+// =========================
 // Knowledge Document Upload
 // =========================
 const knowledgeUploadDir = "public/uploads/knowledge";
@@ -65,7 +94,7 @@ const knowledgeFileFilter = (req, file, cb) => {
   if (!allowedExtensions.includes(ext)) {
     return cb(
       new Error("Only .txt, .pdf, and .docx files are allowed!"),
-      false,
+      false
     );
   }
 

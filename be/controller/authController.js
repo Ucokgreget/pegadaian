@@ -13,7 +13,15 @@ export const login = async (req, res) => {
 
     const user = await prisma.user.findUnique({
       where: { email },
-      select: { id: true, email: true, password: true, role: true, name: true },
+      select: { 
+        id: true, email: true, password: true, role: true, name: true,
+        subscriptions: {
+          where: { status: 'ACTIVE' },
+          include: { package: true },
+          orderBy: { startedAt: 'desc' },
+          take: 1
+        }
+      },
     });
 
     if (!user) {
@@ -55,12 +63,20 @@ export const login = async (req, res) => {
       data: { refreshToken, accessToken },
     });
 
+    const activePackageName = user.subscriptions?.[0]?.package?.name || "Free";
+    const userResponse = {
+      ...user,
+      activePackageName
+    };
+    delete userResponse.subscriptions;
+    delete userResponse.password; // Don't return password hash
+
     return res.status(200).json({
       message: "Login berhasil",
       accessToken,
       refreshToken,
       rememberToken,
-      user,
+      user: userResponse,
     });
   } catch (error) {
     return res
@@ -211,6 +227,12 @@ export const getMe = async (req, res) => {
         name: true,
         role: true,
         createdAt: true,
+        subscriptions: {
+          where: { status: 'ACTIVE' },
+          include: { package: true },
+          orderBy: { startedAt: 'desc' },
+          take: 1
+        }
       },
     });
 
@@ -218,7 +240,17 @@ export const getMe = async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    return res.json(user);
+    const activePackageName = user.subscriptions?.[0]?.package?.name || "Free";
+    
+    const userResponse = {
+      ...user,
+      activePackageName
+    };
+    
+    // Hapus subscriptions dari response agar payload tidak terlalu besar dan bersih
+    delete userResponse.subscriptions;
+
+    return res.json(userResponse);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Failed to fetch user profile" });

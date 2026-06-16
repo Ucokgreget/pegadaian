@@ -22,6 +22,7 @@ import {
   ReceiptIcon,
   Book,
   ClipboardList,
+  QrCode,
 } from "lucide-react";
 import { useSidebar } from "./SidebarContext";
 import { title } from "process";
@@ -29,8 +30,8 @@ import { title } from "process";
 // ─── Menu config ──────────────────────────────────────────────────────────────
 
 const menuItems = [
-  { isHeader: true, title: "Dashboard" },
-  { title: "Overview", href: "/user", icon: LayoutDashboard },
+  // { isHeader: true, title: "Dashboard" },
+  // { title: "Overview", href: "/user", icon: LayoutDashboard },
   { isHeader: true, title: "Toko" },
   { title: "Bot Settings", href: "/user/chatbot", icon: Bot },
   { title: "Knowledge Setting", href: "/user/knowledge", icon: Book },
@@ -43,10 +44,11 @@ const menuItems = [
   },
   { isHeader: true, title: "Transaksi" },
   { title: "Orders", href: "/user/orders", icon: ShoppingCart },
+  { title: "Metode Pembayaran", href: "/user/payment-method", icon: QrCode },
   { title: "Withdrawals", href: "/user/withdrawals", icon: Wallet },
   { isHeader: true, title: "Marketing" },
   { title: "Customers", href: "/user/customers", icon: Users },
-  { title: "Broadcast", href: "/user/wa-blast", icon: Megaphone },
+  // { title: "Broadcast", href: "/user/wa-blast", icon: Megaphone },
   { title: "Analytics", href: "/user/analitik", icon: BarChart },
   { isHeader: true, title: "Akun" },
   {
@@ -54,11 +56,11 @@ const menuItems = [
     href: "/user/subscription/history",
     icon: CreditCard,
   },
-  {
-    title: "Invoice",
-    href: "/user/invoice",
-    icon: ReceiptIcon,
-  },
+  // {
+  //   title: "Invoice",
+  //   href: "/user/invoice",
+  //   icon: ReceiptIcon,
+  // },
 ];
 
 // ─── WhatsApp SVG (fallback logo) ─────────────────────────────────────────────

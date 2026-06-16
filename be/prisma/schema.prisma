@@ -22,6 +22,7 @@ model User {
   refreshToken  String? @db.Text
   rememberToken String? @db.Text
   googleId      String? @unique // Google OAuth subject ID
+  qrisStatic    String? @map("qris_static") // QRIS statis milik merchant
 
   // Relations
   devices            Device[]
@@ -41,14 +42,14 @@ model User {
 }
 
 model Device {
-  id          Int       @id @default(autoincrement())
-  userId      Int
-  deviceName  String?
-  phone       String
-  status      String    @default("DISCONNECTED")
-  isActive    Boolean   @default(true)
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  deviceName String?
+  phone      String
+  status     String   @default("DISCONNECTED")
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
 
   user            User             @relation(fields: [userId], references: [id])
   chatbotSettings ChatbotSettings? // FIX: relasi balik sudah ada di ChatbotSettings
@@ -74,16 +75,16 @@ model ChatbotSettings {
 model Conversation {
   id         Int      @id @default(autoincrement())
   userId     Int
-  deviceId   Int
+  deviceId   Int?
   sender     String
   message    String
   response   String?
-  isIncoming Boolean  @default(true)   @map("is_incoming")
-  isCheckout Boolean  @default(false)  @map("is_checkout")
-  createdAt  DateTime @default(now())  @map("created_at")
+  isIncoming Boolean  @default(true) @map("is_incoming")
+  isCheckout Boolean  @default(false) @map("is_checkout")
+  createdAt  DateTime @default(now()) @map("created_at")
 
-  user   User   @relation(fields: [userId], references: [id])
-  device Device @relation(fields: [deviceId], references: [id])
+  user   User    @relation(fields: [userId], references: [id])
+  device Device? @relation(fields: [deviceId], references: [id])
 
   @@map("conversations")
 }
@@ -260,13 +261,15 @@ model Package {
 model PackageFeature {
   id            Int      @id @default(autoincrement())
   packageId     Int
+  featureId     Int?
   featureText   String
   isHighlighted Boolean  @default(false)
   sortOrder     Int      @default(0)
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
 
-  package Package @relation(fields: [packageId], references: [id]) // FIX: relasi balik sudah ditambah di Package
+  package Package              @relation(fields: [packageId], references: [id]) // FIX: relasi balik sudah ditambah di Package
+  feature SubscriptionFeature? @relation(fields: [featureId], references: [id])
 
   @@map("package_features")
 }
@@ -297,6 +300,8 @@ model SubscriptionFeature {
   featureName String
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
+
+  packageFeatures PackageFeature[]
 
   @@map("subscription_features")
 }
@@ -347,19 +352,22 @@ model InvoiceItem {
 model Payment {
   id              Int           @id @default(autoincrement())
   userId          Int
-  invoiceId       Int
-  tripayReference String        @unique
-  merchantRef     String
+  invoiceId       Int? // nullable: QRIS manual payments tidak punya invoice
+  waOrderId       Int?          @map("wa_order_id") // relasi ke WAOrder untuk QRIS manual
+  tripayReference String?       @unique // nullable: QRIS manual tidak punya Tripay reference
+  merchantRef     String? // nullable: QRIS manual tidak punya merchant ref Tripay
   paymentMethod   String
   amount          Float
   status          PaymentStatus @default(PENDING)
+  proofUrl        String?       @map("proof_url") // path/url bukti transfer/screenshot bayar
   payload         Json?
   paidAt          DateTime?
   createdAt       DateTime      @default(now()) @map("created_at")
   updatedAt       DateTime      @updatedAt @map("updated_at")
 
-  user    User    @relation(fields: [userId], references: [id]) // FIX: relasi balik ditambah di User
-  invoice Invoice @relation(fields: [invoiceId], references: [id])
+  user    User     @relation(fields: [userId], references: [id])
+  invoice Invoice? @relation(fields: [invoiceId], references: [id])
+  waOrder WAOrder? @relation(fields: [waOrderId], references: [id])
 
   @@map("payments")
 }
@@ -408,7 +416,7 @@ model WAOrder {
   postalCode      String?
   notes           String?
   subtotal        Int?
-  shippingData    Json?         // stores all dynamic checkout field values
+  shippingData    Json? // stores all dynamic checkout field values
   status          WAOrderStatus @default(COLLECTING_INFO)
   orderCode       String        @unique
   tripayReference String?
@@ -417,8 +425,9 @@ model WAOrder {
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 
-  user  User          @relation(fields: [userId], references: [id])
-  items WAOrderItem[]
+  user     User          @relation(fields: [userId], references: [id])
+  items    WAOrderItem[]
+  payments Payment[]
 
   @@map("wa_orders")
 }
@@ -478,16 +487,16 @@ enum SubscriptionStatus {
 }
 
 model CheckoutField {
-  id        Int      @id @default(autoincrement())
-  userId    Int
-  label     String   // e.g. "Nama Lengkap"
-  fieldKey  String   // e.g. "customerName"
-  question  String   // e.g. "Silakan masukkan nama lengkap penerima:"
-  inputType String   @default("text") // "text" | "phone" | "textarea"
-  isRequired Boolean @default(true)
-  order     Int      @default(0)
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  label      String // e.g. "Nama Lengkap"
+  fieldKey   String // e.g. "customerName"
+  question   String // e.g. "Silakan masukkan nama lengkap penerima:"
+  inputType  String   @default("text") // "text" | "phone" | "textarea"
+  isRequired Boolean  @default(true)
+  order      Int      @default(0)
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 

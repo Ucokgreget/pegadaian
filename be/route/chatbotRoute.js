@@ -33,11 +33,15 @@ router.get("/runtime", async (req, res) => {
     const runtime = getRuntime(userId);
 
     // Get persistent settings
-    let setting = await prisma.chatbotSettings.findUnique({
-      where: {
-        userId: userId,
-      },
-    });
+    const device = await prisma.device.findFirst({ where: { userId } });
+    let setting = null;
+    if (device) {
+      setting = await prisma.chatbotSettings.findUnique({
+        where: {
+          deviceId: device.id,
+        },
+      });
+    }
 
     // Merge runtime state with persistent isActive setting
     return res.json({
