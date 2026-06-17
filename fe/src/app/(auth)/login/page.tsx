@@ -1,13 +1,11 @@
-import { autoLogin } from "@/actions/auth";
-import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import LoginForm from "@/app/(auth)/login/LoginForm";
 
+export const dynamic = "force-dynamic";
+
 export default async function LoginPage() {
-  const response = await autoLogin();
+  const cookieStore = await cookies();
+  const hasRememberToken = cookieStore.has("rememberToken");
 
-  if (response.status && response.user) {
-    redirect(response.user.role === "ADMIN" ? "/admin" : "/user");
-  }
-
-  return <LoginForm />;
+  return <LoginForm hasRememberToken={hasRememberToken} />;
 }

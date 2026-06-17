@@ -8,7 +8,6 @@ import { SubscriptionCard } from "@/components/dashboard/SubscriptionCard";
 import { BotStatusCard } from "@/components/dashboard/BotStatusCard";
 import { UsageLimitCard } from "@/components/dashboard/UsageLimitCard";
 import { RecentTransactionsTable } from "@/components/dashboard/RecentTransactionsTable";
-import { div } from "motion/react-m";
 
 // Dummy Mock Data
 const dashboardData = {

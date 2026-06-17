@@ -1,6 +1,6 @@
 "use client";
 
-import { loginAction } from "@/actions/auth";
+import { loginAction, autoLogin } from "@/actions/auth";
 import ToastContainerComponent from "@/components/ui/ToastContainerComponent";
 import Image from "next/image";
 import Link from "next/link";
@@ -154,10 +154,16 @@ function SubmitButton() {
   );
 }
 
-export default function LoginForm() {
+interface LoginFormProps {
+  hasRememberToken?: boolean;
+}
+
+export default function LoginForm({ hasRememberToken = false }: LoginFormProps) {
   const router = useRouter();
   const [state, formAction] = useActionState(loginAction, initialState);
   const [, startTransition] = useTransition();
+
+  const [isCheckingAutoLogin, setIsCheckingAutoLogin] = useState(hasRememberToken);
 
   const [formData, setFormData] = useState<FormDataState>({
     email: "",
@@ -166,6 +172,22 @@ export default function LoginForm() {
   const [errors, setErrors] = useState<FormErrors>({});
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+
+  useEffect(() => {
+    if (hasRememberToken) {
+      const runAutoLogin = async () => {
+        try {
+          const res = await autoLogin();
+          if (!res.status) {
+            setIsCheckingAutoLogin(false);
+          }
+        } catch (e) {
+          setIsCheckingAutoLogin(false);
+        }
+      };
+      runAutoLogin();
+    }
+  }, [hasRememberToken]);
 
   const inputBase =
     "w-full rounded-xl border border-border/80 bg-background/70 py-2.5 pl-10 pr-4 text-sm text-foreground outline-none transition placeholder:text-muted-foreground/70 focus:border-emerald-500 focus:bg-background focus:ring-4 focus:ring-emerald-500/15";
@@ -238,6 +260,27 @@ export default function LoginForm() {
 
     setErrors({ general: state.message || "Email atau password salah." });
   }, [router, state]);
+
+  if (isCheckingAutoLogin) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-950 text-slate-50 font-sans">
+        <div className="flex flex-col items-center gap-4">
+          <div className="relative h-12 w-12">
+            <div className="absolute inset-0 rounded-full border-2 border-slate-800" />
+            <div className="absolute inset-0 animate-spin rounded-full border-2 border-emerald-500 border-t-transparent border-l-transparent" />
+          </div>
+          <div className="flex flex-col items-center text-center">
+            <p className="text-sm font-medium text-slate-100 sm:text-base">
+              Menyiapkan dashboard Sijaka.id...
+            </p>
+            <p className="mt-1 text-xs text-slate-400 sm:text-sm">
+              Menghubungkan automasi WhatsApp dan memuat data toko Anda.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>

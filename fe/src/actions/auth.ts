@@ -9,6 +9,7 @@ import type {
 import { on } from "events";
 import { cookies } from "next/headers";
 import { json } from "zod";
+import { redirect } from "next/navigation";
 
 const API_URL = process.env.API_URL;
 
@@ -105,16 +106,25 @@ export async function loginAction(
     };
   }
 
-  return await login({
+  const result = await login({
     email,
     password,
     rememberMe,
   });
+
+  if (result.status && result.user) {
+    redirect(result.user.role === "ADMIN" ? "/admin" : "/user");
+  }
+
+  return result;
 }
 
 export async function autoLogin(): Promise<LoginResponse> {
+  let success = false;
+  let userRole = "";
+  let cookieStore;
   try {
-    const cookieStore = await cookies();
+    cookieStore = await cookies();
     const rememberToken = cookieStore.get("rememberToken")?.value;
 
     if (!rememberToken) {
@@ -162,14 +172,8 @@ export async function autoLogin(): Promise<LoginResponse> {
       cookieStore.delete("refreshToken");
     }
 
-    return {
-      status: true,
-      message: result.message || "Berhasil auto login",
-      accessToken: result.accessToken,
-      refreshToken: result.refreshToken,
-      rememberToken: result.rememberToken ?? rememberToken,
-      user: result.user,
-    };
+    success = true;
+    userRole = result.user?.role || "USER";
   } catch (error) {
     console.log("Auto login gagal", error);
     return {
@@ -180,6 +184,18 @@ export async function autoLogin(): Promise<LoginResponse> {
       rememberToken: null,
     };
   }
+
+  if (success && userRole) {
+    redirect(userRole === "ADMIN" ? "/admin" : "/user");
+  }
+
+  return {
+    status: false,
+    message: "Auto login gagal",
+    accessToken: null,
+    refreshToken: null,
+    rememberToken: null,
+  };
 }
 
 /* ================= REGISTER ================= */
