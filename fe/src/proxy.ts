@@ -43,8 +43,38 @@ export async function proxy(request: NextRequest) {
 
     return NextResponse.next();
   } catch {
+    // Token expired/invalid → coba refresh dulu
+    const refreshToken = request.cookies.get("refreshToken")?.value;
+
+    if (refreshToken) {
+      try {
+        const res = await fetch(`${process.env.API_URL}/refresh`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ refreshToken }),
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          const response = NextResponse.next();
+          response.cookies.set("token", data.accessToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+            path: "/",
+            maxAge: 60 * 15,
+          });
+          return response;
+        }
+      } catch {
+        // refresh juga gagal, fall through ke redirect login
+      }
+    }
+
+    // Refresh gagal atau nggak ada → redirect login
     const response = NextResponse.redirect(new URL("/login", request.url));
     response.cookies.delete("token");
+    response.cookies.delete("refreshToken");
     return response;
   }
 }
