@@ -3,11 +3,8 @@
 import fs from "fs/promises";
 import mammoth from "mammoth";
 import path from "path";
-import { createRequire } from "module";
+import { PDFParse } from "pdf-parse";
 import * as cheerio from "cheerio";
-
-const require = createRequire(import.meta.url);
-const pdfParse = require("pdf-parse");
 
 import { prisma } from "../lib/prisma.js";
 import { chunkText } from "../lib/chunkText.js";
@@ -23,8 +20,10 @@ async function extractTextFromFile(file) {
 
     if (ext === ".pdf") {
       const dataBuffer = await fs.readFile(file.path);
-      const data = await pdfParse(dataBuffer); // langsung panggil sebagai function
-      return data.text;
+      const pdf = new PDFParse({ data: dataBuffer });
+      const result = await pdf.getText();
+      await pdf.destroy();
+      return result.text;
     }
 
     if (ext === ".docx") {
