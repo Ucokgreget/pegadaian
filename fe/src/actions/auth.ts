@@ -38,7 +38,7 @@ export async function login(data: LoginRequest): Promise<LoginResponse> {
     if (!res.ok || !result?.accessToken) {
       return {
         status: false,
-        message: result?.message || "Login gagal",
+        message: result?.error || result?.message || "Login gagal",
         accessToken: null,
         refreshToken: null,
         rememberToken: null,

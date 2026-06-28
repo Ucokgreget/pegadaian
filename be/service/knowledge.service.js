@@ -7,7 +7,7 @@ import { createRequire } from "module";
 import * as cheerio from "cheerio";
 
 const require = createRequire(import.meta.url);
-const pdfParse = require("pdf-parse");
+const { PDFParse } = require("pdf-parse");
 
 import { prisma } from "../lib/prisma.js";
 import { chunkText } from "../lib/chunkText.js";
@@ -23,7 +23,8 @@ async function extractTextFromFile(file) {
 
     if (ext === ".pdf") {
       const dataBuffer = await fs.readFile(file.path);
-      const data = await pdfParse(dataBuffer);
+      const parser = new PDFParse({ data: dataBuffer });
+      const data = await parser.getText();
       return data.text;
     }
 
@@ -99,7 +100,6 @@ export async function createKnowledgeFromUploadedFile({ userId, file }) {
       await prisma.$executeRaw`
         INSERT INTO "knowledge_chunks" (
           "document_id",
-          "user_id",
           "chunk_index",
           "content",
           "metadata",
@@ -108,7 +108,6 @@ export async function createKnowledgeFromUploadedFile({ userId, file }) {
         )
         VALUES (
           ${document.id},
-          ${numericUserId},
           ${i},
           ${chunkContent},
           ${JSON.stringify(metadata)}::jsonb,
@@ -232,7 +231,6 @@ export async function createKnowledgeFromUrl({ userId, url }) {
       await prisma.$executeRaw`
         INSERT INTO "knowledge_chunks" (
           "document_id",
-          "user_id",
           "chunk_index",
           "content",
           "metadata",
@@ -241,7 +239,6 @@ export async function createKnowledgeFromUrl({ userId, url }) {
         )
         VALUES (
           ${document.id},
-          ${numericUserId},
           ${i},
           ${chunkContent},
           ${JSON.stringify(metadata)}::jsonb,

@@ -836,11 +836,12 @@ Untuk tebal, HANYA gunakan *teks* (single asterisk).
         const SIMILARITY_THRESHOLD = 0.55;
 
         const relevantChunks = await prisma.$queryRaw`
-          SELECT content, 1 - (embedding <=> ${embeddingString}::vector) AS similarity
-          FROM "knowledge_chunks"
-          WHERE user_id = ${settings.userId}
-          AND 1 - (embedding <=> ${embeddingString}::vector) >= ${SIMILARITY_THRESHOLD}
-          ORDER BY embedding <=> ${embeddingString}::vector
+          SELECT kc.content, 1 - (kc.embedding <=> ${embeddingString}::vector) AS similarity
+          FROM "knowledge_chunks" kc
+          JOIN "knowledge_documents" kd ON kc.document_id = kd.id
+          WHERE kd.user_id = ${settings.userId}
+          AND 1 - (kc.embedding <=> ${embeddingString}::vector) >= ${SIMILARITY_THRESHOLD}
+          ORDER BY kc.embedding <=> ${embeddingString}::vector
           LIMIT 5
         `;
 

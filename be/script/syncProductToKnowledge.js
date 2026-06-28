@@ -77,7 +77,6 @@ async function syncProductsToKnowledge(userId) {
       INSERT INTO knowledge_chunks
       (
         document_id,
-        user_id,
         chunk_index,
         content,
         metadata,
@@ -87,7 +86,6 @@ async function syncProductsToKnowledge(userId) {
       VALUES
       (
         ${document.id},
-        ${userId},
         0,
         ${content},
         ${JSON.stringify({
