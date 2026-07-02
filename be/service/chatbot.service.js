@@ -65,7 +65,6 @@ export async function updateDeviceForUser(userId, devicePhone) {
         userId,
         phone: devicePhone,
         status: "CONNECTED",
-        packageName: "FREE",
         isActive: true,
       },
     });
